@@ -8,7 +8,7 @@ import requests
 from typing import Dict, Any, Optional, List
 import time
 import logging
-from .config import ETHERSCAN_API_KEY, ETHERSCAN_BASE_URL
+from .config import Config, ETHERSCAN_API_KEY, ETHERSCAN_BASE_URL
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +24,14 @@ class EtherscanAPI:
         Args:
             api_key (str, optional): Etherscan API key. If None, uses the key from config.
         """
-        self.api_key = api_key or ETHERSCAN_API_KEY
+        # Keep backward compatibility but also support the new Config class
+        if api_key is None:
+            # Try to get from Config first, fall back to global variable
+            config = Config()
+            self.api_key = config.get_api_key() or ETHERSCAN_API_KEY
+        else:
+            self.api_key = api_key
+        
         self.base_url = ETHERSCAN_BASE_URL
         
         if not self.api_key:
@@ -182,6 +189,7 @@ class EtherscanAPI:
             holders.append({
                 "TokenHolderAddress": address,
                 "TokenHolderQuantity": str(quantity),
+                "balance": str(quantity),  # Adding this field for compatibility
                 "TokenHolderPercentage": str(pct)
             })
             

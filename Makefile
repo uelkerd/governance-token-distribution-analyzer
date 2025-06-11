@@ -1,4 +1,4 @@
-.PHONY: install test lint format clean build docs integration-test historical-data historical-report integration-test-cov integration-full end-to-end-test visualization-test
+.PHONY: install test lint format clean build docs integration-test historical-data historical-report integration-test-cov integration-full end-to-end-test visualization-test lint-check format-check typecheck all-checks
 
 # Install the package in development mode
 install:
@@ -18,13 +18,28 @@ test-cov:
 
 # Run linting
 lint:
-	black --check src/ tests/
-	ruff src/ tests/
+	ruff governance_token_analyzer/ tests/ --fix
+	ruff format governance_token_analyzer/ tests/
+
+# Run linting check only (no fixes)
+lint-check:
+	ruff governance_token_analyzer/ tests/ --no-fix
+	ruff format --check governance_token_analyzer/ tests/
 
 # Format code
 format:
-	black src/ tests/
-	ruff --fix src/ tests/
+	ruff format governance_token_analyzer/ tests/
+
+# Format check only
+format-check:
+	ruff format --check governance_token_analyzer/ tests/
+
+# Type check
+typecheck:
+	mypy --ignore-missing-imports governance_token_analyzer/
+
+# Run all checks
+all-checks: format-check lint-check typecheck test
 
 # Clean build artifacts
 clean:
@@ -36,6 +51,8 @@ clean:
 	find . -name ".coverage" -delete
 	find . -name "coverage.xml" -delete
 	find . -name ".pytest_cache" -type d -exec rm -rf {} +
+	find . -name ".ruff_cache" -type d -exec rm -rf {} +
+	find . -name ".mypy_cache" -type d -exec rm -rf {} +
 
 # Build package
 build:
