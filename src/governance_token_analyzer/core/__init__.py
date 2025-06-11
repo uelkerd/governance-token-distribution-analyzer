@@ -1,1 +1,1 @@
-"""Core analysis functionality and metrics.""" 
+"""Core analysis functionality and metrics."""

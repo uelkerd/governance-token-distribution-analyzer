@@ -17,9 +17,8 @@ import seaborn as sns
 from datetime import datetime
 import sys
 
-# Add project root to Python path
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_root)
+# Add src directory to Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from governance_token_analyzer.core import (
     concentration_analysis, 
