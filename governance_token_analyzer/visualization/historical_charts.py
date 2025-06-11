@@ -593,11 +593,16 @@ def create_multi_metric_dashboard(
         # Create figure
         fig, axes = plt.subplots(n_rows, n_cols, figsize=figsize)
         
-        # Handle single row/column case
-        if n_metrics == 1:
-            axes = np.array([axes])
+        # Convert to numpy array for consistent indexing
+        if n_rows == 1 and n_cols == 1:
+            # Special case: single plot
+            axes = np.array([[axes]])
         elif n_rows == 1:
+            # Single row
             axes = np.array([axes])
+        elif n_cols == 1:
+            # Single column
+            axes = np.array([[ax] for ax in axes])
         
         # Plot each metric
         metrics_plotted = 0
@@ -607,27 +612,20 @@ def create_multi_metric_dashboard(
             col = i % n_cols
             
             # Get the current axis
-            if n_rows == 1 and n_cols == 1:
-                ax = axes[0]
-            elif n_rows == 1:
-                ax = axes[col]
-            elif n_cols == 1:
-                ax = axes[row]
-            else:
-                ax = axes[row, col]
+            ax = axes[row, col]
             
             # Get data for this metric
             data = time_series_data.get(metric)
             
             if data is None or not isinstance(data, pd.DataFrame) or data.empty:
                 logger.warning(f"No valid data available for metric '{metric}'")
-                ax.text(0.5, 0.5, f"No data available for {metric}", 
+                ax.text(0.5, 0.5, f"No data available for {metric}",
                         ha='center', va='center', transform=ax.transAxes)
                 continue
             
             if metric not in data.columns:
                 logger.warning(f"Metric '{metric}' not found in the corresponding DataFrame")
-                ax.text(0.5, 0.5, f"Metric '{metric}' not found in data", 
+                ax.text(0.5, 0.5, f"Metric '{metric}' not found in data",
                         ha='center', va='center', transform=ax.transAxes)
                 continue
             
@@ -664,13 +662,7 @@ def create_multi_metric_dashboard(
         for i in range(n_metrics, n_rows * n_cols):
             row = i // n_cols
             col = i % n_cols
-            
-            if n_rows == 1:
-                axes[col].axis('off')
-            elif n_cols == 1:
-                axes[row].axis('off')
-            else:
-                axes[row, col].axis('off')
+            axes[row, col].axis('off')
         
         # Set overall title
         fig.suptitle(title, fontsize=16)

@@ -10,9 +10,12 @@ import shutil
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
+import json
+from pandas import Timestamp
 
 from governance_token_analyzer.core import historical_data
 from governance_token_analyzer.protocols import compound
+from governance_token_analyzer.core.exceptions import ProtocolNotSupportedError, MetricNotFoundError
 
 
 class TestHistoricalDataIntegration:
@@ -117,16 +120,8 @@ class TestHistoricalDataIntegration:
     def test_nonexistent_protocol(self, data_manager):
         """Test behavior with a nonexistent protocol."""
         # Get snapshots for a protocol that doesn't exist
-        snapshots = data_manager.get_snapshots('nonexistent_protocol')
-        
-        # Should return an empty list, not raise an exception
-        assert snapshots == [], "Should return an empty list for nonexistent protocol"
-        
-        # Get time series for a protocol that doesn't exist
-        time_series = data_manager.get_time_series_data('nonexistent_protocol', 'gini_coefficient')
-        
-        # Should return an empty DataFrame, not raise an exception
-        assert time_series.empty, "Should return an empty DataFrame for nonexistent protocol"
+        with pytest.raises(ProtocolNotSupportedError):
+            snapshots = data_manager.get_snapshots('nonexistent_protocol')
 
     def test_nonexistent_metric(self, data_manager):
         """Test behavior with a nonexistent metric."""
@@ -139,11 +134,8 @@ class TestHistoricalDataIntegration:
         )
         
         # Get time series for a metric that doesn't exist
-        time_series = data_manager.get_time_series_data('compound', 'nonexistent_metric')
-        
-        # Should return an empty DataFrame with the correct columns
-        assert time_series.empty, "Should return an empty DataFrame for nonexistent metric"
-        assert 'nonexistent_metric' in time_series.columns, "DataFrame should contain the requested metric column"
+        with pytest.raises(MetricNotFoundError):
+            time_series = data_manager.get_time_series_data('compound', 'nonexistent_metric')
 
     def test_calculate_distribution_change(self):
         """Test calculation of distribution changes between snapshots."""

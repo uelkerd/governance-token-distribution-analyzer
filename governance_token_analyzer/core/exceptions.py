@@ -61,4 +61,14 @@ class VisualizationError(GovernanceAnalyzerError):
 
 class ConfigurationError(GovernanceAnalyzerError):
     """Exception raised for issues related to configuration."""
+    pass
+
+
+class AnalysisError(Exception):
+    """Exception raised for errors during data analysis."""
+    pass
+
+
+class NetworkAnalysisError(Exception):
+    """Exception raised for errors during network analysis."""
     pass 

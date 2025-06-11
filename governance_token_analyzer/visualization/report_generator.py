@@ -11,6 +11,7 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+import shutil
 
 # Import visualization modules
 from . import charts
@@ -753,4 +754,187 @@ class ReportGenerator:
         with open(output_path, 'w') as f:
             json.dump(report_data, f, indent=2)
         
-        return output_path 
+        return output_path
+
+def generate_historical_analysis_report(protocol, time_series_data, snapshots, output_path):
+    """
+    Generate a historical analysis report for a protocol.
+    
+    This is a standalone function that creates a report with historical data analysis.
+    
+    Args:
+        protocol: Name of the protocol
+        time_series_data: DataFrame with time series data
+        snapshots: List of historical snapshots
+        output_path: Path to save the report
+        
+    Returns:
+        Path to the generated report
+    """
+    # Create a report generator instance
+    report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))
+    
+    # Generate the report using the existing method
+    return report_gen.generate_historical_report(
+        snapshots=snapshots,
+        protocol_name=protocol,
+        output_format='html'
+    )
+
+def generate_comprehensive_report(protocol, snapshots, time_series_data, visualization_paths, output_path):
+    """
+    Generate a comprehensive report with all analysis components.
+    
+    This is a standalone function that creates a comprehensive report with
+    all available analysis components including current state, historical trends,
+    and visualizations.
+    
+    Args:
+        protocol: Name of the protocol
+        snapshots: List of historical snapshots
+        time_series_data: Dictionary mapping metric names to their time series DataFrames
+        visualization_paths: Dictionary mapping metric names to their visualization file paths
+        output_path: Path to save the report
+        
+    Returns:
+        Path to the generated report
+    """
+    # Create a report generator instance
+    report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))
+    
+    # Get the latest snapshot
+    latest_snapshot = snapshots[-1] if snapshots else None
+    
+    # Create HTML content
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{protocol.capitalize()} Comprehensive Report</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 20px; }}
+            h1, h2, h3 {{ color: #333; }}
+            .section {{ margin-bottom: 30px; }}
+            .metric {{ margin-bottom: 15px; }}
+            img {{ max-width: 100%; height: auto; }}
+            table {{ border-collapse: collapse; width: 100%; }}
+            th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+            th {{ background-color: #f2f2f2; }}
+        </style>
+    </head>
+    <body>
+        <h1>{protocol.capitalize()} Comprehensive Governance Analysis Report</h1>
+        <div class="section">
+            <h2>Overview</h2>
+            <p>This report provides a comprehensive analysis of the {protocol.capitalize()} governance token distribution and historical trends.</p>
+        </div>
+    """
+    
+    # Add visualizations
+    if visualization_paths:
+        html_content += """
+        <div class="section">
+            <h2>Visualizations</h2>
+        """
+        
+        for metric, path in visualization_paths.items():
+            # Create a relative path for the image
+            rel_path = os.path.basename(path)
+            
+            # Skip copying if source and destination are the same
+            dest_path = os.path.join(os.path.dirname(output_path), rel_path)
+            if os.path.abspath(path) != os.path.abspath(dest_path):
+                # Copy the image to the output directory
+                shutil.copy(path, dest_path)
+            
+            html_content += f"""
+            <div class="metric">
+                <h3>{metric.replace('_', ' ').title()}</h3>
+                <img src="{rel_path}" alt="{metric} visualization">
+            </div>
+            """
+        
+        html_content += "</div>"
+    
+    # Add historical data
+    if time_series_data:
+        html_content += """
+        <div class="section">
+            <h2>Historical Analysis</h2>
+        """
+        
+        for metric, data in time_series_data.items():
+            html_content += f"""
+            <div class="metric">
+                <h3>{metric.replace('_', ' ').title()}</h3>
+                <table>
+                    <tr>
+                        <th>Date</th>
+                        <th>Value</th>
+                    </tr>
+            """
+            
+            for idx, row in data.iterrows():
+                date_str = idx.strftime('%Y-%m-%d') if isinstance(idx, pd.Timestamp) else str(idx)
+                value = row[metric] if metric in row else 'N/A'
+                formatted_value = f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
+                html_content += f"""
+                    <tr>
+                        <td>{date_str}</td>
+                        <td>{formatted_value}</td>
+                    </tr>
+                """
+            
+            html_content += """
+                </table>
+            </div>
+            """
+        
+        html_content += "</div>"
+    
+    # Add latest snapshot data
+    if latest_snapshot:
+        html_content += """
+        <div class="section">
+            <h2>Current Distribution</h2>
+        """
+        
+        # Add metrics
+        if 'metrics' in latest_snapshot.get('data', {}):
+            html_content += """
+            <div class="metric">
+                <h3>Key Metrics</h3>
+                <table>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+            """
+            
+            for metric, value in latest_snapshot['data']['metrics'].items():
+                formatted_value = f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
+                html_content += f"""
+                    <tr>
+                        <td>{metric.replace('_', ' ').title()}</td>
+                        <td>{formatted_value}</td>
+                    </tr>
+                """
+            
+            html_content += """
+                </table>
+            </div>
+            """
+        
+        html_content += "</div>"
+    
+    # Close HTML
+    html_content += """
+    </body>
+    </html>
+    """
+    
+    # Write to file
+    with open(output_path, 'w') as f:
+        f.write(html_content)
+    
+    return output_path 

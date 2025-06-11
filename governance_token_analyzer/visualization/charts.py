@@ -4,10 +4,17 @@ This module provides functions to create various visualizations
 for token distribution and governance metrics.
 """
 
+import os
+import logging
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from typing import Dict, Any, List, Optional, Tuple, Union
+import networkx as nx
+from ..core.exceptions import VisualizationError
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 def create_distribution_comparison(
@@ -203,4 +210,199 @@ def save_chart(fig: plt.Figure, filename: str, dpi: int = 300) -> None:
         None
     """
     fig.savefig(filename, dpi=dpi, bbox_inches='tight')
-    plt.close(fig) 
+    plt.close(fig)
+
+
+def create_delegation_network_visualization(
+    delegation_graph: nx.DiGraph,
+    key_delegatees: List[Dict[str, Any]] = None,
+    title: str = "Delegation Network",
+    figsize: Tuple[int, int] = (12, 10)
+) -> plt.Figure:
+    """
+    Create a visualization of the delegation network.
+    
+    Args:
+        delegation_graph: NetworkX DiGraph representing the delegation network
+        key_delegatees: List of key delegatees to highlight
+        title: Title for the visualization
+        figsize: Figure size
+        
+    Returns:
+        Matplotlib Figure object
+    """
+    try:
+        # Create figure
+        fig, ax = plt.subplots(figsize=figsize)
+        
+        # Extract key delegatee addresses if provided
+        key_addresses = set()
+        if key_delegatees:
+            key_addresses = {d['address'] for d in key_delegatees}
+        
+        # Set node colors based on whether they're key delegatees
+        node_colors = []
+        for node in delegation_graph.nodes():
+            if node in key_addresses:
+                node_colors.append('tab:red')
+            elif delegation_graph.in_degree(node) > 0:
+                node_colors.append('tab:orange')
+            elif delegation_graph.out_degree(node) > 0:
+                node_colors.append('tab:blue')
+            else:
+                node_colors.append('tab:gray')
+        
+        # Set node sizes based on balance
+        node_sizes = []
+        for node in delegation_graph.nodes():
+            balance = delegation_graph.nodes[node].get('balance', 0)
+            node_sizes.append(100 + (balance / 1000))
+        
+        # Set edge widths based on amount
+        edge_widths = []
+        for _, _, data in delegation_graph.edges(data=True):
+            amount = data.get('amount', 0)
+            edge_widths.append(0.5 + (amount / 10000))
+        
+        # Create a spring layout
+        pos = nx.spring_layout(delegation_graph, k=0.3, iterations=50)
+        
+        # Draw nodes
+        nx.draw_networkx_nodes(
+            delegation_graph,
+            pos,
+            ax=ax,
+            node_color=node_colors,
+            node_size=node_sizes,
+            alpha=0.8
+        )
+        
+        # Draw edges
+        nx.draw_networkx_edges(
+            delegation_graph,
+            pos,
+            ax=ax,
+            width=edge_widths,
+            alpha=0.6,
+            edge_color='tab:gray',
+            arrowsize=15,
+            connectionstyle='arc3,rad=0.1'
+        )
+        
+        # Add labels to key delegatees
+        labels = {}
+        for node in delegation_graph.nodes():
+            if node in key_addresses:
+                # Shorten address for display
+                short_addr = f"{node[:6]}...{node[-4:]}"
+                labels[node] = short_addr
+        
+        nx.draw_networkx_labels(
+            delegation_graph,
+            pos,
+            labels=labels,
+            font_size=10,
+            font_weight='bold'
+        )
+        
+        # Add legend
+        legend_elements = [
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='tab:red', markersize=10, label='Key Delegatee'),
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='tab:orange', markersize=10, label='Delegatee'),
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='tab:blue', markersize=10, label='Delegator'),
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='tab:gray', markersize=10, label='No Delegation')
+        ]
+        
+        ax.legend(handles=legend_elements, loc='upper right')
+        
+        # Set title and remove axes
+        ax.set_title(title, fontsize=16)
+        ax.set_axis_off()
+        
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Failed to create delegation network visualization: {e}")
+        raise VisualizationError(f"Failed to create delegation network visualization: {e}")
+
+
+def create_delegation_metrics_chart(
+    metrics: Dict[str, float],
+    title: str = "Delegation Metrics",
+    figsize: Tuple[int, int] = (10, 6)
+) -> plt.Figure:
+    """
+    Create a chart visualizing delegation metrics.
+    
+    Args:
+        metrics: Dictionary of delegation metrics
+        title: Chart title
+        figsize: Figure size
+        
+    Returns:
+        Matplotlib Figure object
+    """
+    try:
+        # Create figure
+        fig, ax = plt.subplots(figsize=figsize)
+        
+        # Extract metrics to display
+        display_metrics = {
+            'Delegation Rate (%)': metrics.get('delegation_rate', 0),
+            'Delegator %': metrics.get('delegator_percentage', 0),
+            'Delegation Concentration': metrics.get('delegation_concentration', 0) * 100
+        }
+        
+        # Create bar chart
+        bars = ax.bar(
+            display_metrics.keys(),
+            display_metrics.values(),
+            color=['tab:blue', 'tab:orange', 'tab:red']
+        )
+        
+        # Add value labels
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                height + 1,
+                f'{height:.1f}',
+                ha='center',
+                va='bottom',
+                fontweight='bold'
+            )
+        
+        # Set labels and title
+        ax.set_ylabel('Percentage')
+        ax.set_title(title, fontsize=14)
+        ax.grid(axis='y', alpha=0.3)
+        
+        # Set y-axis limit
+        ax.set_ylim(0, max(display_metrics.values()) * 1.2)
+        
+        # Add metrics counts as text
+        delegator_count = metrics.get('delegator_count', 0)
+        delegatee_count = metrics.get('delegatee_count', 0)
+        avg_delegation = metrics.get('avg_delegation_amount', 0)
+        
+        metrics_text = (
+            f"Delegators: {delegator_count}\n"
+            f"Delegatees: {delegatee_count}\n"
+            f"Avg. Delegation: {avg_delegation:.2f}"
+        )
+        
+        # Add text box
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax.text(
+            0.05, 0.95, metrics_text,
+            transform=ax.transAxes,
+            fontsize=10,
+            verticalalignment='top',
+            bbox=props
+        )
+        
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Failed to create delegation metrics chart: {e}")
+        raise VisualizationError(f"Failed to create delegation metrics chart: {e}") 
