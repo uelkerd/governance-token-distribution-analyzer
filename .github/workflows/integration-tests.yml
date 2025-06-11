@@ -51,4 +51,11 @@ jobs:
         file: ./coverage.xml
         flags: integration
         name: codecov-integration
-        fail_ci_if_error: false 
+        fail_ci_if_error: false
+        
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-integration
+        path: coverage.xml
+        if-no-files-found: error 

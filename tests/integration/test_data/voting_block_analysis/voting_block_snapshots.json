@@ -1,0 +1,43 @@
+[
+  {
+    "timestamp": "2025-04-12T20:33:43.497352",
+    "num_blocks": 2,
+    "total_addresses": 93,
+    "block_power": {
+      "Block_1": {
+        "percentage": 89.06410360387737,
+        "address_count": 91
+      },
+      "Block_2": {
+        "percentage": 1.2518850440012737,
+        "address_count": 2
+      }
+    }
+  },
+  {
+    "timestamp": "2025-05-12T20:33:43.648470",
+    "num_blocks": 1,
+    "total_addresses": 91,
+    "block_power": {
+      "Block_1": {
+        "percentage": 87.0441418146804,
+        "address_count": 91
+      }
+    }
+  },
+  {
+    "timestamp": "2025-06-11T20:33:43.836721",
+    "num_blocks": 2,
+    "total_addresses": 94,
+    "block_power": {
+      "Block_1": {
+        "percentage": 37.31394056954365,
+        "address_count": 29
+      },
+      "Block_2": {
+        "percentage": 53.49729930453333,
+        "address_count": 65
+      }
+    }
+  }
+]

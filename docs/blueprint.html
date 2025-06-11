@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive DeFi Governance Analyzer Blueprint</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Cool Slate -->
+    <!-- Application Structure Plan: A developer-centric dashboard SPA. A fixed sidebar provides navigation to key project stages (Data, Analytics, Viz, etc.), breaking from the report's linear structure. This task-oriented design allows users to either follow the project lifecycle sequentially or jump directly to specific information (e.g., only view visualization libraries). The main content area uses cards, interactive tables, and illustrative charts to make complex topics digestible. This structure was chosen for its superior usability and non-linear exploration capabilities, which better suit a developer's workflow when consuming a technical guide. -->
+    <!-- Visualization & Content Choices: Tables from the report (libraries, resources) are turned into interactive, filterable lists (Goal: Organize, Method: HTML+JS). Complex concepts like "Whale Dominance" or "Attack Vectors" are paired with illustrative Chart.js bar/doughnut charts to make abstract ideas concrete (Goal: Inform/Compare, Method: Chart.js/Canvas). The project lifecycle is visualized as a CSS-based flowchart (Goal: Organize, Method: HTML/CSS). This multi-format approach enhances understanding by translating text into visual and interactive forms, all within the designed dashboard structure. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link.active {
+            background-color: #4338ca; /* indigo-700 */
+            color: white;
+            font-weight: 600;
+        }
+        .sidebar-link:not(.active):hover {
+            background-color: #e0e7ff; /* indigo-100 */
+            color: #3730a3; /* indigo-800 */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .table-filter-button.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md flex-shrink-0 p-4 space-y-2 transition-all duration-300 -translate-x-full sm:translate-x-0">
+            <div class="flex items-center space-x-3 p-2 mb-4">
+                 <div class="p-2 bg-indigo-600 rounded-lg text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+                <h1 class="text-xl font-bold text-slate-800">Gov-Analyzer</h1>
+            </div>
+            <nav class="space-y-2">
+                <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" data-target="overview">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    Overview
+                </a>
+                <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" data-target="data-collection">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4" /></svg>
+                    Data Collection
+                </a>
+                <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" data-target="analytics">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    Analytics Engine
+                </a>
+                <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" data-target="visualization">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
+                    Visualization
+                </a>
+                <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" data-target="production">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    Production-Ready
+                </a>
+                 <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" data-target="toolkit">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>
+                    Toolkit & Resources
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+             <header class="flex justify-between items-center p-4 bg-white border-b">
+                <button id="menu-button" class="sm:hidden text-slate-500 hover:text-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <h2 id="header-title" class="text-2xl font-semibold text-slate-800">Overview</h2>
+                 <div></div>
+            </header>
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-6 md:p-8">
+                
+                <!-- Overview Section -->
+                <div id="overview" class="content-section space-y-8">
+                    <div>
+                        <h3 class="text-3xl font-bold text-slate-900 mb-2">Building a Python Governance Analyzer</h3>
+                        <p class="text-lg text-slate-600">This application is an interactive guide for developing a sophisticated Python-based 'Governance Token Distribution Analyzer'. It translates the original technical report into a hands-on blueprint, covering everything from data acquisition to production deployment. Use the sidebar to navigate the key stages of building this powerful tool for deep blockchain governance analysis.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h4 class="text-xl font-semibold text-slate-800 mb-4">Project Development Lifecycle</h4>
+                        <p class="text-slate-600 mb-6">The analyzer's construction follows a logical flow, starting with raw data and culminating in a robust, insightful application. Each stage builds upon the last, transforming blockchain data into actionable governance intelligence.</p>
+                        <div class="relative flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 sm:space-x-4">
+                            <!-- Step 1 -->
+                            <div class="flex items-center flex-col sm:flex-row text-center sm:text-left">
+                                <div class="flex-shrink-0 bg-indigo-500 text-white rounded-full h-12 w-12 flex items-center justify-center font-bold text-lg">1</div>
+                                <div class="mt-2 sm:mt-0 sm:ml-4">
+                                    <h5 class="font-semibold">Data Collection</h5>
+                                    <p class="text-sm text-slate-500">Acquire & normalize data</p>
+                                </div>
+                            </div>
+                             <div class="hidden sm:block flex-1 h-0.5 bg-slate-300"></div>
+                            <!-- Step 2 -->
+                             <div class="flex items-center flex-col sm:flex-row text-center sm:text-left">
+                                <div class="flex-shrink-0 bg-indigo-500 text-white rounded-full h-12 w-12 flex items-center justify-center font-bold text-lg">2</div>
+                                <div class="mt-2 sm:mt-0 sm:ml-4">
+                                    <h5 class="font-semibold">Analytics Engine</h5>
+                                    <p class="text-sm text-slate-500">Calculate metrics</p>
+                                </div>
+                            </div>
+                             <div class="hidden sm:block flex-1 h-0.5 bg-slate-300"></div>
+                             <!-- Step 3 -->
+                             <div class="flex items-center flex-col sm:flex-row text-center sm:text-left">
+                                <div class="flex-shrink-0 bg-indigo-500 text-white rounded-full h-12 w-12 flex items-center justify-center font-bold text-lg">3</div>
+                                <div class="mt-2 sm:mt-0 sm:ml-4">
+                                    <h5 class="font-semibold">Visualization</h5>
+                                    <p class="text-sm text-slate-500">Create dashboards</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                         <h4 class="text-xl font-semibold text-slate-800 mb-4">Strategic Recommendations</h4>
+                         <p class="text-slate-600 mb-6">Success requires more than just code. A phased approach, modular design, and rigorous testing are paramount. This section summarizes the strategic pillars for creating a professional, portfolio-worthy tool.</p>
+                        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <h5 class="font-semibold text-indigo-800">Phased Implementation</h5>
+                                <p class="text-sm text-indigo-700 mt-1">Iterate from data collection to deployment. Solidify each stage before advancing.</p>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <h5 class="font-semibold text-indigo-800">Modularity</h5>
+                                <p class="text-sm text-indigo-700 mt-1">Isolate logic for data adapters, analytics, and UI components for easy maintenance.</p>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <h5 class="font-semibold text-indigo-800">Comprehensive Testing</h5>
+                                <p class="text-sm text-indigo-700 mt-1">Use unit, integration, and data validation tests to ensure reliability and accuracy.</p>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <h5 class="font-semibold text-indigo-800">Clear Documentation</h5>
+                                <p class="text-sm text-indigo-700 mt-1">Comment code extensively and adhere to best practices for long-term clarity.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Collection Section -->
+                <div id="data-collection" class="content-section space-y-8">
+                    <h3 class="text-3xl font-bold text-slate-900">I. Mastering Advanced Data Collection</h3>
+                    <p class="text-lg text-slate-600">Acquiring comprehensive and accurate governance data is the bedrock of any meaningful analysis. This stage involves interfacing with decentralized indexing layers like The Graph, normalizing data from diverse protocols into a unified schema, and augmenting it with contextual information from other platforms.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h4 class="text-xl font-semibold text-slate-800 mb-2">The Graph Protocol</h4>
+                            <p class="text-slate-600 mb-4">Use The Graph to query historical on-chain data like proposals and votes via GraphQL APIs called 'subgraphs'. This is far more efficient than direct node queries.</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li><b>Python Clients:</b> Use libraries like `subgrounds` for a Pythonic interface or `gql` for general-purpose GraphQL queries.</li>
+                                <li><b>Pagination:</b> Iteratively query data using `first` and `skip` parameters to handle large datasets.</li>
+                                <li><b>Key Subgraphs:</b> Target specific governance subgraphs for protocols like Uniswap, Aave, and Compound.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h4 class="text-xl font-semibold text-slate-800 mb-2">Multi-Protocol Normalization</h4>
+                            <p class="text-slate-600 mb-4">Different DeFi protocols have unique governance structures. To compare them, you must transform their data into a single, consistent schema.</p>
+                             <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li><b>Define Core Schema:</b> Create standard fields for proposals, votes, and delegations (`protocol_name`, `proposal_id`, `voter_address`, etc.).</li>
+                                <li><b>Use Adapters:</b> Build a separate Python parser for each protocol to map its unique data structure to your core schema.</li>
+                                <li><b>Handle Nuances:</b> Use a flexible `metadata` field to store protocol-specific details that don't fit the core schema.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Engine Section -->
+                <div id="analytics" class="content-section space-y-8">
+                    <h3 class="text-3xl font-bold text-slate-900">II. Engineering Sophisticated Analytics</h3>
+                    <p class="text-lg text-slate-600">With data collected and normalized, the analytical engine calculates metrics to reveal insights. This involves cross-protocol comparisons, tracking historical trends, and computing advanced indicators of governance health and potential vulnerabilities.</p>
+                    
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h4 class="text-xl font-semibold text-slate-800 mb-2">Cross-Protocol Comparison</h4>
+                            <p class="text-slate-600 mb-4">The engine calculates key metrics on the normalized data, allowing for direct, apples-to-apples comparisons between different DeFi protocols.</p>
+                             <div class="chart-container">
+                                <canvas id="whaleDominanceChart"></canvas>
+                            </div>
+                            <p class="text-center text-sm text-slate-500 mt-2">Example: Comparing whale dominance across protocols.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h4 class="text-xl font-semibold text-slate-800 mb-2">Historical Trend Analysis</h4>
+                             <p class="text-slate-600 mb-4">Governance is not static. Tracking metrics over time reveals patterns of maturation, voter apathy, or centralization.</p>
+                            <div class="chart-container">
+                                <canvas id="participationTrendChart"></canvas>
+                            </div>
+                            <p class="text-center text-sm text-slate-500 mt-2">Example: Tracking average voter turnout over several months.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-2xl font-semibold text-slate-800 mt-8 mb-4">Advanced Governance Metrics & Attack Vectors</h4>
+                         <p class="text-slate-600 mb-6">Beyond standard metrics, a sophisticated analyzer assesses complex dynamics like voting bloc coordination and potential exploits. Understanding these vectors is key to evaluating a protocol's true resilience.</p>
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-white p-6 rounded-xl shadow-sm">
+                                <h5 class="font-semibold">Voting Blocs</h5>
+                                <p class="text-sm text-slate-500 mt-1">Use network analysis libraries (`igraph`, `networkx`) to identify groups of wallets that consistently vote together, revealing coordination.</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm">
+                                <h5 class="font-semibold">Delegation Patterns</h5>
+                                <p class="text-sm text-slate-500 mt-1">Analyze how voting power is concentrated among delegates. A few powerful delegates can centralize decision-making.</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm">
+                                <h5 class="font-semibold">Flash Loan Attacks</h5>
+                                <p class="text-sm text-slate-500 mt-1">Assess the feasibility of an attacker borrowing tokens to pass a malicious proposal within a single transaction.</p>
+                                 <div class="mt-4 h-24">
+                                    <canvas id="attackVectorChart"></canvas>
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Visualization Section -->
+                <div id="visualization" class="content-section space-y-8">
+                     <h3 class="text-3xl font-bold text-slate-900">III. Effective Data Visualization & Reporting</h3>
+                    <p class="text-lg text-slate-600">The presentation of governance insights is as crucial as the analysis itself. An interactive dashboard allows users to dynamically explore data, while automated reports make findings accessible to a wider audience.</p>
+
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h4 class="text-xl font-semibold text-slate-800 mb-2">Interactive Dashboards</h4>
+                            <p class="text-slate-600 mb-4">Dashboards transform complex data into comprehensible and actionable insights. They should allow users to filter, drill down, and visualize relationships dynamically.</p>
+                             <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li><b>Streamlit:</b> Ideal for rapidly building elegant, interactive web apps directly from Python scripts. Excellent for fast prototyping.</li>
+                                <li><b>Plotly & Dash:</b> Offer a more comprehensive framework for building complex, multi-page analytical applications with intricate user controls.</li>
+                                <li><b>Key Features:</b> Protocol selection, date range filtering, drill-downs, and sortable tables are essential for a good user experience.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h4 class="text-xl font-semibold text-slate-800 mb-2">Automated Reporting</h4>
+                            <p class="text-slate-600 mb-4">Generate professional, shareable reports in PDF or HTML format to summarize key findings for stakeholders who may not use the interactive dashboard.</p>
+                             <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li><b>`pdfkit`:</b> Converts styled HTML content to PDF. A great choice for creating visually rich reports from web templates.</li>
+                                <li><b>`FPDF2`:</b> Generates PDFs programmatically in Python, offering granular control over layout without an HTML intermediate.</li>
+                                <li><b>Automation:</b> Reports can be generated on a schedule (e.g., weekly summaries) or on-demand from the dashboard interface.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Production-Ready Section -->
+                <div id="production" class="content-section space-y-8">
+                    <h3 class="text-3xl font-bold text-slate-900">IV. Architecting for Production-Readiness</h3>
+                    <p class="text-lg text-slate-600">A portfolio-worthy tool must be reliable, resilient, and efficient. This requires robust error handling, comprehensive data validation, and strategies for ensuring the application can scale as data volumes grow.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h4 class="text-xl font-semibold text-slate-800 mb-2">Resilient Error Handling</h4>
+                            <p class="text-slate-600 mb-4">External APIs can fail. The application must handle transient issues gracefully to ensure stability.</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li><b>Retry Logic:</b> Implement exponential backoff for API calls that fail due to temporary network issues or rate limiting.</li>
+                                <li><b>Logging:</b> Maintain comprehensive logs of all API requests, responses, and errors to facilitate debugging.</li>
+                                <li><b>Reference:</b> Model retry logic on established libraries like `web3.py`'s `HTTPProvider`.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h4 class="text-xl font-semibold text-slate-800 mb-2">Data Validation</h4>
+                            <p class="text-slate-600 mb-4">Garbage in, garbage out. Rigorously validate all incoming data to ensure its quality and consistency before processing.</p>
+                             <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li><b>Schema Validation:</b> Use libraries like `Pydantic` to define expected data structures and automatically validate API responses against them.</li>
+                                <li><b>Value Validation:</b> Check for missing data, correct data types, and ensure values fall within expected ranges.</li>
+                                <li><b>Data Contracts:</b> Establish clear "expectations" for data from each source to prevent inconsistencies from corrupting your analysis.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm col-span-1 md:col-span-2">
+                             <h4 class="text-xl font-semibold text-slate-800 mb-2">Scalability & Performance</h4>
+                            <p class="text-slate-600 mb-4">As the analyzer ingests more historical data from more protocols, performance becomes critical. Design for scale from the outset.</p>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="font-semibold">Parallel Processing</h5>
+                                    <p class="text-sm text-slate-500 mt-1">Use `asyncio` for concurrent I/O-bound tasks (API calls) and `multiprocessing` or `Dask` for CPU-bound analytical calculations.</p>
+                                </div>
+                                <div>
+                                    <h5 class="font-semibold">Efficient Data Structures</h5>
+                                    <p class="text-sm text-slate-500 mt-1">Leverage high-performance libraries like `Pandas` or `Polars` and prioritize vectorized operations over slow Python loops.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolkit & Resources Section -->
+                <div id="toolkit" class="content-section space-y-8">
+                     <h3 class="text-3xl font-bold text-slate-900">V. Toolkit & Resources</h3>
+                     <p class="text-lg text-slate-600">This section provides a curated, filterable list of the key Python libraries and external resources mentioned in the report. Use the filters to quickly find the right tool for each stage of your project.</p>
+
+                     <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h4 class="text-xl font-semibold text-slate-800 mb-4">Core Python Libraries</h4>
+                        <div id="library-filters" class="flex flex-wrap gap-2 mb-4">
+                            <!-- Filters will be injected here by JS -->
+                        </div>
+                         <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="border-b bg-slate-50">
+                                    <tr>
+                                        <th class="p-3 text-sm font-semibold text-slate-600">Library</th>
+                                        <th class="p-3 text-sm font-semibold text-slate-600">Category</th>
+                                        <th class="p-3 text-sm font-semibold text-slate-600">Primary Use Case</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="library-table-body">
+                                    <!-- Library data will be injected here by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                     </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DATA ---
+            const libraries = [
+                { name: 'subgrounds', category: 'Graph Protocol Client', description: 'Pythonic interaction with The Graph, schema-to-object mapping.' },
+                { name: 'gql', category: 'Graph Protocol Client', description: 'General-purpose GraphQL client for direct query execution.' },
+                { name: 'pandas', category: 'Data Handling & Analysis', description: 'Powerful DataFrames for data manipulation, cleaning, and time-series analysis.' },
+                { name: 'polars', category: 'Data Handling & Analysis', description: 'High-performance DataFrame library, efficient for large datasets.' },
+                { name: 'numpy', category: 'Data Handling & Analysis', description: 'Fundamental package for numerical computation and array operations.' },
+                { name: 'igraph / networkx', category: 'Data Handling & Analysis', description: 'Graph creation and analysis for tasks like voting bloc identification.' },
+                { name: 'streamlit', category: 'Dashboarding', description: 'Rapidly build interactive web apps and dashboards from Python scripts.' },
+                { name: 'plotly / Dash', category: 'Dashboarding', description: 'Create rich, interactive charts and build complex analytical web apps.' },
+                { name: 'pydantic', category: 'Data Validation', description: 'Data validation and settings management using Python type annotations.' },
+                { name: 'pdfkit', category: 'PDF/HTML Generation', description: 'Convert HTML content to PDF for generating reports.' },
+                { name: 'FPDF2', category: 'PDF/HTML Generation', description: 'Generate PDF documents programmatically in Python.' },
+                { name: 'multiprocessing', category: 'Concurrency/Scalability', description: 'Process-based parallelism for CPU-bound tasks.' },
+                { name: 'asyncio', category: 'Concurrency/Scalability', description: 'Asynchronous programming for I/O-bound tasks like API calls.' },
+                { name: 'dask', category: 'Concurrency/Scalability', description: 'Parallel computing library that scales Pandas and NumPy workloads.' },
+                { name: 'web3.py', category: 'Blockchain Interaction', description: 'Library for interacting with the Ethereum blockchain.' },
+            ];
+
+            // --- NAVIGATION ---
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            const headerTitle = document.getElementById('header-title');
+            const menuButton = document.getElementById('menu-button');
+            const sidebar = document.getElementById('sidebar');
+
+            function navigateTo(targetId) {
+                sidebarLinks.forEach(link => {
+                    if (link.dataset.target === targetId) {
+                        link.classList.add('active');
+                        headerTitle.textContent = link.textContent.trim();
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+
+                contentSections.forEach(section => {
+                    section.id === targetId ? section.classList.add('active') : section.classList.remove('active');
+                });
+                
+                // Close sidebar on mobile after navigation
+                if (window.innerWidth < 640) {
+                   sidebar.classList.add('-translate-x-full');
+                }
+            }
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = e.currentTarget.dataset.target;
+                    navigateTo(targetId);
+                });
+            });
+            
+            menuButton.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+
+            // --- LIBRARY TABLE ---
+            const libraryTableBody = document.getElementById('library-table-body');
+            const libraryFiltersContainer = document.getElementById('library-filters');
+            
+            const categories = ['All', ...new Set(libraries.map(lib => lib.category))];
+
+            function renderLibraries(filter = 'All') {
+                libraryTableBody.innerHTML = '';
+                const filteredLibs = filter === 'All' ? libraries : libraries.filter(lib => lib.category === filter);
+
+                filteredLibs.forEach(lib => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b hover:bg-slate-50';
+                    row.innerHTML = `
+                        <td class="p-3 font-medium text-slate-800">${lib.name}</td>
+                        <td class="p-3 text-slate-600">${lib.category}</td>
+                        <td class="p-3 text-slate-600">${lib.description}</td>
+                    `;
+                    libraryTableBody.appendChild(row);
+                });
+            }
+
+            function renderFilters() {
+                libraryFiltersContainer.innerHTML = '';
+                categories.forEach(cat => {
+                    const button = document.createElement('button');
+                    button.className = 'table-filter-button px-3 py-1 text-sm font-medium rounded-full border border-slate-300 hover:bg-indigo-100 transition-colors';
+                    button.textContent = cat;
+                    button.dataset.category = cat;
+                    if (cat === 'All') {
+                        button.classList.add('active');
+                    }
+                    button.addEventListener('click', () => {
+                        document.querySelectorAll('.table-filter-button').forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        renderLibraries(cat);
+                    });
+                    libraryFiltersContainer.appendChild(button);
+                });
+            }
+
+            // --- CHARTS ---
+            function createWhaleDominanceChart() {
+                const ctx = document.getElementById('whaleDominanceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Compound', 'Aave', 'Uniswap'],
+                        datasets: [{
+                            label: 'Vote % by Top 10 Wallets',
+                            data: [68, 55, 43],
+                            backgroundColor: ['#818cf8', '#a78bfa', '#60a5fa'],
+                            borderColor: ['#4f46e5', '#7c3aed', '#2563eb'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Illustrative Whale Dominance Comparison' }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) { return value + '%' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function createParticipationTrendChart() {
+                const ctx = document.getElementById('participationTrendChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Average Voter Turnout',
+                            data: [12, 15, 11, 18, 22, 19],
+                            fill: true,
+                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                            borderColor: '#4f46e5',
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                         plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Illustrative Voter Turnout Trend' }
+                        },
+                        scales: {
+                             y: {
+                                ticks: {
+                                    callback: function(value) { return value + '%' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function createAttackVectorChart() {
+                const ctx = document.getElementById('attackVectorChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Cost to Borrow', 'Potential Profit'],
+                        datasets: [{
+                            data: [35, 65],
+                            backgroundColor: ['#fb923c', '#ef4444'],
+                            borderColor: ['#f97316', '#dc2626'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: 'Flash Loan: Cost vs. Profit' },
+                            legend: { position: 'bottom', labels: { boxWidth: 12 } }
+                        }
+                    }
+                });
+            }
+
+            // --- INITIALIZATION ---
+            navigateTo('overview');
+            createWhaleDominanceChart();
+            createParticipationTrendChart();
+            createAttackVectorChart();
+            renderFilters();
+            renderLibraries();
+        });
+    </script>
+</body>
+</html>
