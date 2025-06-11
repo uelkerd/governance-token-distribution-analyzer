@@ -9,4 +9,4 @@ Modern installation should use the pyproject.toml file directly.
 from setuptools import setup
 
 if __name__ == "__main__":
-    setup() 
+    setup()
