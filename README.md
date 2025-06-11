@@ -1,6 +1,6 @@
 # Governance Token Distribution Analyzer
 
-A tool for analyzing governance token distributions across DeFi protocols like Compound, Uniswap, and Aave.
+A tool for analyzing governance token distribution and governance participation across DeFi protocols.
 
 [![Test Status](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/your-username/governance-token-distribution-analyzer)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -43,126 +43,134 @@ This tool helps researchers, investors, and protocol designers understand the de
 - **Voting Block Analysis**: Identify coordinated governance participation and analyze voting patterns
 - **Governance Anomaly Detection**: Detect unusual voting patterns that might indicate coordination
 
+## Supported Protocols
+
+- Compound (COMP)
+- Uniswap (UNI)
+- Aave (AAVE)
+
 ## Installation
 
-### Prerequisites
-
-- Python 3.8 or higher
-- pip (Python package installer)
-
-### From Source
-
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/uelkerd/governance-token-distribution-analyzer.git
-   cd governance-token-distribution-analyzer
-   ```
-
-2. Create and activate a virtual environment (recommended):
-   ```bash
-   # On macOS/Linux
-   python -m venv .venv
-   source .venv/bin/activate
-   
-   # On Windows
-   python -m venv .venv
-   .venv\Scripts\activate
-   ```
-
-3. Install the package in development mode:
-   ```bash
-   pip install -e .
-   ```
-
-### Using Make
-
-The project includes a Makefile for common tasks:
-
 ```bash
-# Install the package
-make install
-
-# Install with development dependencies
-make install-dev
-
-# Run tests
-make test
-
-# Run integration tests
-make integration-test
-
-# Run integration tests with coverage
-make integration-test-cov
+git clone https://github.com/yourusername/governance-token-distribution-analyzer.git
+cd governance-token-distribution-analyzer
 ```
 
-## Quick Start
-
-After installation, you can use the command-line interface:
-
+2. Create a virtual environment and install dependencies:
 ```bash
-# Analyze Compound token distribution
-token-analyzer analyze compound
-
-# Compare multiple token distributions
-token-analyzer compare compound uniswap
-
-# Generate a simulated distribution
-token-analyzer simulate power_law
-
-# Create a comprehensive report
-token-analyzer report compound uniswap aave
-
-# Analyze historical data
-token-analyzer historical-analysis --protocol compound --metric gini_coefficient
-
-# Compare protocols over time
-token-analyzer compare-protocols --protocols compound,uniswap,aave --historical
-
-# Analyze voting blocks
-token-analyzer voting-blocks --protocol compound --proposals recent
-
-# Detect voting anomalies
-token-analyzer detect-anomalies --protocol uniswap --timeframe 3m
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-## Historical Data Analysis
+## API Keys Setup
 
-The tool provides functionality to track and analyze changes in token distributions over time:
+To fetch real data from blockchain APIs, you'll need to set up the following API keys:
+
+1. **Etherscan API Key**:
+   - Register at [https://etherscan.io/register](https://etherscan.io/register)
+   - Create an API key in your account dashboard
+
+2. **Ethplorer API Key**:
+   - Register at [https://ethplorer.io/](https://ethplorer.io/)
+   - Get your API key (free tier available)
+
+3. **Infura API Key** (optional):
+   - Register at [https://infura.io/](https://infura.io/)
+   - Create a new project to get an API key
+
+4. **The Graph API Key** (optional):
+   - For higher rate limits with The Graph, get an API key at [https://thegraph.com/](https://thegraph.com/)
+
+Set up these API keys as environment variables:
 
 ```bash
-# Simulate historical data
-token-analyzer historical simulate --protocol compound --num-snapshots 12 --interval-days 30
+# Linux/macOS
+export ETHERSCAN_API_KEY=your_etherscan_key
+export ETHPLORER_API_KEY=your_ethplorer_key
+export INFURA_API_KEY=your_infura_key
+export GRAPH_API_KEY=your_graph_key
 
-# Generate a historical data report
-token-analyzer historical generate-report --protocol compound
-
-# Export historical data as JSON
-token-analyzer export-historical-data --protocol compound --metric gini_coefficient --format json
-
-# Compare multiple protocols over time
-token-analyzer historical compare-protocols --protocols compound,uniswap,aave --metric gini_coefficient
+# Windows
+set ETHERSCAN_API_KEY=your_etherscan_key
+set ETHPLORER_API_KEY=your_ethplorer_key
+set INFURA_API_KEY=your_infura_key
+set GRAPH_API_KEY=your_graph_key
 ```
 
-## Voting Block Analysis
+Alternatively, create a `.env` file in the project root:
 
-The tool provides functionality to analyze governance voting patterns and identify coordination:
+```
+ETHERSCAN_API_KEY=your_etherscan_key
+ETHPLORER_API_KEY=your_ethplorer_key
+INFURA_API_KEY=your_infura_key
+GRAPH_API_KEY=your_graph_key
+```
+
+## Usage
+
+### Basic Analysis
+
+```python
+from governance_token_analyzer.protocols import compound, uniswap, aave
+from governance_token_analyzer.analysis import concentration
+
+# Get Compound token holders (real data)
+holders = compound.get_token_holders(use_real_data=True)
+
+# Analyze token concentration
+concentration_metrics = concentration.analyze_token_distribution(holders)
+print(f"Top 10 holders control {concentration_metrics['top_10_percentage']:.2f}% of tokens")
+
+# Get governance proposals
+proposals = compound.get_governance_proposals(use_real_data=True)
+```
+
+### Sample vs. Real Data
+
+The analyzer can work with both sample data and real API data:
+
+```python
+# Using sample data (default)
+sample_holders = uniswap.get_token_holders()
+
+# Using real API data
+real_holders = uniswap.get_token_holders(use_real_data=True)
+```
+
+## Running Tests
+
+Run the basic test suite:
 
 ```bash
-# Identify voting blocks in a protocol
-token-analyzer voting-blocks --protocol compound
-
-# Calculate voting power of identified blocks
-token-analyzer voting-power --protocol compound --blocks-file blocks.json
-
-# Analyze influence of large token holders on proposals
-token-analyzer proposal-influence --protocol aave --proposals recent
-
-# Detect anomalies in voting patterns
-token-analyzer voting-anomalies --protocol uniswap --timeframe 6m
-
-# Generate a comprehensive voting analysis report
-token-analyzer voting-report --protocol compound --include-visualizations
+pytest
 ```
+
+Run tests including integration tests with real APIs:
+
+```bash
+SKIP_INTEGRATION_TESTS=false pytest
+```
+
+## Project Structure
+
+- `governance_token_analyzer/`: Main package
+  - `core/`: Core functionality
+    - `api_client.py`: Client for fetching data from APIs
+  - `protocols/`: Protocol-specific modules
+    - `compound.py`: Compound-specific analysis
+    - `uniswap.py`: Uniswap-specific analysis
+    - `aave.py`: Aave-specific analysis
+  - `analysis/`: Analysis modules
+    - `concentration.py`: Token concentration analysis
+    - `participation.py`: Governance participation analysis
+- `tests/`: Test suite
+  - `integration/`: Integration tests with real APIs
+
+## License
+
+MIT
 
 ## Documentation
 
