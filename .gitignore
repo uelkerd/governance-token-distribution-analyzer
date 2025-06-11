@@ -51,6 +51,13 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Test generated data
+tests/integration/test_data/**/*.json
+tests/integration/test_data/**/*.csv
+tests/integration/test_data/**/*.png
+tests/integration/test_data/**/*.html
+tests/integration/test_data/**/*.pdf
+
 # Translations
 *.mo
 *.pot
