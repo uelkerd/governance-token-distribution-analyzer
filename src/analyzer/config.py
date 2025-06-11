@@ -38,4 +38,4 @@ ETHERSCAN_BASE_URL = "https://api.etherscan.io/api"
 INFURA_BASE_URL = f"https://mainnet.infura.io/v3/{INFURA_PROJECT_ID}"
 
 # Default settings
-DEFAULT_OUTPUT_DIR = "../data/sample_outputs" 
+DEFAULT_OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/sample_outputs") 
