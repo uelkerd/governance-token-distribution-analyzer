@@ -1,1 +1,1 @@
-"""Tests for the Governance Token Distribution Analyzer.""" 
+"""Tests for the Governance Token Distribution Analyzer."""
