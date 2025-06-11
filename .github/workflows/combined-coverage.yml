@@ -1,0 +1,52 @@
+name: Combined Test Coverage
+
+on:
+  workflow_run:
+    workflows: ["Unit Tests", "Integration Tests"]
+    types:
+      - completed
+
+jobs:
+  upload-combined-coverage:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+        
+    - name: Download artifacts from unit tests
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: unit-tests.yml
+        name: coverage-unit
+        path: coverage-reports
+        
+    - name: Download artifacts from integration tests
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: integration-tests.yml
+        name: coverage-integration
+        path: coverage-reports
+        
+    - name: Combine coverage reports
+      run: |
+        python -m coverage combine coverage-reports/*.xml
+        python -m coverage xml
+        
+    - name: Upload combined coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: combined
+        name: codecov-combined
+        fail_ci_if_error: false 
