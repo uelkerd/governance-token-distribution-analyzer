@@ -1,1 +1,1 @@
-"""Protocol-specific analysis modules.""" 
+"""Protocol-specific analysis modules."""
