@@ -15,7 +15,10 @@ from pandas import Timestamp
 
 from governance_token_analyzer.core import historical_data
 from governance_token_analyzer.protocols import compound
-from governance_token_analyzer.core.exceptions import ProtocolNotSupportedError, MetricNotFoundError
+from governance_token_analyzer.core.exceptions import (
+    ProtocolNotSupportedError,
+    MetricNotFoundError,
+)
 
 
 class TestHistoricalDataIntegration:
