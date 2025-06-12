@@ -1,16 +1,15 @@
-"""
-Token Distribution Data Simulator
+"""Token Distribution Data Simulator
 
 This module provides tools to generate simulated token distribution data
 that mimics real-world patterns observed in governance tokens.
 """
 
-import numpy as np
-import pandas as pd
-from typing import List, Dict, Any, Tuple, Optional
-import random
 import logging
+import random
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -18,8 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class TokenDistributionSimulator:
-    """
-    Simulates realistic token distribution data for testing and analysis.
+    """Simulates realistic token distribution data for testing and analysis.
 
     This class can generate various distribution patterns commonly seen in
     governance tokens, such as whale-dominated, community-distributed,
@@ -27,8 +25,7 @@ class TokenDistributionSimulator:
     """
 
     def __init__(self, seed: Optional[int] = None):
-        """
-        Initialize the simulator with an optional random seed.
+        """Initialize the simulator with an optional random seed.
 
         Args:
             seed: Optional random seed for reproducible simulations
@@ -41,8 +38,7 @@ class TokenDistributionSimulator:
     def generate_power_law_distribution(
         self, num_holders: int = 100, alpha: float = 1.5, total_supply: int = 10_000_000
     ) -> List[Dict[str, Any]]:
-        """
-        Generate a power-law distribution of token holders.
+        """Generate a power-law distribution of token holders.
 
         Power-law distributions are common in token ecosystems where a small number
         of whales hold a large percentage of the tokens.
@@ -89,8 +85,7 @@ class TokenDistributionSimulator:
         protocol_percentage: float = 30.0,
         total_supply: int = 10_000_000,
     ) -> List[Dict[str, Any]]:
-        """
-        Generate a distribution where protocol-owned wallets hold significant tokens.
+        """Generate a distribution where protocol-owned wallets hold significant tokens.
 
         This mimics scenarios like DAO treasuries, development funds, or staking contracts
         holding large portions of the token supply.
@@ -160,8 +155,7 @@ class TokenDistributionSimulator:
         gini_target: float = 0.6,
         total_supply: int = 10_000_000,
     ) -> List[Dict[str, Any]]:
-        """
-        Generate a more equal distribution typically seen in community-focused projects.
+        """Generate a more equal distribution typically seen in community-focused projects.
 
         This creates a distribution with a target Gini coefficient, mimicking
         projects that prioritize widespread token distribution.
@@ -231,8 +225,7 @@ class TokenDistributionSimulator:
     def generate_token_holders_response(
         self, holders: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Format holders data to match the API response structure.
+        """Format holders data to match the API response structure.
 
         Args:
             holders: List of holder dictionaries
@@ -252,8 +245,7 @@ class TokenDistributionSimulator:
         total_supply: int = 10_000_000,
         concentration_trend: str = "decreasing",
     ) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Generate a time series of token distributions.
+        """Generate a time series of token distributions.
 
         This simulates how token distribution evolves over time, either becoming
         more concentrated or more distributed.

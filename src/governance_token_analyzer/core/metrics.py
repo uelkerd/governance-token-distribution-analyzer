@@ -1,19 +1,18 @@
-"""
-Metrics Module for analyzing governance token distributions.
+"""Metrics Module for analyzing governance token distributions.
 This module provides functions to calculate various metrics for
 assessing token distribution and governance effectiveness.
 """
 
+from typing import Any, Dict, List, Union
+
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Any, Union
 
 
 def calculate_gini_coefficient(
     balances: Union[List[float], np.ndarray, pd.Series],
 ) -> float:
-    """
-    Calculate Gini coefficient to measure inequality in token distribution.
+    """Calculate Gini coefficient to measure inequality in token distribution.
 
     The Gini coefficient is a measure of statistical dispersion representing
     the income or wealth inequality within a group. A value of 0 expresses
@@ -45,8 +44,7 @@ def calculate_gini_coefficient(
 
 
 def calculate_concentration_ratio(df: pd.DataFrame, n: int = 10) -> float:
-    """
-    Calculate the concentration ratio of the top N token holders.
+    """Calculate the concentration ratio of the top N token holders.
 
     The concentration ratio is the percentage of total tokens held by the
     top N holders. It's a measure of market concentration.
@@ -74,8 +72,7 @@ def calculate_concentration_ratio(df: pd.DataFrame, n: int = 10) -> float:
 def calculate_participation_rate(
     votes: List[Dict[str, Any]], total_holders: int
 ) -> float:
-    """
-    Calculate governance participation rate.
+    """Calculate governance participation rate.
 
     Participation rate is the percentage of token holders who participated
     in governance voting.
@@ -100,8 +97,7 @@ def calculate_participation_rate(
 
 
 def calculate_vote_distribution(votes: List[Dict[str, Any]]) -> Dict[str, float]:
-    """
-    Calculate the distribution of votes (for/against/abstain).
+    """Calculate the distribution of votes (for/against/abstain).
 
     Args:
         votes: List of vote records with 'vote' field
@@ -133,8 +129,7 @@ def calculate_vote_distribution(votes: List[Dict[str, Any]]) -> Dict[str, float]
 def calculate_whale_influence(
     df: pd.DataFrame, threshold_percentage: float = 1.0
 ) -> Dict[str, Any]:
-    """
-    Calculate whale influence metrics.
+    """Calculate whale influence metrics.
 
     "Whales" are defined as holders with more than threshold_percentage of the total supply.
 

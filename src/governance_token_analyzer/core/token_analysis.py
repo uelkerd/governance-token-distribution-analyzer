@@ -1,17 +1,16 @@
-"""
-Token Analysis Module for the Governance Token Distribution Analyzer.
+"""Token Analysis Module for the Governance Token Distribution Analyzer.
 
 This module provides functions to analyze token distribution data,
 including concentration metrics and governance participation.
 """
 
 import logging
-import pandas as pd
+from typing import Any, Dict, List, Optional
+
 import numpy as np
-from typing import Dict, List, Any, Tuple, Optional
 
 from .api import EtherscanAPI
-from .config import Config, PROTOCOLS
+from .config import PROTOCOLS, Config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -26,8 +25,7 @@ class TokenDistributionAnalyzer:
         etherscan_api: Optional[EtherscanAPI] = None,
         config: Optional[Config] = None,
     ):
-        """
-        Initialize the token distribution analyzer.
+        """Initialize the token distribution analyzer.
 
         Args:
             etherscan_api: Optional EtherscanAPI instance. If None, a new instance will be created.
@@ -39,8 +37,7 @@ class TokenDistributionAnalyzer:
     def get_token_holders(
         self, protocol_key: str, limit: int = 100
     ) -> List[Dict[str, Any]]:
-        """
-        Get the top token holders for a specific protocol.
+        """Get the top token holders for a specific protocol.
 
         Args:
             protocol_key: Key of the protocol in the PROTOCOLS dictionary.
@@ -97,8 +94,7 @@ class TokenDistributionAnalyzer:
         return holders[:limit]
 
     def calculate_gini_coefficient(self, balances: List[float]) -> float:
-        """
-        Calculate the Gini coefficient for token balances.
+        """Calculate the Gini coefficient for token balances.
 
         The Gini coefficient is a measure of inequality where:
         - 0 represents perfect equality (everyone has the same amount)
@@ -131,8 +127,7 @@ class TokenDistributionAnalyzer:
     def calculate_herfindahl_index(
         self, balances: List[float], total_supply: Optional[float] = None
     ) -> float:
-        """
-        Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
+        """Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
 
         HHI is a measure of market concentration, calculated as the sum of
         squared market shares. Higher values indicate more concentration.
@@ -164,8 +159,7 @@ class TokenDistributionAnalyzer:
     def calculate_concentration_metrics(
         self, holders: List[Dict[str, Any]], total_supply: str
     ) -> Dict[str, Any]:
-        """
-        Calculate concentration metrics for token holders.
+        """Calculate concentration metrics for token holders.
 
         Args:
             holders: List of token holders with their addresses and balances.
@@ -235,8 +229,7 @@ class TokenDistributionAnalyzer:
 
 
 def analyze_compound_token() -> Dict[str, Any]:
-    """
-    Analyze the Compound (COMP) token distribution as a proof of concept.
+    """Analyze the Compound (COMP) token distribution as a proof of concept.
 
     Returns:
         Dictionary containing the analysis results.

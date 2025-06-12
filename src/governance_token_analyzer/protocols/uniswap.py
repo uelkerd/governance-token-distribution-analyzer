@@ -1,37 +1,43 @@
-"""
-Compound Protocol Module for analyzing COMP token distribution.
-This module handles fetching and processing data for the Compound protocol.
+"""Uniswap Protocol Module for analyzing UNI token distribution.
+This module handles fetching and processing data for the Uniswap protocol.
 """
 
-import pandas as pd
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List
+
 from ..core.api_client import APIClient
+from ..core.config import Config
 
-# Initialize API client
+# Initialize API client and config
+config = Config()
 api_client = APIClient()
+
+# Determine if we should use real data by default based on API key availability
+DEFAULT_USE_REAL_DATA = bool(config.etherscan_api_key)
 
 
 def get_token_holders(
-    limit: int = 100, use_real_data: bool = False
+    limit: int = 100, use_real_data: bool = None
 ) -> List[Dict[str, Any]]:
-    """
-    Get list of top COMP token holders.
+    """Get list of top UNI token holders.
 
     Args:
         limit: Number of holders to retrieve
-        use_real_data: Whether to use real data from APIs (vs. sample data)
+        use_real_data: Whether to use real data from APIs. If None, automatically
+                      determined based on API key availability.
 
     Returns:
         List of token holder dictionaries
     """
-    return api_client.get_token_holders("compound", limit, use_real_data)
+    if use_real_data is None:
+        use_real_data = DEFAULT_USE_REAL_DATA
+
+    return api_client.get_token_holders("uniswap", limit, use_real_data)
 
 
 def get_governance_proposals(
     limit: int = 10, use_real_data: bool = False
 ) -> List[Dict[str, Any]]:
-    """
-    Get list of Compound governance proposals.
+    """Get list of Uniswap governance proposals.
 
     Args:
         limit: Number of proposals to retrieve
@@ -40,14 +46,13 @@ def get_governance_proposals(
     Returns:
         List of proposal dictionaries
     """
-    return api_client.get_governance_proposals("compound", limit, use_real_data)
+    return api_client.get_governance_proposals("uniswap", limit, use_real_data)
 
 
 def get_governance_votes(
     proposal_id: int, use_real_data: bool = False
 ) -> List[Dict[str, Any]]:
-    """
-    Get list of votes for a specific proposal.
+    """Get list of votes for a specific proposal.
 
     Args:
         proposal_id: ID of the proposal
@@ -56,17 +61,16 @@ def get_governance_votes(
     Returns:
         List of vote dictionaries
     """
-    return api_client.get_governance_votes("compound", proposal_id, use_real_data)
+    return api_client.get_governance_votes("uniswap", proposal_id, use_real_data)
 
 
 def get_sample_data() -> Dict[str, Any]:
-    """
-    Get sample data for testing.
+    """Get sample data for testing.
 
     Returns:
         Dictionary containing sample data for token holders and governance
     """
-    return api_client.get_protocol_data("compound")
+    return api_client.get_protocol_data("uniswap")
 
     # Generate votes for each proposal
     votes = []
@@ -76,15 +80,14 @@ def get_sample_data() -> Dict[str, Any]:
 
 
 def get_protocol_info() -> Dict[str, Any]:
-    """
-    Get basic information about the Compound protocol.
+    """Get basic information about the Uniswap protocol.
 
     Returns:
         Dictionary containing basic protocol information
     """
     data = get_sample_data()
     return {
-        "protocol": "compound",
+        "protocol": "uniswap",
         "token_symbol": data["token_symbol"],
         "token_name": data["token_name"],
         "total_supply": data["total_supply"],
@@ -93,8 +96,7 @@ def get_protocol_info() -> Dict[str, Any]:
 
 
 def calculate_voting_power_distribution() -> Dict[str, float]:
-    """
-    Calculate the distribution of voting power across holders.
+    """Calculate the distribution of voting power across holders.
 
     Returns:
         Dictionary containing voting power distribution metrics
@@ -126,12 +128,15 @@ def calculate_voting_power_distribution() -> Dict[str, float]:
         "delegation_percentage": delegation_percentage,
     }
 
-    # Create a list of decreasing balances (Pareto-like distribution)
+    # Create a list of decreasing balances (Pareto-like distribution but more distributed than Compound)
     balances = []
     remaining_supply = total_supply
+
+    # Uniswap has a more dispersed distribution due to the airdrop
     for i in range(count):
         # Generate a balance based on a power-law distribution
-        share = random.uniform(0.05, 0.3) if i < 10 else random.uniform(0.001, 0.05)
+        # Whales have smaller percentage than in Compound
+        share = random.uniform(0.02, 0.1) if i < 10 else random.uniform(0.0001, 0.02)
         balance = min(remaining_supply * share, remaining_supply)
         balances.append(balance)
         remaining_supply -= balance
@@ -168,8 +173,6 @@ def calculate_voting_power_distribution() -> Dict[str, float]:
 
 # Deprecated functions - for backward compatibility only
 import warnings
-import random
-from datetime import datetime, timedelta
 
 
 def _generate_sample_holder_data(count: int) -> List[Dict[str, Any]]:
@@ -179,7 +182,7 @@ def _generate_sample_holder_data(count: int) -> List[Dict[str, Any]]:
         DeprecationWarning,
         stacklevel=2,
     )
-    return api_client._generate_sample_holder_data("compound", count)
+    return api_client._generate_sample_holder_data("uniswap", count)
 
 
 def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
@@ -189,7 +192,7 @@ def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
         DeprecationWarning,
         stacklevel=2,
     )
-    return api_client._generate_sample_proposal_data("compound", count)
+    return api_client._generate_sample_proposal_data("uniswap", count)
 
     for i in range(count):
         proposal_id = i + 1
@@ -200,16 +203,16 @@ def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
         states = ["active", "passed", "executed", "defeated", "expired"]
         state = random.choice(states)
 
-        # Random vote counts
-        for_votes = random.randint(1000000, 5000000)
-        against_votes = random.randint(100000, 2000000)
+        # Random vote counts - Uniswap has larger vote counts due to more tokens
+        for_votes = random.randint(10000000, 50000000)
+        against_votes = random.randint(1000000, 20000000)
         total_votes = for_votes + against_votes
 
         proposals.append(
             {
                 "id": proposal_id,
-                "title": f"Proposal {proposal_id}: {'Increase' if random.random() > 0.5 else 'Decrease'} Interest Rate",
-                "description": f"This proposal aims to {'increase' if random.random() > 0.5 else 'decrease'} the interest rate for {random.choice(['USDC', 'ETH', 'DAI', 'WBTC'])}",
+                "title": f"Proposal {proposal_id}: {random.choice(['Fee Change', 'Treasury Allocation', 'Protocol Upgrade', 'Governance Change'])}",
+                "description": f"This proposal aims to {random.choice(['change fees', 'allocate treasury funds', 'upgrade the protocol', 'change governance parameters'])}",
                 "proposer": f"0x{random.randint(0, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF):040x}",
                 "start_date": start_date.isoformat(),
                 "end_date": end_date.isoformat(),
@@ -217,7 +220,9 @@ def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
                 "for_votes": for_votes,
                 "against_votes": against_votes,
                 "total_votes": total_votes,
-                "participation_rate": random.uniform(10, 50),  # percentage
+                "participation_rate": random.uniform(
+                    5, 30
+                ),  # percentage - lower than Compound due to more dispersed tokens
             }
         )
 
@@ -231,4 +236,4 @@ def _generate_sample_vote_data(proposal_id: int) -> List[Dict[str, Any]]:
         DeprecationWarning,
         stacklevel=2,
     )
-    return api_client._generate_sample_vote_data("compound", proposal_id)
+    return api_client._generate_sample_vote_data("uniswap", proposal_id)

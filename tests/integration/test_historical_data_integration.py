@@ -1,24 +1,20 @@
-"""
-Integration tests for historical data analysis.
+"""Integration tests for historical data analysis.
 This is a smaller version of the full test suite that can run quickly.
 """
 
-import pytest
-import os
-import tempfile
 import shutil
+import tempfile
 from datetime import datetime, timedelta
+
 import pandas as pd
-import numpy as np
-import json
-from pandas import Timestamp
+import pytest
 
 from governance_token_analyzer.core import historical_data
-from governance_token_analyzer.protocols import compound
 from governance_token_analyzer.core.exceptions import (
-    ProtocolNotSupportedError,
     MetricNotFoundError,
+    ProtocolNotSupportedError,
 )
+from governance_token_analyzer.protocols import compound
 
 
 class TestHistoricalDataIntegration:
@@ -161,6 +157,26 @@ class TestHistoricalDataIntegration:
             "0x1 balance should increase by 50"
         )
         assert addr1_change["percent_change"] == 50.0, "0x1 should increase by 50%"
+
+        addr2_change = changes[changes["address"] == "0x2"].iloc[0]
+        assert addr2_change["absolute_change"] == -20, (
+            "0x2 balance should decrease by 20"
+        )
+        assert addr2_change["percent_change"] == -10.0, "0x2 should decrease by 10%"
+
+        addr3_change = changes[changes["address"] == "0x3"].iloc[0]
+        assert addr3_change["absolute_change"] == -300, (
+            "0x3 balance should decrease by 300"
+        )
+        assert addr3_change["percent_change"] == -100.0, "0x3 should decrease by 100%"
+
+        addr4_change = changes[changes["address"] == "0x4"].iloc[0]
+        assert addr4_change["absolute_change"] == 400, (
+            "0x4 balance should increase by 400"
+        )
+        assert addr4_change["percent_change"] == float("inf"), (
+            "0x4 percent change should be infinity"
+        )
 
         addr2_change = changes[changes["address"] == "0x2"].iloc[0]
         assert addr2_change["absolute_change"] == -20, (

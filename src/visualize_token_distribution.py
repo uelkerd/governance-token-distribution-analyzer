@@ -1,19 +1,19 @@
 #!/usr/bin/env python
-"""
-Token Distribution Visualization
+"""Token Distribution Visualization
 
 This script generates visualizations of token distribution data for DeFi governance tokens.
 """
 
-import os
-import sys
 import json
 import logging
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import numpy as np
-from pathlib import Path
+import os
+import sys
 from datetime import datetime
+from pathlib import Path
+
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Add the src directory to the Python path
 src_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,8 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_token_data(protocol: str) -> dict:
-    """
-    Load token analysis data from JSON file.
+    """Load token analysis data from JSON file.
 
     Args:
         protocol: Protocol name (e.g., 'compound')
@@ -48,7 +47,7 @@ def load_token_data(protocol: str) -> dict:
         raise FileNotFoundError(f"No analysis data for {protocol}")
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             data = json.load(f)
         return data
     except json.JSONDecodeError:
@@ -57,8 +56,7 @@ def load_token_data(protocol: str) -> dict:
 
 
 def create_pie_chart(data: dict, output_dir: Path):
-    """
-    Create a pie chart showing token distribution.
+    """Create a pie chart showing token distribution.
 
     Args:
         data: Token analysis data
@@ -111,8 +109,7 @@ def create_pie_chart(data: dict, output_dir: Path):
 
 
 def create_concentration_bar_chart(data: dict, output_dir: Path):
-    """
-    Create a bar chart showing token concentration metrics.
+    """Create a bar chart showing token concentration metrics.
 
     Args:
         data: Token analysis data
@@ -164,8 +161,7 @@ def create_concentration_bar_chart(data: dict, output_dir: Path):
 
 
 def visualize_holder_distribution(analysis_results, output_dir="plots"):
-    """
-    Create a pie chart visualization of token holder distribution.
+    """Create a pie chart visualization of token holder distribution.
 
     Args:
         analysis_results: Token analysis results dictionary
@@ -213,8 +209,7 @@ def visualize_holder_distribution(analysis_results, output_dir="plots"):
 
 
 def visualize_concentration_metrics(analysis_results, output_dir="plots"):
-    """
-    Create a bar chart visualization of token concentration metrics.
+    """Create a bar chart visualization of token concentration metrics.
 
     Args:
         analysis_results: Token analysis results dictionary
@@ -252,8 +247,7 @@ def visualize_concentration_metrics(analysis_results, output_dir="plots"):
 
 
 def visualize_historical_gini(token_name, historical_data, output_dir="plots"):
-    """
-    Create a line chart of historical Gini coefficient values.
+    """Create a line chart of historical Gini coefficient values.
 
     Args:
         token_name: Name of the token
@@ -311,8 +305,7 @@ def visualize_historical_gini(token_name, historical_data, output_dir="plots"):
 
 
 def visualize_historical_herfindahl(token_name, historical_data, output_dir="plots"):
-    """
-    Create a line chart of historical Herfindahl index values.
+    """Create a line chart of historical Herfindahl index values.
 
     Args:
         token_name: Name of the token
@@ -369,8 +362,7 @@ def visualize_historical_herfindahl(token_name, historical_data, output_dir="plo
 
 
 def visualize_historical_concentration(token_name, historical_data, output_dir="plots"):
-    """
-    Create a line chart of historical concentration percentages.
+    """Create a line chart of historical concentration percentages.
 
     Args:
         token_name: Name of the token
@@ -447,8 +439,7 @@ def visualize_historical_concentration(token_name, historical_data, output_dir="
 
 
 def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots"):
-    """
-    Create a dashboard of all metrics in a single figure.
+    """Create a dashboard of all metrics in a single figure.
 
     Args:
         token_name: Name of the token
@@ -567,8 +558,7 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
 
 
 def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plots"):
-    """
-    Create comparative visualizations of multiple tokens.
+    """Create comparative visualizations of multiple tokens.
 
     Args:
         tokens: List of token names
@@ -799,7 +789,6 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
 
 def main():
     """Main function to run the visualization."""
-
     # Paths to data files
     comp_file = "data/comp_analysis_latest.json"
     comp_historical_file = "data/historical/comp_historical_metrics.json"
@@ -807,7 +796,7 @@ def main():
 
     # Check if COMP analysis file exists
     if os.path.exists(comp_file):
-        with open(comp_file, "r") as f:
+        with open(comp_file) as f:
             comp_data = json.load(f)
 
         # Visualize single token distribution and metrics
@@ -819,7 +808,7 @@ def main():
     # Load historical data for COMP if available
     comp_historical_data = []
     if os.path.exists(comp_historical_file):
-        with open(comp_historical_file, "r") as f:
+        with open(comp_historical_file) as f:
             comp_historical = json.load(f)
             comp_historical_data = comp_historical.get("data_points", [])
 
@@ -829,12 +818,12 @@ def main():
         visualize_historical_concentration("COMP", comp_historical_data)
         visualize_metrics_dashboard("COMP", comp_historical_data)
     else:
-        print(f"No historical data found for COMP")
+        print("No historical data found for COMP")
 
     # Load historical data for UNI if available
     uni_historical_data = []
     if os.path.exists(uni_historical_file):
-        with open(uni_historical_file, "r") as f:
+        with open(uni_historical_file) as f:
             uni_historical = json.load(f)
             uni_historical_data = uni_historical.get("data_points", [])
 
@@ -844,7 +833,7 @@ def main():
         visualize_historical_concentration("UNI", uni_historical_data)
         visualize_metrics_dashboard("UNI", uni_historical_data)
     else:
-        print(f"No historical data found for UNI")
+        print("No historical data found for UNI")
 
     # Create comparative analysis if both tokens have data
     if comp_historical_data and uni_historical_data:

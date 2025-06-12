@@ -1,18 +1,16 @@
-"""
-Data Collection Module for the Governance Token Analyzer.
+"""Data Collection Module for the Governance Token Analyzer.
 
 This module handles collecting and managing data from multiple DeFi governance protocols.
 It provides a unified interface for accessing token holder, proposal, and voting data.
 """
 
-import os
 import json
 import logging
+import os
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Union
-from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..protocols import compound, uniswap, aave
+from ..protocols import aave, compound, uniswap
 from .api_client import APIClient
 
 # Configure logging
@@ -26,8 +24,7 @@ class DataCollectionManager:
     """Manager for collecting and storing governance token data."""
 
     def __init__(self, data_dir: str = None):
-        """
-        Initialize the data collection manager.
+        """Initialize the data collection manager.
 
         Args:
             data_dir: Directory to store collected data
@@ -57,8 +54,7 @@ class DataCollectionManager:
         use_real_data: bool = False,
         cache_ttl: int = 3600,
     ) -> Dict[str, Any]:
-        """
-        Collect data for a specific protocol.
+        """Collect data for a specific protocol.
 
         Args:
             protocol: Protocol name ('compound', 'uniswap', 'aave')
@@ -120,8 +116,7 @@ class DataCollectionManager:
     def collect_all_protocols(
         self, use_cache: bool = True, use_real_data: bool = False, cache_ttl: int = 3600
     ) -> Dict[str, Dict[str, Any]]:
-        """
-        Collect data for all supported protocols.
+        """Collect data for all supported protocols.
 
         Args:
             use_cache: Whether to use cached data if available and not expired
@@ -152,8 +147,7 @@ class DataCollectionManager:
         use_cache: bool = True,
         use_real_data: bool = False,
     ) -> List[Dict[str, Any]]:
-        """
-        Get token holders for a specific protocol.
+        """Get token holders for a specific protocol.
 
         Args:
             protocol: Protocol name
@@ -178,8 +172,7 @@ class DataCollectionManager:
         use_cache: bool = True,
         use_real_data: bool = False,
     ) -> List[Dict[str, Any]]:
-        """
-        Get governance proposals for a specific protocol.
+        """Get governance proposals for a specific protocol.
 
         Args:
             protocol: Protocol name
@@ -204,8 +197,7 @@ class DataCollectionManager:
         use_cache: bool = True,
         use_real_data: bool = False,
     ) -> List[Dict[str, Any]]:
-        """
-        Get votes for a specific governance proposal.
+        """Get votes for a specific governance proposal.
 
         Args:
             protocol: Protocol name
@@ -231,7 +223,7 @@ class DataCollectionManager:
 
         try:
             if os.path.exists(cache_file):
-                with open(cache_file, "r") as f:
+                with open(cache_file) as f:
                     return json.load(f)
         except Exception as e:
             logger.error(f"Error loading cached data for {protocol}: {e}")

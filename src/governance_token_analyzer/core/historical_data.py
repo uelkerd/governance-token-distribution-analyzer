@@ -1,25 +1,24 @@
-"""
-Historical Data Analysis Module for tracking token distribution changes over time.
+"""Historical Data Analysis Module for tracking token distribution changes over time.
 This module provides functionality to collect, process, and analyze historical
 token distribution and governance participation data.
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple, Set
-from datetime import datetime, timedelta
-import os
 import json
 import logging
-from pathlib import Path
+import os
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Set
+
+import numpy as np
+import pandas as pd
 
 from governance_token_analyzer.core.exceptions import (
     DataAccessError,
-    DataStorageError,
     DataFormatError,
-    ProtocolNotSupportedError,
-    MetricNotFoundError,
+    DataStorageError,
     HistoricalDataError,
+    MetricNotFoundError,
+    ProtocolNotSupportedError,
 )
 
 # Configure logging
@@ -27,16 +26,13 @@ logger = logging.getLogger(__name__)
 
 
 class HistoricalDataManager:
-    """
-    Manages the collection, storage, and retrieval of historical token distribution data.
-    """
+    """Manages the collection, storage, and retrieval of historical token distribution data."""
 
     # Supported protocols - can be extended as more protocols are added
     SUPPORTED_PROTOCOLS = {"compound", "uniswap", "aave"}
 
     def __init__(self, data_dir: str = "data/historical"):
-        """
-        Initialize the historical data manager.
+        """Initialize the historical data manager.
 
         Args:
             data_dir: Directory where historical data will be stored
@@ -52,8 +48,7 @@ class HistoricalDataManager:
             raise DataStorageError(f"Failed to create data directory: {e}") from e
 
     def _ensure_data_dir_exists(self) -> None:
-        """
-        Create data directory if it doesn't exist.
+        """Create data directory if it doesn't exist.
 
         Raises:
             OSError: If there's an issue creating the directory
@@ -63,8 +58,7 @@ class HistoricalDataManager:
             os.makedirs(os.path.join(self.data_dir, protocol), exist_ok=True)
 
     def _validate_protocol(self, protocol: str) -> None:
-        """
-        Validate that the protocol is supported.
+        """Validate that the protocol is supported.
 
         Args:
             protocol: Name of the protocol to validate
@@ -81,8 +75,7 @@ class HistoricalDataManager:
     def store_snapshot(
         self, protocol: str, data: Dict[str, Any], timestamp: Optional[datetime] = None
     ) -> None:
-        """
-        Store a snapshot of token distribution data.
+        """Store a snapshot of token distribution data.
 
         Args:
             protocol: Name of the protocol (e.g., 'compound', 'uniswap', 'aave')
@@ -104,6 +97,12 @@ class HistoricalDataManager:
 
         if timestamp is None:
             timestamp = datetime.now()
+        elif isinstance(timestamp, str):
+            try:
+                timestamp = datetime.fromisoformat(timestamp)
+            except ValueError:
+                logger.error(f"Invalid timestamp format: {timestamp}")
+                raise DataFormatError(f"Invalid timestamp format: {timestamp}")
 
         # Format timestamp for filename
         timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
@@ -120,7 +119,7 @@ class HistoricalDataManager:
             with open(filepath, "w") as f:
                 json.dump(data_with_timestamp, f, indent=2)
             logger.info(f"Stored snapshot for {protocol} at {timestamp_str}")
-        except (IOError, TypeError, ValueError) as e:
+        except (OSError, TypeError, ValueError) as e:
             logger.error(f"Failed to store snapshot for {protocol}: {e}")
             raise DataStorageError(
                 f"Failed to store snapshot for {protocol}: {e}"
@@ -132,8 +131,7 @@ class HistoricalDataManager:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
     ) -> List[Dict[str, Any]]:
-        """
-        Retrieve historical snapshots for a specific protocol.
+        """Retrieve historical snapshots for a specific protocol.
 
         Args:
             protocol: Name of the protocol
@@ -165,7 +163,7 @@ class HistoricalDataManager:
                 filepath = os.path.join(protocol_dir, filename)
 
                 try:
-                    with open(filepath, "r") as f:
+                    with open(filepath) as f:
                         snapshot = json.load(f)
                 except json.JSONDecodeError as e:
                     logger.warning(f"Failed to parse JSON in {filepath}: {e}")
@@ -210,8 +208,7 @@ class HistoricalDataManager:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
     ) -> pd.DataFrame:
-        """
-        Extract a time series for a specific metric from historical snapshots.
+        """Extract a time series for a specific metric from historical snapshots.
 
         Args:
             protocol: Name of the protocol
@@ -298,8 +295,7 @@ class HistoricalDataManager:
             ) from e
 
     def get_available_metrics(self, protocol: str) -> Set[str]:
-        """
-        Get a set of all available metrics for a protocol.
+        """Get a set of all available metrics for a protocol.
 
         Args:
             protocol: Name of the protocol
@@ -348,8 +344,7 @@ def calculate_distribution_change(
     address_col: str = "address",
     balance_col: str = "balance",
 ) -> pd.DataFrame:
-    """
-    Calculate changes in token distribution between two snapshots.
+    """Calculate changes in token distribution between two snapshots.
 
     Args:
         old_distribution: DataFrame containing older distribution data
@@ -433,8 +428,7 @@ def calculate_distribution_change(
 def analyze_concentration_trends(
     snapshots: List[Dict[str, Any]], top_n_holders: int = 10
 ) -> pd.DataFrame:
-    """
-    Analyze trends in token concentration over time.
+    """Analyze trends in token concentration over time.
 
     Args:
         snapshots: List of historical snapshots
@@ -458,7 +452,7 @@ def analyze_concentration_trends(
         for snapshot in snapshots:
             # Validate snapshot format
             if "timestamp" not in snapshot or "data" not in snapshot:
-                logger.warning(f"Invalid snapshot format: missing required fields")
+                logger.warning("Invalid snapshot format: missing required fields")
                 continue
 
             try:
@@ -509,8 +503,7 @@ def analyze_concentration_trends(
 def analyze_governance_participation_trends(
     snapshots: List[Dict[str, Any]],
 ) -> pd.DataFrame:
-    """
-    Analyze trends in governance participation over time.
+    """Analyze trends in governance participation over time.
 
     Args:
         snapshots: List of historical snapshots
@@ -533,7 +526,7 @@ def analyze_governance_participation_trends(
         for snapshot in snapshots:
             # Validate snapshot format
             if "timestamp" not in snapshot or "data" not in snapshot:
-                logger.warning(f"Invalid snapshot format: missing required fields")
+                logger.warning("Invalid snapshot format: missing required fields")
                 continue
 
             try:
@@ -593,8 +586,7 @@ def simulate_historical_data(
     data_manager: Optional[HistoricalDataManager] = None,
     seed: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
-    """
-    Simulate historical data for testing and development purposes.
+    """Simulate historical data for testing and development purposes.
 
     Args:
         protocol: Name of the protocol to simulate

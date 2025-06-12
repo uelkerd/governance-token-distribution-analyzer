@@ -1,10 +1,12 @@
-import pytest
+from typing import Any, Dict
+
 import pandas as pd
-from typing import Dict, Any
+import pytest
+
+from governance_token_analyzer.core import data_processor, metrics
 
 # Import protocol modules
-from governance_token_analyzer.protocols import compound, uniswap, aave
-from governance_token_analyzer.core import metrics, data_processor
+from governance_token_analyzer.protocols import aave, compound, uniswap
 from governance_token_analyzer.visualization import charts
 
 

@@ -1,21 +1,98 @@
 """
-API module for interacting with blockchain data sources.
+API Client Module for governance token data collection.
 
-This module handles API requests to Etherscan, The Graph, and other data sources.
+This module provides utilities for fetching data from various blockchain APIs
+including Etherscan, The Graph, and protocol-specific endpoints.
 """
 
+import os
 import requests
-from typing import Dict, Any, Optional, List
-import time
+import json
 import logging
+from typing import Dict, List, Any, Optional, Union
+from datetime import datetime, timedelta
+import time
+import random
 from .config import Config, ETHERSCAN_API_KEY, ETHERSCAN_BASE_URL
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Default API keys (should be set through environment variables)
+DEFAULT_ETHERSCAN_API_KEY = os.environ.get("ETHERSCAN_API_KEY", "")
+DEFAULT_INFURA_API_KEY = os.environ.get("INFURA_API_KEY", "")
+DEFAULT_GRAPH_API_KEY = os.environ.get("GRAPH_API_KEY", "")
+ETHPLORER_API_URL = "https://api.ethplorer.io"
+DEFAULT_ETHPLORER_API_KEY = os.environ.get("ETHPLORER_API_KEY", "freekey")
 
-class EtherscanAPI:
+# API endpoints
+ETHERSCAN_API_URL = "https://api.etherscan.io/api"
+INFURA_API_URL = f"https://mainnet.infura.io/v3/{DEFAULT_INFURA_API_KEY}"
+
+# Token contract addresses
+TOKEN_ADDRESSES = {
+    "compound": "0xc00e94Cb662C3520282E6f5717214004A7f26888",  # COMP
+    "uniswap": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",  # UNI
+    "aave": "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",  # AAVE
+}
+
+# Governance contract addresses
+GOVERNANCE_ADDRESSES = {
+    "compound": "0xc0Da02939E1441F497fd74F78cE7Decb17B66529",
+    "uniswap": "0x408ED6354d4973f66138C91495F2f2FCbd8724C3",
+    "aave": "0xEC568fffba86c094cf06b22134B23074DFE2252c",
+}
+
+# GraphQL endpoints
+GRAPHQL_ENDPOINTS = {
+    "compound": "https://api.thegraph.com/subgraphs/name/compound-finance/compound-governance",
+    "uniswap": "https://api.thegraph.com/subgraphs/name/uniswap/governance",
+    "aave": "https://api.thegraph.com/subgraphs/name/aave/governance",
+}
+
+# Protocol specific information for sample data generation
+PROTOCOL_INFO = {
+    "compound": {
+        "token_symbol": "COMP",
+        "token_name": "Compound",
+        "total_supply": 10000000,  # 10 million COMP
+        "decimals": 18,
+        "proposal_threshold": 65000,  # COMP needed to submit a proposal
+        "whale_addresses": [
+            "0x6626593c237f530d15ae9980a95ef938ac15c35c",  # Compound Treasury
+            "0xc00e94cb662c3520282e6f5717214004a7f26888",  # Compound Comptroller
+            "0x2775b1c75658be0f640272ccb8c72ac986009e38",  # Binance
+        ],
+    },
+    "uniswap": {
+        "token_symbol": "UNI",
+        "token_name": "Uniswap",
+        "total_supply": 1000000000,  # 1 billion UNI
+        "decimals": 18,
+        "proposal_threshold": 10000000,  # UNI needed to submit a proposal
+        "whale_addresses": [
+            "0x1a9c8182c09f50c8318d769245bea52c32be35bc",  # Uniswap Treasury
+            "0x4750c43867ef5f89869132eccf19b9b6c4286e1a",  # Binance
+            "0xe78388b4ce79068e89bf8aa7f218ef6b9ab0e9d0",  # Uniswap Team
+        ],
+    },
+    "aave": {
+        "token_symbol": "AAVE",
+        "token_name": "Aave",
+        "total_supply": 16000000,  # 16 million AAVE
+        "decimals": 18,
+        "proposal_threshold": 80000,  # AAVE needed to submit a proposal
+        "whale_addresses": [
+            "0x25f2226b597e8f9514b3f68f00f494cf4f286491",  # Aave Ecosystem Reserve
+            "0xbe8e3e3618f7474f8cb1d074a26affef007e98fb",  # Binance
+            "0x4da27a545c0c5b758a6ba100e3a049001de870f5",  # Staked Aave
+        ],
+    },
+}
+
+
+class APIClient:
     """Client for interacting with the Etherscan API."""
 
     def __init__(self, api_key: Optional[str] = None):

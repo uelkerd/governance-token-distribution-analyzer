@@ -1,15 +1,12 @@
-"""
-Governance Effectiveness Metrics
+"""Governance Effectiveness Metrics
 
 This module provides tools to analyze the effectiveness of DAO governance
 and correlate token distribution patterns with governance outcomes.
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Any, Optional
 import logging
 from datetime import datetime
+from typing import Any, Dict, List
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -17,8 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class GovernanceEffectivenessAnalyzer:
-    """
-    Analyzes governance effectiveness metrics and correlates them with
+    """Analyzes governance effectiveness metrics and correlates them with
     token distribution patterns.
     """
 
@@ -29,8 +25,7 @@ class GovernanceEffectivenessAnalyzer:
     def calculate_voter_participation(
         self, proposal_votes: List[Dict[str, Any]], total_eligible_votes: float
     ) -> Dict[str, float]:
-        """
-        Calculate voter participation metrics.
+        """Calculate voter participation metrics.
 
         Args:
             proposal_votes: List of dictionaries containing proposal voting data
@@ -83,8 +78,7 @@ class GovernanceEffectivenessAnalyzer:
     def calculate_proposal_success_rate(
         self, proposals: List[Dict[str, Any]]
     ) -> Dict[str, float]:
-        """
-        Calculate metrics related to proposal success rates.
+        """Calculate metrics related to proposal success rates.
 
         Args:
             proposals: List of dictionaries containing proposal data
@@ -131,8 +125,7 @@ class GovernanceEffectivenessAnalyzer:
         token_distribution: List[Dict[str, Any]],
         total_eligible_votes: float,
     ) -> Dict[str, Any]:
-        """
-        Calculate comprehensive governance effectiveness metrics.
+        """Calculate comprehensive governance effectiveness metrics.
 
         Args:
             proposals: List of dictionaries containing proposal data

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Compound Governance Token Analysis Module
+"""Compound Governance Token Analysis Module
 
 This module provides functionality for analyzing the distribution of COMP tokens
 and related governance metrics for the Compound protocol.
@@ -9,23 +8,19 @@ This script demonstrates the analysis of the Compound (COMP) governance token di
 It retrieves data from Etherscan and calculates basic concentration metrics.
 """
 
-import sys
-import os
 import json
 import logging
-from pathlib import Path
+import os
+import sys
 from datetime import datetime
 
 # Add the src directory to the Python path
 src_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(src_dir))
 
-from src.analyzer.token_analysis import (
-    analyze_compound_token,
-    TokenDistributionAnalyzer,
-)
-from src.analyzer.config import Config, DEFAULT_OUTPUT_DIR
 from src.analyzer.api import EtherscanAPI
+from src.analyzer.config import Config
+from src.analyzer.token_analysis import TokenDistributionAnalyzer
 
 # Configure logging
 logging.basicConfig(
@@ -43,8 +38,7 @@ class CompoundAnalyzer:
     COMP_CONTRACT_ADDRESS = "0xc00e94cb662c3520282e6f5717214004a7f26888"
 
     def __init__(self, api_client=None, config=None):
-        """
-        Initialize the Compound analyzer with API client and configuration.
+        """Initialize the Compound analyzer with API client and configuration.
 
         Args:
             api_client: An instance of EtherscanAPI or compatible client
@@ -55,8 +49,7 @@ class CompoundAnalyzer:
         self.analyzer = TokenDistributionAnalyzer(self.api_client, self.config)
 
     def get_token_holders(self, limit=100):
-        """
-        Get Compound token holders.
+        """Get Compound token holders.
 
         Args:
             limit: Maximum number of holders to retrieve
@@ -68,8 +61,7 @@ class CompoundAnalyzer:
         return self.api_client.get_token_holders(self.COMP_CONTRACT_ADDRESS, limit)
 
     def analyze_distribution(self, limit=100):
-        """
-        Analyze the distribution of COMP tokens.
+        """Analyze the distribution of COMP tokens.
 
         Args:
             limit: Maximum number of holders to analyze
@@ -158,8 +150,7 @@ class CompoundAnalyzer:
         return results
 
     def save_analysis_results(self, results, filename=None):
-        """
-        Save analysis results to a JSON file.
+        """Save analysis results to a JSON file.
 
         Args:
             results: Analysis results dictionary
@@ -198,7 +189,7 @@ def main():
         analyzer.save_analysis_results(results, "comp_analysis_latest.json")
 
         # Print the results
-        print(f"\nCOMP Token Distribution Analysis:")
+        print("\nCOMP Token Distribution Analysis:")
         print(f"Gini Coefficient: {results['metrics']['gini_coefficient']:.4f}")
         print(f"Herfindahl Index: {results['metrics']['herfindahl_index']:.4f}")
         print(

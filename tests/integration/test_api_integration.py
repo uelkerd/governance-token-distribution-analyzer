@@ -1,12 +1,13 @@
-"""
-Integration tests for API Client with real API calls.
+"""Integration tests for API Client with real API calls.
 
 These tests validate the integration with external APIs.
 They are skipped by default to avoid rate limiting during regular test runs.
 """
 
-import pytest
 import os
+
+import pytest
+
 from governance_token_analyzer.core.api_client import APIClient
 
 # Skip all tests if no API keys are available or if SKIP_INTEGRATION_TESTS is set

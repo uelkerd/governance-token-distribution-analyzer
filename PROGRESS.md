@@ -115,4 +115,28 @@ The project's success can be measured by:
 5. **Usability**: Intuitive CLI interface with clear documentation
 6. **Testing**: Comprehensive test coverage (aim for >90%)
 7. **Integration**: Seamless integration between components
-8. **Governance Analysis**: Accurate identification of voting blocks and patterns 
+8. **Governance Analysis**: Accurate identification of voting blocks and patterns
+
+## Development Notes
+
+### Project Structure
+- The project follows a modern Python package structure with code in the `src/` directory
+- The main package is located at `src/governance_token_analyzer/`
+
+### Running Tests
+- Set your PYTHONPATH to include the src directory:
+  ```
+  export PYTHONPATH=$PWD/src
+  ```
+- Run pytest from the project root:
+  ```
+  pytest src/tests
+  ```
+- Or with more verbose output:
+  ```
+  pytest -v src/tests
+  ```
+
+### Import Strategy
+- All imports in the project should reference the package from the src directory
+- Example: `from governance_token_analyzer.core import metrics` 

@@ -1,14 +1,12 @@
-import pytest
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
-import os
-import tempfile
 import shutil
+import tempfile
+from datetime import datetime
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import pytest
 
 from governance_token_analyzer.core import historical_data
-from governance_token_analyzer.protocols import compound, uniswap, aave
 from governance_token_analyzer.visualization import historical_charts
 
 

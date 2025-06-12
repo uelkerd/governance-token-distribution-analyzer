@@ -1,18 +1,16 @@
-"""
-Integration tests for the CLI components that interact with historical data analysis and reporting.
+"""Integration tests for the CLI components that interact with historical data analysis and reporting.
 These tests verify that CLI commands correctly utilize the historical data and report generation functionality.
 """
 
-import pytest
-import os
-import tempfile
-import shutil
-from datetime import datetime, timedelta
 import json
+import os
+import shutil
+import tempfile
+
+import pytest
 from click.testing import CliRunner
 
 from governance_token_analyzer.cli import main
-from governance_token_analyzer.cli import historical_analysis
 from governance_token_analyzer.core import historical_data
 
 
@@ -144,7 +142,7 @@ class TestCliIntegration:
         assert os.path.getsize(expected_output) > 0
 
         # Verify report contains historical analysis section
-        with open(expected_output, "r") as f:
+        with open(expected_output) as f:
             content = f.read()
             assert "Historical Analysis" in content
 
@@ -181,7 +179,7 @@ class TestCliIntegration:
         assert os.path.getsize(expected_output) > 0
 
         # Verify the JSON content
-        with open(expected_output, "r") as f:
+        with open(expected_output) as f:
             data = json.load(f)
             assert "protocol" in data
             assert data["protocol"] == "compound"

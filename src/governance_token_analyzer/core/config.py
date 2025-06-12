@@ -1,10 +1,10 @@
-"""
-Configuration module for the Governance Token Distribution Analyzer.
+"""Configuration module for the Governance Token Distribution Analyzer.
 
 This module handles loading environment variables and configuration settings.
 """
 
 import os
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -19,6 +19,8 @@ class Config:
         # API Keys
         self.etherscan_api_key = os.getenv("ETHERSCAN_API_KEY")
         self.infura_project_id = os.getenv("INFURA_PROJECT_ID")
+        self.alchemy_api_key = os.getenv("ALCHEMY_API_KEY")
+        self.graph_api_key = os.getenv("GRAPH_API_KEY")
 
         # Protocol Settings
         self.protocols = {
@@ -46,6 +48,12 @@ class Config:
             if self.infura_project_id
             else ""
         )
+        self.alchemy_base_url = (
+            f"https://eth-mainnet.g.alchemy.com/v2/{self.alchemy_api_key}"
+            if self.alchemy_api_key
+            else ""
+        )
+        self.graph_base_url = "https://api.thegraph.com/subgraphs/name"
 
         # Default settings
         self.default_output_dir = os.path.join(
@@ -56,6 +64,15 @@ class Config:
     def get_api_key(self):
         """Get the Etherscan API key."""
         return self.etherscan_api_key
+
+    def get_web3_provider_url(self):
+        """Get the best available Web3 provider URL (prefer Alchemy over Infura)."""
+        if self.alchemy_api_key:
+            return self.alchemy_base_url
+        elif self.infura_project_id:
+            return self.infura_base_url
+        else:
+            return None
 
     def get_protocol_info(self, protocol_name):
         """Get information for a specific protocol."""
@@ -70,6 +87,8 @@ class Config:
 # For backwards compatibility, keep the original variables
 ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")
 INFURA_PROJECT_ID = os.getenv("INFURA_PROJECT_ID")
+ALCHEMY_API_KEY = os.getenv("ALCHEMY_API_KEY")
+GRAPH_API_KEY = os.getenv("GRAPH_API_KEY")
 
 # Protocol Settings
 PROTOCOLS = {

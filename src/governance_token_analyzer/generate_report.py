@@ -1,30 +1,29 @@
 #!/usr/bin/env python
-"""
-Governance Token Distribution Report Generator
+"""Governance Token Distribution Report Generator
 
 This script generates comprehensive reports on governance token distribution patterns
 including visualizations, metrics, and insights across multiple protocols.
 """
 
-import os
-import sys
 import json
 import logging
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from pathlib import Path
+import os
+import sys
 from datetime import datetime
-from typing import Dict, List, Any, Optional
-import matplotlib.gridspec as gridspec
+from pathlib import Path
+from typing import Dict, List
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sns
 
 # Add the src directory to the Python path
 src_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(src_dir))
 
 # Import project modules
-from src.analyzer.config import Config, DEFAULT_OUTPUT_DIR
+from src.analyzer.config import DEFAULT_OUTPUT_DIR, Config
 
 # Configure logging
 logging.basicConfig(
@@ -39,8 +38,7 @@ class ReportGenerator:
     """Generates comprehensive reports on governance token distribution."""
 
     def __init__(self, output_dir: str = "reports"):
-        """
-        Initialize the report generator.
+        """Initialize the report generator.
 
         Args:
             output_dir: Directory to save generated reports
@@ -74,8 +72,7 @@ class ReportGenerator:
         )
 
     def load_protocol_data(self, protocols: List[str]) -> Dict[str, Dict]:
-        """
-        Load analysis data for multiple protocols.
+        """Load analysis data for multiple protocols.
 
         Args:
             protocols: List of protocol names to include in the report
@@ -94,7 +91,7 @@ class ReportGenerator:
                     logger.error(f"Analysis file not found: {file_path}")
                     continue
 
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     protocol_data = json.load(f)
 
                 data[protocol] = protocol_data
@@ -106,8 +103,7 @@ class ReportGenerator:
     def generate_comparative_concentration_chart(
         self, protocol_data: Dict[str, Dict]
     ) -> str:
-        """
-        Generate a comparative chart of concentration metrics across protocols.
+        """Generate a comparative chart of concentration metrics across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -186,8 +182,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_distribution_comparison(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a comparison of token distribution patterns across protocols.
+        """Generate a comparison of token distribution patterns across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -270,8 +265,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_top_holders_bar_chart(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a bar chart comparing top holder percentages across protocols.
+        """Generate a bar chart comparing top holder percentages across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -360,8 +354,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_html_report(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a comprehensive HTML report with all analysis results.
+        """Generate a comprehensive HTML report with all analysis results.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -440,13 +433,13 @@ class ReportGenerator:
         <body>
             <h1>Governance Token Distribution Analysis Report</h1>
             <p>Generated on: {timestamp}</p>
-            
+
             <div class="summary">
                 <h2>Executive Summary</h2>
                 <p>This report provides an analysis of token distribution patterns across {len(protocol_data)} governance tokens
                 in the DeFi ecosystem. The analysis focuses on concentration metrics, distribution patterns, and comparative insights.</p>
             </div>
-            
+
             <h2>Protocols Analyzed</h2>
             <table>
                 <tr>
@@ -481,28 +474,28 @@ class ReportGenerator:
 
         html_content += """
             </table>
-            
+
             <h2>Comparative Analysis</h2>
-            
+
             <div class="chart-container">
                 <h3>Token Concentration Comparison</h3>
                 <img src="comparative_concentration.png" alt="Token Concentration Comparison">
                 <p>Comparison of concentration metrics (Gini Coefficient and Herfindahl Index)
                 across governance tokens. Higher values indicate more concentrated token distribution.</p>
             </div>
-            
+
             <div class="chart-container">
                 <h3>Token Distribution Comparison</h3>
                 <img src="distribution_comparison.png" alt="Token Distribution Comparison">
                 <p>Pie charts showing the percentage of tokens held by top holders for each protocol.</p>
             </div>
-            
+
             <div class="chart-container">
                 <h3>Top Holders Comparison</h3>
                 <img src="top_holders_comparison.png" alt="Top Holders Comparison">
                 <p>Comparison of token percentages held by top 5, 10, and 20 holders across protocols.</p>
             </div>
-            
+
             <h2>Key Findings</h2>
             <ul>
         """
@@ -550,13 +543,13 @@ class ReportGenerator:
 
             if top_holders_pct and "5" in top_holders_pct and top_holders_pct["5"] > 50:
                 html_content += f"""
-                    <li>In {data.get("name", protocol)}, the top 5 holders control {top_holders_pct["5"]:.2f}% of tokens, 
+                    <li>In {data.get("name", protocol)}, the top 5 holders control {top_holders_pct["5"]:.2f}% of tokens,
                     which could lead to governance centralization risks</li>
                 """
 
         html_content += """
             </ul>
-            
+
             <h2>Recommendations</h2>
             <ol>
                 <li>Protocols with high concentration should consider mechanisms to encourage wider token distribution</li>
@@ -564,7 +557,7 @@ class ReportGenerator:
                 <li>Regular monitoring of token distribution trends is essential for maintaining decentralized governance</li>
                 <li>Consider implementing token delegation mechanisms to increase governance participation</li>
             </ol>
-            
+
             <div class="footer">
                 <p>Generated by Governance Token Distribution Analyzer | © 2023</p>
             </div>
@@ -581,8 +574,7 @@ class ReportGenerator:
         return str(report_path)
 
     def generate_full_report(self, protocols: List[str] = None) -> str:
-        """
-        Generate a full report including all protocols.
+        """Generate a full report including all protocols.
 
         Args:
             protocols: List of protocol names to include (default: all available)

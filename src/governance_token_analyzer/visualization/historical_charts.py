@@ -1,16 +1,16 @@
-"""
-Historical Charts Module for visualizing token distribution changes over time.
+"""Historical Charts Module for visualizing token distribution changes over time.
 This module provides functions to create visualizations for historical
 token distribution and governance participation data.
 """
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple, Union
-from datetime import datetime
-import matplotlib.dates as mdates
 import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 from governance_token_analyzer.core.exceptions import (
     DataFormatError,
@@ -27,8 +27,7 @@ def plot_metric_over_time(
     title: Optional[str] = None,
     figsize: Tuple[int, int] = (12, 6),
 ) -> plt.Figure:
-    """
-    Plot a single metric over time.
+    """Plot a single metric over time.
 
     Args:
         time_series_data: DataFrame with time index and metric values
@@ -136,8 +135,7 @@ def plot_protocol_comparison_over_time(
     title: Optional[str] = None,
     figsize: Tuple[int, int] = (12, 6),
 ) -> plt.Figure:
-    """
-    Plot a comparison of a metric across multiple protocols over time.
+    """Plot a comparison of a metric across multiple protocols over time.
 
     Args:
         protocol_data: Dictionary mapping protocol names to their time series DataFrames
@@ -261,8 +259,7 @@ def plot_protocol_comparison_over_time(
 def create_concentration_heatmap(
     snapshots: List[Dict[str, Any]], figsize: Tuple[int, int] = (14, 8)
 ) -> plt.Figure:
-    """
-    Create a heatmap showing token concentration changes over time.
+    """Create a heatmap showing token concentration changes over time.
 
     Args:
         snapshots: List of historical snapshots
@@ -395,8 +392,7 @@ def create_holder_movement_plot(
     top_n: int = 20,
     figsize: Tuple[int, int] = (12, 8),
 ) -> plt.Figure:
-    """
-    Create a plot showing movement of top token holders between two snapshots.
+    """Create a plot showing movement of top token holders between two snapshots.
 
     Args:
         old_snapshot: Older snapshot data
@@ -540,8 +536,7 @@ def create_holder_movement_plot(
 def create_governance_participation_plot(
     snapshots: List[Dict[str, Any]], figsize: Tuple[int, int] = (12, 6)
 ) -> plt.Figure:
-    """
-    Create a plot showing governance participation rates over time.
+    """Create a plot showing governance participation rates over time.
 
     Args:
         snapshots: List of historical snapshots
@@ -673,8 +668,7 @@ def create_multi_metric_dashboard(
     title: str = "Governance Metrics Dashboard",
     figsize: Tuple[int, int] = (15, 10),
 ) -> plt.Figure:
-    """
-    Create a dashboard with multiple metrics plotted over time.
+    """Create a dashboard with multiple metrics plotted over time.
 
     Args:
         time_series_data: Dictionary mapping metric names to their time series DataFrames

@@ -1,93 +1,55 @@
-"""
-Voting Block Analysis Module for identifying coordinated governance participation.
+"""Voting Block Analysis Module for identifying coordinated governance participation.
 
 This module provides functionality to detect and analyze voting blocks, which are groups
 of addresses that consistently vote together on governance proposals. This can help identify
 coordination, voting power concentration, and potential governance attacks.
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple, Set
 import logging
-from datetime import datetime
-import networkx as nx
-from sklearn.cluster import DBSCAN
-import matplotlib.pyplot as plt
 from collections import defaultdict
+from typing import Any, Dict, List, Optional
 
-from governance_token_analyzer.core.exceptions import (
-    DataFormatError,
-    HistoricalDataError,
-)
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+import pandas as pd
+
+from .exceptions import HistoricalDataError, DataFormatError
+from .logging_config import get_logger
 
 # Configure logging
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class VotingBlockAnalyzer:
-    """
-    Analyzes voting patterns to identify coordinated voting blocks in governance.
-    """
+    """Analyzes voting patterns to identify coordinated voting blocks in governance."""
 
     def __init__(self):
         """Initialize the voting block analyzer."""
-        self.voting_history = {}
+        self.voting_history = []
         self.address_similarity = None
         self.voting_blocks = []
 
-    def load_voting_data(self, proposals: List[Dict[str, Any]]) -> None:
-        """
-        Load voting data from a list of governance proposals.
-
-        Args:
-            proposals: List of proposal objects containing voting information
-
-        Raises:
-            DataFormatError: If the proposal data doesn't have the expected format
-        """
+    def load_voting_data(self, proposals: List[Dict[str, Any]]):
+        """Load and process voting data from a list of proposals."""
+        self.voting_history = []
         try:
-            voting_data = {}
-
-            for proposal in proposals:
-                if "id" not in proposal or "votes" not in proposal:
-                    logger.warning(f"Skipping proposal: missing required fields")
-                    continue
-
-                proposal_id = proposal["id"]
-                votes = proposal.get("votes", [])
-
-                if not votes:
-                    logger.warning(f"Proposal {proposal_id}: No votes found")
-                    continue
-
-                for vote in votes:
-                    if "voter" not in vote or "support" not in vote:
-                        logger.warning(
-                            f"Skipping vote in proposal {proposal_id}: missing required fields"
+            for prop in proposals:
+                if "votes" in prop and prop["votes"] is not None:
+                    for vote in prop["votes"]:
+                        self.voting_history.append(
+                            {
+                                "address": vote["voter"],
+                                "proposal_id": prop["id"],
+                                "vote": vote["support"],
+                            }
                         )
-                        continue
+        except (KeyError, TypeError) as e:
+            logger.error(f"Error processing proposal data: {e}")
+            raise DataFormatError(f"Invalid proposal data format: {e}") from e
 
-                    voter = vote["voter"]
-                    support = vote["support"]
-
-                    if voter not in voting_data:
-                        voting_data[voter] = {}
-
-                    voting_data[voter][proposal_id] = support
-
-            self.voting_history = voting_data
-            logger.info(
-                f"Loaded voting data for {len(voting_data)} addresses across {len(proposals)} proposals"
-            )
-
-        except Exception as e:
-            logger.error(f"Failed to load voting data: {e}")
-            raise DataFormatError(f"Failed to load voting data: {e}") from e
-
-    def calculate_voting_similarity(self, min_overlap: int = 3) -> pd.DataFrame:
-        """
-        Calculate similarity in voting patterns between addresses.
+    def calculate_voting_similarity(self, min_overlap: int = 1) -> pd.DataFrame:
+        """Calculate similarity in voting patterns between addresses.
 
         Args:
             min_overlap: Minimum number of proposals that two addresses must have both voted on
@@ -100,48 +62,56 @@ class VotingBlockAnalyzer:
         """
         try:
             if not self.voting_history:
-                logger.warning("No voting history data available")
+                logger.warning(
+                    "No voting history data available, cannot calculate similarity."
+                )
                 return pd.DataFrame()
 
-            addresses = list(self.voting_history.keys())
-            n_addresses = len(addresses)
+            # Create a matrix of address vs proposal votes with actual vote values
+            vote_df = pd.DataFrame(self.voting_history)
+            vote_matrix = vote_df.pivot_table(
+                index="address", columns="proposal_id", values="vote"
+            )
 
-            # Initialize similarity matrix
-            similarity = np.zeros((n_addresses, n_addresses))
+            # Calculate Jaccard similarity based on voting agreement
+            similarity_matrix = pd.DataFrame(
+                index=vote_matrix.index, columns=vote_matrix.index, dtype=float
+            )
 
-            # Calculate similarity between each pair of addresses
-            for i in range(n_addresses):
-                addr1 = addresses[i]
-                votes1 = self.voting_history[addr1]
-
-                for j in range(i + 1, n_addresses):
-                    addr2 = addresses[j]
-                    votes2 = self.voting_history[addr2]
-
-                    # Find proposals both addresses voted on
-                    common_proposals = set(votes1.keys()) & set(votes2.keys())
-
-                    if len(common_proposals) < min_overlap:
+            for i, addr1 in enumerate(vote_matrix.index):
+                for j, addr2 in enumerate(vote_matrix.index):
+                    if i >= j:
                         continue
 
-                    # Calculate agreement ratio
-                    agreements = sum(
-                        1 for p in common_proposals if votes1[p] == votes2[p]
-                    )
-                    agreement_ratio = agreements / len(common_proposals)
+                    votes1 = vote_matrix.loc[addr1]
+                    votes2 = vote_matrix.loc[addr2]
 
-                    # Update similarity matrix (symmetric)
-                    similarity[i, j] = agreement_ratio
-                    similarity[j, i] = agreement_ratio
+                    # Find proposals where both addresses voted
+                    both_voted = votes1.notna() & votes2.notna()
+                    either_voted = votes1.notna() | votes2.notna()
 
-            # Create DataFrame for easier analysis
-            sim_df = pd.DataFrame(similarity, index=addresses, columns=addresses)
-            self.address_similarity = sim_df
+                    if both_voted.sum() >= min_overlap:
+                        # Count agreements among proposals where both voted
+                        agreements = (votes1[both_voted] == votes2[both_voted]).sum()
 
-            logger.info(
-                f"Calculated voting similarity for {n_addresses} addresses with minimum overlap of {min_overlap} proposals"
-            )
-            return sim_df
+                        # Jaccard similarity: agreements / total_unique_positions
+                        # Total unique positions = agreements + disagreements + unique votes
+                        disagreements = both_voted.sum() - agreements
+                        unique_votes = either_voted.sum() - both_voted.sum()
+
+                        total_positions = agreements + disagreements + unique_votes
+                        similarity = (
+                            agreements / total_positions if total_positions > 0 else 0.0
+                        )
+                    else:
+                        similarity = 0.0
+
+                    similarity_matrix.loc[addr1, addr2] = similarity
+                    similarity_matrix.loc[addr2, addr1] = similarity
+
+            np.fill_diagonal(similarity_matrix.values, 1.0)
+            self.address_similarity = similarity_matrix.fillna(0)
+            return self.address_similarity
 
         except Exception as e:
             logger.error(f"Failed to calculate voting similarity: {e}")
@@ -149,11 +119,18 @@ class VotingBlockAnalyzer:
                 f"Failed to calculate voting similarity: {e}"
             ) from e
 
-    def identify_voting_blocks(
-        self, similarity_threshold: float = 0.8
-    ) -> List[List[str]]:
+    def get_voting_similarity(self) -> Optional[pd.DataFrame]:
+        """Return the address similarity matrix.
+
+        Returns:
+            DataFrame with address similarity scores
         """
-        Identify voting blocks based on voting pattern similarity.
+        return self.address_similarity
+
+    def identify_voting_blocks(
+        self, similarity_threshold: float = 0.7
+    ) -> List[List[str]]:
+        """Identify voting blocks based on voting pattern similarity.
 
         Args:
             similarity_threshold: Minimum similarity score to consider addresses as part of the same block
@@ -169,7 +146,7 @@ class VotingBlockAnalyzer:
                 logger.warning("No similarity data available. Calculating now...")
                 self.calculate_voting_similarity()
 
-            if self.address_similarity.empty:
+            if self.address_similarity is None or self.address_similarity.empty:
                 logger.warning("No address similarity data available")
                 return []
 
@@ -212,154 +189,107 @@ class VotingBlockAnalyzer:
             raise HistoricalDataError(f"Failed to identify voting blocks: {e}") from e
 
     def calculate_voting_power(
-        self, voting_blocks: List[List[str]], token_balances: Dict[str, float]
-    ) -> Dict[str, float]:
-        """
-        Calculate the total voting power of each identified voting block.
+        self, token_balances: Dict[str, float]
+    ) -> Dict[str, Any]:
+        """Calculate the voting power of each block.
 
         Args:
-            voting_blocks: List of voting blocks (each a list of addresses)
-            token_balances: Dictionary mapping addresses to their token balances
+            token_balances: Dictionary of token balances for each address
 
         Returns:
-            Dictionary mapping block IDs to their total voting power
-
-        Raises:
-            DataFormatError: If the token balances data doesn't have the expected format
+            Dictionary with voting power information for each block
         """
-        try:
-            if not voting_blocks:
-                logger.warning("No voting blocks provided")
-                return {}
+        if not self.voting_blocks:
+            logger.warning(
+                "No voting blocks identified, cannot calculate voting power."
+            )
+            return {}
 
-            if not token_balances:
-                logger.warning("No token balance data provided")
-                return {}
+        voting_power = {}
+        total_supply = sum(token_balances.values())
 
-            block_power = {}
-            total_tokens = sum(token_balances.values())
+        for i, block in enumerate(self.voting_blocks):
+            block_id = f"Block {i + 1}"
+            block_tokens = sum(token_balances.get(addr, 0) for addr in block)
+            percentage = (block_tokens / total_supply) * 100 if total_supply > 0 else 0
+            voting_power[block_id] = {
+                "addresses": block,
+                "address_count": len(block),
+                "total_tokens": block_tokens,
+                "percentage": percentage,
+            }
 
-            for i, block in enumerate(voting_blocks):
-                block_id = f"Block_{i + 1}"
-                block_tokens = sum(token_balances.get(addr, 0) for addr in block)
-                block_percentage = (
-                    (block_tokens / total_tokens * 100) if total_tokens > 0 else 0
-                )
+        return voting_power
 
-                block_power[block_id] = {
-                    "addresses": block,
-                    "address_count": len(block),
-                    "total_tokens": block_tokens,
-                    "percentage": block_percentage,
-                }
+    def get_block_voting_patterns(self, block_id: int) -> Dict[str, Any]:
+        """Analyze the voting patterns for a single block."""
+        if not self.voting_blocks or block_id >= len(self.voting_blocks):
+            logger.warning(
+                f"Block ID {block_id} is out of bounds or no blocks identified."
+            )
+            return {}
 
-            logger.info(f"Calculated voting power for {len(voting_blocks)} blocks")
-            return block_power
+        block = self.voting_blocks[block_id]
+        if not block:
+            logger.warning(f"Block {block_id} is empty.")
+            return {}
 
-        except Exception as e:
-            if isinstance(e, KeyError):
-                logger.error(f"Error accessing token balance data: {e}")
-                raise DataFormatError(f"Error accessing token balance data: {e}") from e
-            logger.error(f"Failed to calculate voting block power: {e}")
-            raise HistoricalDataError(
-                f"Failed to calculate voting block power: {e}"
-            ) from e
+        block_proposals = {}
+        total_votes = 0
 
-    def get_block_voting_patterns(self, block: List[str]) -> Dict[str, Dict[str, Any]]:
-        """
-        Analyze voting patterns for a specific block.
+        for proposal in self.voting_history:
+            proposal_id = proposal["proposal_id"]
+            address = proposal["address"]
 
-        Args:
-            block: List of addresses in the voting block
+            if address in block:
+                if proposal_id not in block_proposals:
+                    block_proposals[proposal_id] = {
+                        "votes_for": 0,
+                        "votes_against": 0,
+                        "total_votes": 0,
+                    }
 
-        Returns:
-            Dictionary with voting pattern statistics for the block
+                if proposal["vote"] == 1:
+                    block_proposals[proposal_id]["votes_for"] += 1
+                elif proposal["vote"] == 0:
+                    block_proposals[proposal_id]["votes_against"] += 1
 
-        Raises:
-            HistoricalDataError: If there's an issue analyzing voting patterns
-        """
-        try:
-            if not block:
-                logger.warning("Empty block provided")
-                return {}
+                block_proposals[proposal_id]["total_votes"] += 1
+                total_votes += 1
 
-            # Get all proposals voted on by any member of the block
-            all_proposals = set()
-            for addr in block:
-                if addr in self.voting_history:
-                    all_proposals.update(self.voting_history[addr].keys())
-
-            if not all_proposals:
-                logger.warning("No voting history found for addresses in this block")
-                return {}
-
-            proposal_stats = {}
-
-            for proposal_id in all_proposals:
-                # Count votes for this proposal
-                votes = {"for": 0, "against": 0, "abstain": 0, "no_vote": 0}
-
-                for addr in block:
-                    if (
-                        addr in self.voting_history
-                        and proposal_id in self.voting_history[addr]
-                    ):
-                        vote = self.voting_history[addr][proposal_id]
-                        if vote == 1:
-                            votes["for"] += 1
-                        elif vote == 0:
-                            votes["against"] += 1
-                        else:
-                            votes["abstain"] += 1
-                    else:
-                        votes["no_vote"] += 1
-
-                # Calculate consensus percentage
-                voted = votes["for"] + votes["against"] + votes["abstain"]
-                consensus_pct = 0
-
-                if voted > 0:
-                    max_vote = max(votes["for"], votes["against"], votes["abstain"])
-                    consensus_pct = (max_vote / voted) * 100
-
-                proposal_stats[proposal_id] = {
-                    "votes": votes,
-                    "block_size": len(block),
-                    "participation_pct": (voted / len(block)) * 100,
-                    "consensus_pct": consensus_pct,
-                }
-
-            # Calculate average statistics
-            avg_participation = sum(
-                p["participation_pct"] for p in proposal_stats.values()
-            ) / len(proposal_stats)
-            avg_consensus = sum(
-                p["consensus_pct"] for p in proposal_stats.values()
-            ) / len(proposal_stats)
-
-            result = {
-                "proposals": proposal_stats,
-                "avg_participation": avg_participation,
-                "avg_consensus": avg_consensus,
+        if not block_proposals:
+            return {
+                "proposals": {},
+                "avg_participation": 0,
+                "avg_consensus": 0,
                 "block_size": len(block),
             }
 
-            logger.info(
-                f"Analyzed voting patterns for block with {len(block)} addresses across {len(all_proposals)} proposals"
-            )
-            return result
+        avg_participation = (
+            total_votes / (len(block) * len(block_proposals))
+            if block and block_proposals
+            else 0
+        )
 
-        except Exception as e:
-            logger.error(f"Failed to analyze block voting patterns: {e}")
-            raise HistoricalDataError(
-                f"Failed to analyze block voting patterns: {e}"
-            ) from e
+        total_consensus = 0
+        for p in block_proposals.values():
+            if p["total_votes"] > 0:
+                consensus = max(p["votes_for"], p["votes_against"]) / p["total_votes"]
+                total_consensus += consensus
+
+        avg_consensus = total_consensus / len(block_proposals) if block_proposals else 0
+
+        return {
+            "proposals": block_proposals,
+            "avg_participation": avg_participation,
+            "avg_consensus": avg_consensus,
+            "block_size": len(block),
+        }
 
     def visualize_voting_blocks(
         self, token_balances: Optional[Dict[str, float]] = None
     ) -> plt.Figure:
-        """
-        Create a network visualization of voting blocks.
+        """Create a network visualization of voting blocks.
 
         Args:
             token_balances: Optional dictionary mapping addresses to token balances
@@ -485,12 +415,96 @@ class VotingBlockAnalyzer:
             logger.error(f"Failed to visualize voting blocks: {e}")
             raise HistoricalDataError(f"Failed to visualize voting blocks: {e}") from e
 
+    def analyze_block_cohesion(self) -> Dict[str, float]:
+        """Analyze the cohesion of each voting block.
+
+        Returns:
+            Dictionary with cohesion scores for each block
+
+        Raises:
+            HistoricalDataError: If there's an issue analyzing block cohesion
+        """
+        try:
+            if not self.voting_blocks:
+                logger.warning("No voting blocks identified")
+                return {}
+
+            if self.address_similarity is None:
+                logger.warning(
+                    "Address similarity not calculated. Cannot analyze cohesion."
+                )
+                return {}
+
+            cohesion_scores = {}
+            for i, block in enumerate(self.voting_blocks):
+                block_id = f"Block {i + 1}"
+                if not block:
+                    continue
+                block_similarity = self.address_similarity.loc[block, block].values
+                # Calculate average cohesion within the block, ignoring self-similarity
+                upper_tri_indices = np.triu_indices_from(block_similarity, k=1)
+                if upper_tri_indices[0].size > 0:
+                    cohesion_scores[block_id] = np.mean(
+                        block_similarity[upper_tri_indices]
+                    )
+                else:
+                    cohesion_scores[block_id] = 0.0
+
+            logger.info(f"Analyzed cohesion for {len(cohesion_scores)} blocks")
+            return cohesion_scores
+
+        except Exception as e:
+            logger.error(f"Failed to analyze block cohesion: {e}")
+            raise HistoricalDataError(f"Failed to analyze block cohesion: {e}") from e
+
+    def track_block_evolution(
+        self, historical_snapshots: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Track the evolution of voting blocks over time.
+
+        Args:
+            historical_snapshots: List of historical voting data snapshots
+
+        Returns:
+            Dictionary with block evolution over time
+
+        Raises:
+            HistoricalDataError: If there's an issue tracking block evolution
+        """
+        try:
+            block_evolution = {}
+            previous_blocks = None
+
+            for snapshot in historical_snapshots:
+                timestamp = snapshot.get("timestamp")
+                if not timestamp:
+                    logger.warning("Skipping snapshot due to missing timestamp")
+                    continue
+
+                analyzer = VotingBlockAnalyzer()
+                analyzer.load_voting_data(snapshot.get("votes", []))
+                current_blocks = analyzer.identify_voting_blocks()
+
+                if previous_blocks is not None:
+                    # Logic to compare current_blocks with previous_blocks
+                    # This could involve tracking block merges, splits, and changes in composition
+                    # For simplicity, this example just records the blocks at each timestamp
+                    pass
+
+                block_evolution[timestamp] = current_blocks
+                previous_blocks = current_blocks
+
+            return block_evolution
+
+        except Exception as e:
+            logger.error(f"Failed to track block evolution: {e}")
+            raise HistoricalDataError(f"Failed to track block evolution: {e}") from e
+
 
 def analyze_proposal_influence(
     proposals: List[Dict[str, Any]], token_balances: Dict[str, float]
 ) -> Dict[str, Dict[str, Any]]:
-    """
-    Analyze the influence of large token holders on proposal outcomes.
+    """Analyze the influence of large token holders on proposal outcomes.
 
     Args:
         proposals: List of proposals with voting data
@@ -527,7 +541,7 @@ def analyze_proposal_influence(
                 or "votes" not in proposal
                 or "outcome" not in proposal
             ):
-                logger.warning(f"Skipping proposal: missing required fields")
+                logger.warning("Skipping proposal: missing required fields")
                 continue
 
             proposal_id = proposal["id"]
@@ -653,8 +667,7 @@ def analyze_proposal_influence(
 def detect_voting_anomalies(
     proposals: List[Dict[str, Any]], token_holders: List[Dict[str, Any]]
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """
-    Detect anomalies in voting patterns that might indicate coordination or manipulation.
+    """Detect anomalies in voting patterns that might indicate coordination or manipulation.
 
     Args:
         proposals: List of proposals with voting data

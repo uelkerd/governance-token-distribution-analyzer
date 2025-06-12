@@ -1,16 +1,16 @@
-"""
-Charts Module for visualizing governance token data.
+"""Charts Module for visualizing governance token data.
 This module provides functions to create various visualizations
 for token distribution and governance metrics.
 """
 
-import os
 import logging
+from typing import Any, Dict, List, Tuple
+
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from typing import Dict, Any, List, Optional, Tuple, Union
 import networkx as nx
+import numpy as np
+import pandas as pd
+
 from ..core.exceptions import VisualizationError
 
 # Configure logging
@@ -20,8 +20,7 @@ logger = logging.getLogger(__name__)
 def create_distribution_comparison(
     *dfs: pd.DataFrame, title: str = "Token Holder Distribution Comparison"
 ) -> plt.Figure:
-    """
-    Create a comparison chart of token holder distributions for multiple protocols.
+    """Create a comparison chart of token holder distributions for multiple protocols.
 
     Args:
         *dfs: DataFrames containing token holder data for different protocols
@@ -65,8 +64,7 @@ def create_metrics_comparison(
     metrics_dict: Dict[str, Dict[str, float]],
     title: str = "Governance Metrics Comparison",
 ) -> plt.Figure:
-    """
-    Create a bar chart comparing governance metrics across protocols.
+    """Create a bar chart comparing governance metrics across protocols.
 
     Args:
         metrics_dict: Dictionary mapping protocol names to their metrics
@@ -122,8 +120,7 @@ def create_participation_trend(
     participation_data: Dict[str, List[Dict[str, Any]]],
     title: str = "Governance Participation Trends",
 ) -> plt.Figure:
-    """
-    Create a line chart showing governance participation trends over time.
+    """Create a line chart showing governance participation trends over time.
 
     Args:
         participation_data: Dictionary mapping protocol names to their participation data
@@ -162,8 +159,7 @@ def create_participation_trend(
 def create_whale_influence_chart(
     whale_data: Dict[str, Dict[str, float]], title: str = "Whale Influence by Protocol"
 ) -> plt.Figure:
-    """
-    Create a chart showing whale influence metrics by protocol.
+    """Create a chart showing whale influence metrics by protocol.
 
     Args:
         whale_data: Dictionary mapping protocol names to their whale metrics
@@ -207,8 +203,7 @@ def create_whale_influence_chart(
 
 
 def save_chart(fig: plt.Figure, filename: str, dpi: int = 300) -> None:
-    """
-    Save a chart to a file.
+    """Save a chart to a file.
 
     Args:
         fig: Matplotlib Figure object
@@ -228,8 +223,7 @@ def create_delegation_network_visualization(
     title: str = "Delegation Network",
     figsize: Tuple[int, int] = (12, 10),
 ) -> plt.Figure:
-    """
-    Create a visualization of the delegation network.
+    """Create a visualization of the delegation network.
 
     Args:
         delegation_graph: NetworkX DiGraph representing the delegation network
@@ -370,8 +364,7 @@ def create_delegation_metrics_chart(
     title: str = "Delegation Metrics",
     figsize: Tuple[int, int] = (10, 6),
 ) -> plt.Figure:
-    """
-    Create a chart visualizing delegation metrics.
+    """Create a chart visualizing delegation metrics.
 
     Args:
         metrics: Dictionary of delegation metrics

@@ -1,5 +1,4 @@
-"""
-Custom exceptions for the Governance Token Distribution Analyzer.
+"""Custom exceptions for the Governance Token Distribution Analyzer.
 
 This module defines the custom exceptions used throughout the application
 to provide clear and actionable error messages.

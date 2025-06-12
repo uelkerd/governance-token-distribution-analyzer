@@ -1,18 +1,17 @@
-"""
-Data Processor Module for standardizing data across different protocols.
+"""Data Processor Module for standardizing data across different protocols.
 This module handles transformation of protocol-specific data structures
 into standard formats for cross-protocol analysis.
 """
 
+from typing import Any, Dict, List, Union
+
 import pandas as pd
-from typing import Dict, List, Any, Union
 
 
 def standardize_holder_data(
     holder_data: List[Dict[str, Any]], protocol_name: str
 ) -> pd.DataFrame:
-    """
-    Standardize token holder data from different protocols into a common DataFrame format.
+    """Standardize token holder data from different protocols into a common DataFrame format.
 
     Args:
         holder_data: List of token holder data dictionaries from a specific protocol
@@ -86,8 +85,7 @@ def _standardize_aave_holders(holder_data: List[Dict[str, Any]]) -> pd.DataFrame
 
 
 def combine_protocol_data(protocol_dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
-    """
-    Combine data from multiple protocols into a single DataFrame.
+    """Combine data from multiple protocols into a single DataFrame.
 
     Args:
         protocol_dfs: Dictionary mapping protocol names to their DataFrames
@@ -99,8 +97,7 @@ def combine_protocol_data(protocol_dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame
 
 
 def filter_top_holders(df: pd.DataFrame, top_n: int = 100) -> pd.DataFrame:
-    """
-    Filter the top N holders by balance from a DataFrame.
+    """Filter the top N holders by balance from a DataFrame.
 
     Args:
         df: DataFrame containing holder data
@@ -115,8 +112,7 @@ def filter_top_holders(df: pd.DataFrame, top_n: int = 100) -> pd.DataFrame:
 def calculate_overlap(
     df1: pd.DataFrame, df2: pd.DataFrame, column: str = "address"
 ) -> Dict[str, Union[int, float]]:
-    """
-    Calculate the overlap between two DataFrames based on a specific column.
+    """Calculate the overlap between two DataFrames based on a specific column.
 
     Args:
         df1: First DataFrame

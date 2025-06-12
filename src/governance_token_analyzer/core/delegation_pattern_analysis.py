@@ -1,26 +1,23 @@
-"""
-Module for analyzing delegation patterns in governance protocols.
+"""Module for analyzing delegation patterns in governance protocols.
 
 This module provides functionality to detect, analyze, and visualize
 delegation patterns within governance token holders.
 """
 
-import os
 import logging
-import numpy as np
-import pandas as pd
-import networkx as nx
-from typing import Dict, List, Tuple, Any, Optional, Set
+from typing import Any, Dict, List
 
-from .exceptions import DataFormatError, AnalysisError
+import networkx as nx
+import numpy as np
+
+from .exceptions import AnalysisError, DataFormatError
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
 
 class DelegationPatternAnalyzer:
-    """
-    Analyzes delegation patterns in governance protocols.
+    """Analyzes delegation patterns in governance protocols.
 
     This class provides methods to identify delegation patterns, analyze
     delegation concentration, and detect changes in delegation behavior
@@ -28,8 +25,7 @@ class DelegationPatternAnalyzer:
     """
 
     def __init__(self, min_delegation_threshold: float = 0.01):
-        """
-        Initialize the DelegationPatternAnalyzer.
+        """Initialize the DelegationPatternAnalyzer.
 
         Args:
             min_delegation_threshold: Minimum percentage of total supply for a
@@ -43,8 +39,7 @@ class DelegationPatternAnalyzer:
     def analyze_delegation_network(
         self, governance_data: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """
-        Analyze the delegation network from governance data.
+        """Analyze the delegation network from governance data.
 
         Args:
             governance_data: Dictionary containing governance data with delegations
@@ -107,8 +102,7 @@ class DelegationPatternAnalyzer:
     def compare_delegation_patterns(
         self, historical_data: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Compare delegation patterns across multiple historical snapshots.
+        """Compare delegation patterns across multiple historical snapshots.
 
         Args:
             historical_data: List of historical governance data snapshots
@@ -164,8 +158,7 @@ class DelegationPatternAnalyzer:
     def detect_delegation_shifts(
         self, historical_data: List[Dict[str, Any]], shift_threshold: float = 0.1
     ) -> Dict[str, Any]:
-        """
-        Detect significant shifts in delegation patterns.
+        """Detect significant shifts in delegation patterns.
 
         Args:
             historical_data: List of historical governance data snapshots
@@ -238,8 +231,7 @@ class DelegationPatternAnalyzer:
     def find_influential_delegators(
         self, governance_data: Dict[str, Any], influence_threshold: float = 0.05
     ) -> List[Dict[str, Any]]:
-        """
-        Find the most influential delegators in the network.
+        """Find the most influential delegators in the network.
 
         Args:
             governance_data: Dictionary containing governance data
@@ -326,8 +318,7 @@ class DelegationPatternAnalyzer:
     def _create_delegation_graph(
         self, delegations: List[Dict[str, Any]], token_holders: List[Dict[str, Any]]
     ) -> nx.DiGraph:
-        """
-        Create a directed graph representing the delegation network.
+        """Create a directed graph representing the delegation network.
 
         Args:
             delegations: List of delegation records
@@ -363,8 +354,7 @@ class DelegationPatternAnalyzer:
     def _calculate_delegation_metrics(
         self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]
     ) -> Dict[str, float]:
-        """
-        Calculate key metrics for the delegation network.
+        """Calculate key metrics for the delegation network.
 
         Args:
             graph: NetworkX DiGraph representing the delegation network
@@ -427,8 +417,7 @@ class DelegationPatternAnalyzer:
     def _identify_key_delegatees(
         self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
-        """
-        Identify key delegatees in the network.
+        """Identify key delegatees in the network.
 
         Args:
             graph: NetworkX DiGraph representing the delegation network
@@ -494,8 +483,7 @@ class DelegationPatternAnalyzer:
     def _analyze_delegation_patterns(
         self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Analyze delegation patterns in the network.
+        """Analyze delegation patterns in the network.
 
         Args:
             graph: NetworkX DiGraph representing the delegation network
@@ -557,8 +545,7 @@ class DelegationPatternAnalyzer:
     def _categorize_holders_by_balance(
         self, token_holders: List[Dict[str, Any]]
     ) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Categorize token holders by their balance.
+        """Categorize token holders by their balance.
 
         Args:
             token_holders: List of token holder records
@@ -599,8 +586,7 @@ class DelegationPatternAnalyzer:
         }
 
     def _detect_circular_delegations(self, graph: nx.DiGraph) -> List[List[str]]:
-        """
-        Detect circular delegation patterns in the network.
+        """Detect circular delegation patterns in the network.
 
         Args:
             graph: NetworkX DiGraph representing the delegation network
@@ -622,8 +608,7 @@ class DelegationPatternAnalyzer:
     def _identify_whale_delegations(
         self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
-        """
-        Identify delegations between whale addresses.
+        """Identify delegations between whale addresses.
 
         Args:
             graph: NetworkX DiGraph representing the delegation network
@@ -667,8 +652,7 @@ class DelegationPatternAnalyzer:
     def _compare_delegation_across_time(
         self, snapshots_analysis: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Compare delegation patterns across time.
+        """Compare delegation patterns across time.
 
         Args:
             snapshots_analysis: List of snapshot analyses
@@ -730,8 +714,7 @@ class DelegationPatternAnalyzer:
     def _calculate_metrics_change(
         self, previous_metrics: Dict[str, float], current_metrics: Dict[str, float]
     ) -> Dict[str, float]:
-        """
-        Calculate change in metrics between two snapshots.
+        """Calculate change in metrics between two snapshots.
 
         Args:
             previous_metrics: Metrics from previous snapshot
@@ -767,8 +750,7 @@ class DelegationPatternAnalyzer:
         previous_delegatees: List[Dict[str, Any]],
         current_delegatees: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-        """
-        Detect changes in key delegatees between snapshots.
+        """Detect changes in key delegatees between snapshots.
 
         Args:
             previous_delegatees: Key delegatees from previous snapshot
@@ -820,8 +802,7 @@ class DelegationPatternAnalyzer:
         }
 
     def _calculate_shift_metrics(self, shifts: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Calculate metrics about delegation shifts.
+        """Calculate metrics about delegation shifts.
 
         Args:
             shifts: List of detected shifts
@@ -872,8 +853,7 @@ class DelegationPatternAnalyzer:
 def analyze_delegation_patterns(
     protocol_data: Dict[str, Any], min_threshold: float = 0.01
 ) -> Dict[str, Any]:
-    """
-    Analyze delegation patterns in a protocol.
+    """Analyze delegation patterns in a protocol.
 
     Args:
         protocol_data: Protocol data including governance data and delegations
@@ -919,8 +899,7 @@ def analyze_historical_delegation_patterns(
     min_threshold: float = 0.01,
     shift_threshold: float = 0.1,
 ) -> Dict[str, Any]:
-    """
-    Analyze historical delegation patterns.
+    """Analyze historical delegation patterns.
 
     Args:
         historical_data: List of historical snapshots

@@ -1,16 +1,16 @@
-"""
-Hello World script to verify the environment is working correctly.
+"""Hello World script to verify the environment is working correctly.
 
 This script tests the basic functionality by making a simple API call
 to Etherscan to get the ETH balance of the Ethereum Foundation address.
 """
 
-import os
-import requests
 import logging
+import os
+
 import dotenv
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+import requests
 
 # Configure logging
 logging.basicConfig(

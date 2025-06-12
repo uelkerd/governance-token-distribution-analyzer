@@ -1,5 +1,4 @@
-"""
-Historical analysis of governance token distribution.
+"""Historical analysis of governance token distribution.
 
 This module enables time-series analysis of token distribution metrics
 to track changes in concentration over time.
@@ -9,11 +8,11 @@ Example usage:
 """
 
 import argparse
+import json
 import logging
 import os
-import json
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
 
 from analyzer.config import Config
 from compound_analysis import CompoundAnalyzer
@@ -39,8 +38,7 @@ class HistoricalTokenAnalyzer:
     }
 
     def __init__(self, token_symbol, config=None):
-        """
-        Initialize the historical analyzer.
+        """Initialize the historical analyzer.
 
         Args:
             token_symbol: Symbol of the token to analyze (e.g., 'COMP', 'UNI')
@@ -62,8 +60,7 @@ class HistoricalTokenAnalyzer:
         os.makedirs(self.data_dir, exist_ok=True)
 
     def analyze_at_date(self, target_date):
-        """
-        Analyze token distribution for a specific date.
+        """Analyze token distribution for a specific date.
 
         Args:
             target_date: Date for which to analyze the distribution (datetime object)
@@ -85,8 +82,7 @@ class HistoricalTokenAnalyzer:
         return results
 
     def save_historical_data(self, results, target_date):
-        """
-        Save historical analysis results to a JSON file.
+        """Save historical analysis results to a JSON file.
 
         Args:
             results: Analysis results dictionary
@@ -106,8 +102,7 @@ class HistoricalTokenAnalyzer:
         return filepath
 
     def run_historical_analysis(self, start_date, end_date=None, interval_days=30):
-        """
-        Run historical analysis from start_date to end_date at specified intervals.
+        """Run historical analysis from start_date to end_date at specified intervals.
 
         Args:
             start_date: Start date for historical analysis (datetime object)
@@ -152,8 +147,7 @@ class HistoricalTokenAnalyzer:
         return result_files
 
     def compile_historical_metrics(self):
-        """
-        Compile historical metrics from saved analysis files.
+        """Compile historical metrics from saved analysis files.
 
         Returns:
             Dictionary with time series data for each metric
@@ -193,7 +187,7 @@ class HistoricalTokenAnalyzer:
         # Extract metrics from each file
         for filepath in file_paths:
             try:
-                with open(filepath, "r") as f:
+                with open(filepath) as f:
                     data = json.load(f)
 
                 # Extract date from timestamp
@@ -292,6 +286,13 @@ def main():
             first_top10 = time_series["top_10_pct"][0]
             last_top10 = time_series["top_10_pct"][-1]
             top10_change = last_top10 - first_top10
+
+            print(
+                f"Gini coefficient change: {gini_change:.2f}% ({first_gini:.4f} → {last_gini:.4f})"
+            )
+            print(
+                f"Top 10 holders concentration change: {top10_change:.2f} percentage points ({first_top10:.2f}% → {last_top10:.2f}%)"
+            )
 
             print(
                 f"Gini coefficient change: {gini_change:.2f}% ({first_gini:.4f} → {last_gini:.4f})"

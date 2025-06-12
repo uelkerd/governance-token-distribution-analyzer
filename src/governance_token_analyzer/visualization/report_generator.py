@@ -1,31 +1,27 @@
-"""
-Report Generator Module for creating comprehensive governance token analysis reports.
+"""Report Generator Module for creating comprehensive governance token analysis reports.
 This module provides functionality to generate HTML, PDF, and JSON reports
 with visualizations and insights about token distribution and governance.
 """
 
-import os
-from typing import Dict, List, Any, Optional, Tuple, Union
-from datetime import datetime
 import json
-import pandas as pd
-import matplotlib.pyplot as plt
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+import os
 import shutil
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import matplotlib.pyplot as plt
+import pandas as pd
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 # Import visualization modules
-from . import charts
-from . import historical_charts
+from . import charts, historical_charts
 
 
 class ReportGenerator:
-    """
-    Generates comprehensive reports with visualizations and analysis.
-    """
+    """Generates comprehensive reports with visualizations and analysis."""
 
     def __init__(self, output_dir: str = "reports", template_dir: str = None):
-        """
-        Initialize the report generator.
+        """Initialize the report generator.
 
         Args:
             output_dir: Directory where reports will be saved
@@ -72,12 +68,12 @@ class ReportGenerator:
             <body>
                 <h1>{{ title }}</h1>
                 <p>Generated on {{ generation_date }}</p>
-                
+
                 <div class="overview">
                     <h2>Overview</h2>
                     <p>{{ overview }}</p>
                 </div>
-                
+
                 <div class="metrics">
                     <h2>Key Metrics</h2>
                     <table>
@@ -95,7 +91,7 @@ class ReportGenerator:
                         {% endfor %}
                     </table>
                 </div>
-                
+
                 <div class="visualizations">
                     <h2>Visualizations</h2>
                     {% for viz in visualizations %}
@@ -106,7 +102,7 @@ class ReportGenerator:
                     </div>
                     {% endfor %}
                 </div>
-                
+
                 {% if historical_analysis %}
                 <div class="historical-analysis">
                     <h2>Historical Analysis</h2>
@@ -120,7 +116,7 @@ class ReportGenerator:
                     {% endfor %}
                 </div>
                 {% endif %}
-                
+
                 {% if comparison %}
                 <div class="comparison">
                     <h2>Protocol Comparison</h2>
@@ -134,12 +130,12 @@ class ReportGenerator:
                     {% endfor %}
                 </div>
                 {% endif %}
-                
+
                 <div class="conclusion">
                     <h2>Conclusion</h2>
                     <p>{{ conclusion }}</p>
                 </div>
-                
+
                 <div class="footer">
                     <p>Generated using Governance Token Distribution Analyzer</p>
                 </div>
@@ -166,8 +162,7 @@ class ReportGenerator:
         output_format: str = "html",
         include_visualizations: bool = True,
     ) -> str:
-        """
-        Generate a report for a single protocol snapshot.
+        """Generate a report for a single protocol snapshot.
 
         Args:
             protocol_data: Protocol data snapshot
@@ -235,8 +230,7 @@ class ReportGenerator:
         protocol_name: str,
         output_format: str = "html",
     ) -> str:
-        """
-        Generate a historical analysis report.
+        """Generate a historical analysis report.
 
         Args:
             snapshots: List of historical snapshots
@@ -303,8 +297,7 @@ class ReportGenerator:
     def generate_comparison_report(
         self, protocol_data: Dict[str, Dict[str, Any]], output_format: str = "html"
     ) -> str:
-        """
-        Generate a comparison report for multiple protocols.
+        """Generate a comparison report for multiple protocols.
 
         Args:
             protocol_data: Dictionary mapping protocol names to their data
@@ -804,8 +797,7 @@ class ReportGenerator:
 def generate_historical_analysis_report(
     protocol, time_series_data, snapshots, output_path
 ):
-    """
-    Generate a historical analysis report for a protocol.
+    """Generate a historical analysis report for a protocol.
 
     This is a standalone function that creates a report with historical data analysis.
 
@@ -830,8 +822,7 @@ def generate_historical_analysis_report(
 def generate_comprehensive_report(
     protocol, snapshots, time_series_data, visualization_paths, output_path
 ):
-    """
-    Generate a comprehensive report with all analysis components.
+    """Generate a comprehensive report with all analysis components.
 
     This is a standalone function that creates a comprehensive report with
     all available analysis components including current state, historical trends,
