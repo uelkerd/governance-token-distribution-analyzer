@@ -2,6 +2,6 @@
 CLI package for governance token analyzer.
 """
 
-from .main import cli
+from .. import cli
 
-__all__ = ["cli"]
+__all__ = ["cli"] 
