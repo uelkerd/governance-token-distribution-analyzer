@@ -10,6 +10,7 @@ from ..core.api_client import APIClient
 # Initialize API client
 api_client = APIClient()
 
+
 def get_token_holders(
     limit: int = 100, use_real_data: bool = False
 ) -> List[Dict[str, Any]]:
@@ -23,7 +24,7 @@ def get_token_holders(
     Returns:
         List of token holder dictionaries
     """
-    return api_client.get_token_holders('aave', limit, use_real_data)
+    return api_client.get_token_holders("aave", limit, use_real_data)
 
 
 def get_governance_proposals(
@@ -39,7 +40,7 @@ def get_governance_proposals(
     Returns:
         List of proposal dictionaries
     """
-    return api_client.get_governance_proposals('aave', limit, use_real_data)
+    return api_client.get_governance_proposals("aave", limit, use_real_data)
 
 
 def get_governance_votes(
@@ -55,7 +56,7 @@ def get_governance_votes(
     Returns:
         List of vote dictionaries
     """
-    return api_client.get_governance_votes('aave', proposal_id, use_real_data)
+    return api_client.get_governance_votes("aave", proposal_id, use_real_data)
 
 
 def get_sample_data() -> Dict[str, Any]:
@@ -143,14 +144,15 @@ import warnings
 import random
 from datetime import datetime, timedelta
 
+
 def _generate_sample_holder_data(count: int) -> List[Dict[str, Any]]:
     """Generate sample token holder data for testing."""
     warnings.warn(
         "_generate_sample_holder_data is deprecated, use api_client.get_token_holders instead",
-        DeprecationWarning, 
-        stacklevel=2
+        DeprecationWarning,
+        stacklevel=2,
     )
-    return api_client._generate_sample_holder_data('aave', count)
+    return api_client._generate_sample_holder_data("aave", count)
 
 
 def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
