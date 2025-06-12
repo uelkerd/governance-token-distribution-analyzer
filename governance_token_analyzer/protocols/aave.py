@@ -66,8 +66,7 @@ def get_sample_data() -> Dict[str, Any]:
     Returns:
         Dictionary containing sample data for token holders and governance
     """
-    token_holders = _generate_sample_holder_data(100)
-    proposals = _generate_sample_proposal_data(5)
+    return api_client.get_protocol_data("aave")
 
     # Generate votes for each proposal
     votes = []
@@ -75,21 +74,57 @@ def get_sample_data() -> Dict[str, Any]:
         proposal_votes = _generate_sample_vote_data(proposal["id"])
         votes.extend(proposal_votes)
 
+
+def get_protocol_info() -> Dict[str, Any]:
+    """
+    Get basic information about the Aave protocol.
+
+    Returns:
+        Dictionary containing basic protocol information
+    """
+    data = get_sample_data()
     return {
-        "token_holders": token_holders,
-        "proposals": proposals,
-        "votes": votes,
-        "governance_data": {
-            "votes": votes,
-            "total_holders": 15000,  # Aave has fewer holders than Uniswap but more than Compound
-        },
+        "protocol": "aave",
+        "token_symbol": data["token_symbol"],
+        "token_name": data["token_name"],
+        "total_supply": data["total_supply"],
+        "participation_rate": data["participation_rate"],
     }
 
 
-def _generate_sample_holder_data(count: int) -> List[Dict[str, Any]]:
-    """Generate sample token holder data for testing."""
-    holders = []
-    total_supply = 16000000  # 16M AAVE tokens
+def calculate_voting_power_distribution() -> Dict[str, float]:
+    """
+    Calculate the distribution of voting power across holders.
+
+    Returns:
+        Dictionary containing voting power distribution metrics
+    """
+    holders = get_token_holders()
+
+    # Calculate voting power distribution
+    total_supply = sum(holder["balance"] for holder in holders)
+
+    # Calculate percentage held by top holders
+    top_10_percentage = (
+        sum(holder["balance"] for holder in holders[:10]) / total_supply * 100
+    )
+    top_20_percentage = (
+        sum(holder["balance"] for holder in holders[:20]) / total_supply * 100
+    )
+    top_50_percentage = (
+        sum(holder["balance"] for holder in holders[:50]) / total_supply * 100
+    )
+
+    # Calculate delegated voting power
+    total_delegated = sum(holder.get("delegated_power", 0) for holder in holders)
+    delegation_percentage = (total_delegated / total_supply) * 100
+
+    return {
+        "top_10_percentage": top_10_percentage,
+        "top_20_percentage": top_20_percentage,
+        "top_50_percentage": top_50_percentage,
+        "delegation_percentage": delegation_percentage,
+    }
 
     # Create a list of decreasing balances (Pareto-like distribution)
     balances = []
@@ -157,7 +192,12 @@ def _generate_sample_holder_data(count: int) -> List[Dict[str, Any]]:
 
 def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
     """Generate sample governance proposal data for testing."""
-    proposals = []
+    warnings.warn(
+        "_generate_sample_proposal_data is deprecated, use api_client.get_governance_proposals instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return api_client._generate_sample_proposal_data("aave", count)
 
     for i in range(count):
         proposal_id = i + 1
@@ -196,34 +236,9 @@ def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
 
 def _generate_sample_vote_data(proposal_id: int) -> List[Dict[str, Any]]:
     """Generate sample vote data for a specific proposal."""
-    votes = []
-    vote_count = random.randint(70, 250)
-
-    for i in range(vote_count):
-        # Generate a random vote weight
-        weight = random.uniform(500, 200000)
-
-        # Generate vote type with bias towards 'for' votes
-        vote_type = random.choices(
-            ["for", "against", "abstain"], weights=[0.75, 0.2, 0.05]
-        )[0]
-
-        # Aave has delegation and staking, so include that information
-        delegated = random.choice([True, False])
-        staked = random.choice([True, False])
-
-        votes.append(
-            {
-                "proposal_id": proposal_id,
-                "voter_address": f"0x{random.randint(0, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF):040x}",
-                "vote": vote_type,
-                "weight": weight,
-                "delegated": delegated,
-                "staked": staked,
-                "timestamp": (
-                    datetime.now() - timedelta(days=random.randint(1, 30))
-                ).isoformat(),
-            }
-        )
-
-    return votes
+    warnings.warn(
+        "_generate_sample_vote_data is deprecated, use api_client.get_governance_votes instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return api_client._generate_sample_vote_data("aave", proposal_id)

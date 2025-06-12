@@ -173,8 +173,7 @@ class APIClient:
 
         except Exception as e:
             logger.error(f"Error fetching governance proposals for {protocol}: {e}")
-            # Fall back to sample data when real API calls fail
-            return self._generate_sample_proposal_data(protocol, limit)
+            return []
 
     def get_governance_votes(
         self, protocol: str, proposal_id: int, use_real_data: bool = False
@@ -205,8 +204,7 @@ class APIClient:
             logger.error(
                 f"Error fetching votes for proposal {proposal_id} in {protocol}: {e}"
             )
-            # Fall back to sample data when real API calls fail
-            return self._generate_sample_vote_data(protocol, proposal_id)
+            return []
 
     def get_protocol_data(
         self, protocol: str, use_real_data: bool = False
