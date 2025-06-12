@@ -74,6 +74,7 @@ def get_sample_data() -> Dict[str, Any]:
         proposal_votes = _generate_sample_vote_data(proposal["id"])
         votes.extend(proposal_votes)
 
+
 def get_protocol_info() -> Dict[str, Any]:
     """
     Get basic information about the Compound protocol.
