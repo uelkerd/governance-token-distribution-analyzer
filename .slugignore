@@ -1,0 +1,15 @@
+# Files and directories to exclude from Heroku slug
+.git
+.github
+.pytest_cache
+docs
+tests
+.venv
+.cursor
+plots
+.qodo
+.DS_Store
+codecov.yml
+.deepsource.toml
+Makefile
+PROGRESS.md 

@@ -1,0 +1,28 @@
+{
+  "name": "Governance Token Distribution Analyzer",
+  "description": "A dashboard for analyzing governance token distribution, participation metrics, and voting patterns.",
+  "keywords": [
+    "python",
+    "streamlit",
+    "governance",
+    "blockchain",
+    "data-analysis"
+  ],
+  "repository": "https://github.com/uelkerd/governance-token-distribution-analyzer",
+  "success_url": "/",
+  "env": {
+    "ETHERSCAN_API_KEY": {
+      "description": "Your Etherscan API key",
+      "required": true
+    },
+    "INFURA_PROJECT_ID": {
+      "description": "Your Infura project ID",
+      "required": true
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+} 
