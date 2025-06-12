@@ -138,8 +138,8 @@ def main():
     for i, block in enumerate(voting_blocks):
         print(f"    Block {i + 1}: {len(block)} addresses")
 
-    # Calculate voting power by block
-    block_power = analyzer.calculate_voting_power(voting_blocks, token_balances)
+    # Calculate voting power by block (method uses self.voting_blocks internally)
+    block_power = analyzer.calculate_voting_power(token_balances)
     print("\n3. Voting block power analysis:")
     for block_id, data in block_power.items():
         print(

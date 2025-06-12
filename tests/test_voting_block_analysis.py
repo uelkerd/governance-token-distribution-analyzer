@@ -110,7 +110,9 @@ def test_load_voting_data(voting_block_analyzer, sample_proposals):
         for vote in proposal["votes"]:
             all_voters.add(vote["voter"])
 
-    assert all(voter in voting_block_analyzer.voting_history for voter in all_voters)
+    # Extract voters from voting history
+    history_voters = set(record["address"] for record in voting_block_analyzer.voting_history)
+    assert all(voter in history_voters for voter in all_voters)
 
 
 def test_calculate_voting_similarity(voting_block_analyzer):
@@ -155,8 +157,8 @@ def test_calculate_voting_power(voting_block_analyzer, token_balances):
     voting_block_analyzer.calculate_voting_similarity(min_overlap=2)
     blocks = voting_block_analyzer.identify_voting_blocks(similarity_threshold=0.5)
 
-    # Calculate voting power
-    block_power = voting_block_analyzer.calculate_voting_power(blocks, token_balances)
+    # Calculate voting power (method uses self.voting_blocks internally)
+    block_power = voting_block_analyzer.calculate_voting_power(token_balances)
 
     # Check that block power data is returned for each block
     assert len(block_power) == len(blocks)
@@ -181,8 +183,8 @@ def test_get_block_voting_patterns(voting_block_analyzer):
     if not blocks:
         pytest.skip("No voting blocks identified for testing patterns")
 
-    # Get voting patterns for the first block
-    patterns = voting_block_analyzer.get_block_voting_patterns(blocks[0])
+    # Get voting patterns for the first block (using block index 0)
+    patterns = voting_block_analyzer.get_block_voting_patterns(0)
 
     # Check that the patterns contain the required fields
     assert "proposals" in patterns
@@ -190,15 +192,14 @@ def test_get_block_voting_patterns(voting_block_analyzer):
     assert "avg_consensus" in patterns
     assert "block_size" in patterns
 
-    # Check that the block size matches
+    # Check that the block size matches the first block size
     assert patterns["block_size"] == len(blocks[0])
 
-    # Check that we have statistics for each proposal
+    # Check that we have statistics for each proposal (if any)
     for proposal_id, stats in patterns["proposals"].items():
-        assert "votes" in stats
-        assert "block_size" in stats
-        assert "participation_pct" in stats
-        assert "consensus_pct" in stats
+        assert "votes_for" in stats
+        assert "votes_against" in stats
+        assert "total_votes" in stats
 
 
 # Tests for analyze_proposal_influence

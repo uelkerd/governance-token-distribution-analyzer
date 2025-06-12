@@ -1,79 +1,83 @@
 {
   "PROP-1": {
     "outcome": "passed",
-    "threshold": null,
-    "threshold_found": false,
-    "top_10_influence": {
-      "total_balance": 2928.968253968254,
-      "percentage_of_supply": 56.46337179062695,
-      "votes": {
-        "for": 2234.5238095238096,
-        "against": 111.11111111111111
-      },
-      "aligned_vote_percentage": 54.020331458825034
-    },
-    "votes_for": 3300.1945062281548,
-    "votes_against": 836.2551400073403,
-    "participation_percentage": 79.74067112273096
-  },
-  "PROP-2": {
-    "outcome": "rejected",
     "threshold": {
-      "addresses_needed": 10,
-      "tokens_needed": 1127.1843352725707,
-      "percentage_needed": 21.729367709205523
+      "addresses_needed": 12,
+      "tokens_needed": 3017.796092796093,
+      "percentage_needed": 58.17575610284986
     },
     "threshold_found": true,
     "top_10_influence": {
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 500.0,
-        "against": 253.96825396825398
+        "for": 1286.111111111111,
+        "against": 1500.0
       },
-      "aligned_vote_percentage": 16.259983536345082
+      "aligned_vote_percentage": 28.739104501261032
     },
-    "votes_for": 744.1921449135028,
-    "votes_against": 817.7298176799535,
-    "participation_percentage": 30.11004996806494
+    "votes_for": 2483.6457054316847,
+    "votes_against": 1991.4802020393647,
+    "participation_percentage": 86.26952428762768
   },
-  "PROP-3": {
-    "outcome": "passed",
+  "PROP-2": {
+    "outcome": "rejected",
     "threshold": null,
     "threshold_found": false,
     "top_10_influence": {
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 1253.968253968254,
-        "against": 100.0
+        "for": 544.4444444444445,
+        "against": 625.0
       },
-      "aligned_vote_percentage": 50.23868971632092
+      "aligned_vote_percentage": 34.63550948411265
     },
-    "votes_for": 1904.3930012848143,
-    "votes_against": 591.6280156822753,
-    "participation_percentage": 48.117203895020126
+    "votes_for": 726.401412018878,
+    "votes_against": 1078.1050303843676,
+    "participation_percentage": 34.78648770533938
+  },
+  "PROP-3": {
+    "outcome": "passed",
+    "threshold": {
+      "addresses_needed": 5,
+      "tokens_needed": 1020.6349206349206,
+      "percentage_needed": 19.675354592262906
+    },
+    "threshold_found": true,
+    "top_10_influence": {
+      "total_balance": 2928.968253968254,
+      "percentage_of_supply": 56.46337179062695,
+      "votes": {
+        "for": 520.6349206349206,
+        "against": 500.0
+      },
+      "aligned_vote_percentage": 26.8448766587536
+    },
+    "votes_for": 1069.8386556304874,
+    "votes_against": 869.5813955514261,
+    "participation_percentage": 37.38729337872436
   },
   "PROP-4": {
     "outcome": "rejected",
     "threshold": {
-      "addresses_needed": 17,
-      "tokens_needed": 2557.9095597048886,
-      "percentage_needed": 49.3102642135982
+      "addresses_needed": 3,
+      "tokens_needed": 1083.3333333333333,
+      "percentage_needed": 20.884027230512338
     },
     "threshold_found": true,
     "top_10_influence": {
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 1142.857142857143,
-        "against": 852.7777777777778
+        "for": 683.3333333333333,
+        "against": 1134.5238095238096
       },
-      "aligned_vote_percentage": 24.034557147249004
+      "aligned_vote_percentage": 33.1362946922891
     },
-    "votes_for": 1626.4893917571935,
-    "votes_against": 1921.6424608631362,
-    "participation_percentage": 68.39933744083491
+    "votes_for": 1067.9231704879116,
+    "votes_against": 2355.8869448531264,
+    "participation_percentage": 66.00271724389461
   },
   "PROP-5": {
     "outcome": "passed",
@@ -83,14 +87,14 @@
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 333.3333333333333,
-        "against": 1166.6666666666667
+        "for": 916.6666666666666,
+        "against": 125.0
       },
-      "aligned_vote_percentage": 13.019017549451053
+      "aligned_vote_percentage": 44.290568267829045
     },
-    "votes_for": 1091.2010692332283,
-    "votes_against": 1469.1559781953486,
-    "participation_percentage": 49.35744581384546
+    "votes_for": 1529.7942032915953,
+    "votes_against": 539.8714219573313,
+    "participation_percentage": 39.898110716080545
   },
   "PROP-6": {
     "outcome": "rejected",
@@ -100,14 +104,14 @@
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 1166.6666666666667,
-        "against": 569.4444444444445
+        "for": 0,
+        "against": 1452.7777777777778
       },
-      "aligned_vote_percentage": 20.99278801845641
+      "aligned_vote_percentage": 61.21308207305706
     },
-    "votes_for": 1429.6030855988865,
-    "votes_against": 1282.9686983099548,
-    "participation_percentage": 52.29177507680461
+    "votes_for": 315.30125135739786,
+    "votes_against": 2058.0113291852804,
+    "participation_percentage": 45.75168420791151
   },
   "PROP-7": {
     "outcome": "passed",
@@ -117,35 +121,31 @@
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 1187.3015873015872,
-        "against": 125.0
+        "for": 1800.0,
+        "against": 500.0
       },
-      "aligned_vote_percentage": 44.87758249200884
+      "aligned_vote_percentage": 53.08000296684647
     },
-    "votes_for": 2107.0538242633893,
-    "votes_against": 538.591331673887,
-    "participation_percentage": 51.001592749723514
+    "votes_for": 2637.2348764383833,
+    "votes_against": 753.8726958883769,
+    "participation_percentage": 65.37229189114029
   },
   "PROP-8": {
     "outcome": "rejected",
-    "threshold": {
-      "addresses_needed": 3,
-      "tokens_needed": 1033.3333333333333,
-      "percentage_needed": 19.92014905064254
-    },
-    "threshold_found": true,
+    "threshold": null,
+    "threshold_found": false,
     "top_10_influence": {
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 867.8571428571429,
-        "against": 700.0
+        "for": 375.0,
+        "against": 953.968253968254
       },
-      "aligned_vote_percentage": 26.47188951919665
+      "aligned_vote_percentage": 37.04374879580018
     },
-    "votes_for": 1121.210355402014,
-    "votes_against": 1523.1040955644728,
-    "participation_percentage": 50.97594000001976
+    "votes_for": 715.1006502992387,
+    "votes_against": 1860.1469555165363,
+    "participation_percentage": 49.644499500155405
   },
   "PROP-9": {
     "outcome": "passed",
@@ -155,14 +155,14 @@
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 1325.0,
+        "for": 1500.0,
         "against": 0
       },
-      "aligned_vote_percentage": 62.68723900483736
+      "aligned_vote_percentage": 66.87131990202128
     },
-    "votes_for": 1866.359619559526,
-    "votes_against": 247.30820348457752,
-    "participation_percentage": 40.746365882502275
+    "votes_for": 2054.575800773966,
+    "votes_against": 188.5382908841235,
+    "participation_percentage": 43.24177455815399
   },
   "PROP-10": {
     "outcome": "rejected",
@@ -172,13 +172,13 @@
       "total_balance": 2928.968253968254,
       "percentage_of_supply": 56.46337179062695,
       "votes": {
-        "for": 0,
-        "against": 1041.6666666666667
+        "for": 976.1904761904761,
+        "against": 1436.111111111111
       },
-      "aligned_vote_percentage": 42.42107964393437
+      "aligned_vote_percentage": 36.848069147501555
     },
-    "votes_for": 336.2407759424476,
-    "votes_against": 2119.299430506802,
-    "participation_percentage": 47.33683249578833
+    "votes_for": 1324.0419481364468,
+    "votes_against": 2573.3430284342594,
+    "participation_percentage": 75.13208674937754
   }
 }

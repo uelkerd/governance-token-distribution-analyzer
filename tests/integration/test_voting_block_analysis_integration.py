@@ -164,8 +164,8 @@ class TestVotingBlockAnalysisIntegration:
         with open(temp_data_dir / "voting_blocks.json", "w") as f:
             json.dump([list(block) for block in voting_blocks], f, indent=2)
 
-        # Calculate voting power
-        block_power = analyzer.calculate_voting_power(voting_blocks, token_balances)
+        # Calculate voting power (method uses self.voting_blocks internally)
+        block_power = analyzer.calculate_voting_power(token_balances)
 
         # Save block power data
         with open(temp_data_dir / "block_power.json", "w") as f:
@@ -282,7 +282,7 @@ class TestVotingBlockAnalysisIntegration:
         analyzer.load_voting_data(sample_proposals)
         analyzer.calculate_voting_similarity()
         blocks = analyzer.identify_voting_blocks()
-        power_with_nan = analyzer.calculate_voting_power(blocks, modified_balances)
+        power_with_nan = analyzer.calculate_voting_power(modified_balances)
         assert isinstance(power_with_nan, dict), "Should handle NaN values gracefully"
 
         # Test with empty token balances
@@ -290,7 +290,7 @@ class TestVotingBlockAnalysisIntegration:
         analyzer.load_voting_data(sample_proposals)
         analyzer.calculate_voting_similarity()
         blocks = analyzer.identify_voting_blocks()
-        empty_power = analyzer.calculate_voting_power(blocks, {})
+        empty_power = analyzer.calculate_voting_power({})
         assert isinstance(empty_power, dict), (
             "Should handle empty token balances gracefully"
         )
@@ -314,7 +314,7 @@ class TestVotingBlockAnalysisIntegration:
             analyzer.load_voting_data(modified_proposals)
             analyzer.calculate_voting_similarity()
             blocks = analyzer.identify_voting_blocks()
-            block_power = analyzer.calculate_voting_power(blocks, token_balances)
+            block_power = analyzer.calculate_voting_power(token_balances)
 
             # Save snapshot
             snapshot = {
