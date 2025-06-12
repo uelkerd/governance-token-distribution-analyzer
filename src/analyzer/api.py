@@ -194,14 +194,15 @@ class EtherscanAPI:
                 idx = i - whale_count - institution_count
                 pct = 0.1 * (0.9**idx)  # Exponential decay
                 quantity = int(total_supply * pct / 100)
-            
-            holders.append({
-                "TokenHolderAddress": address,
-                "TokenHolderQuantity": str(quantity),
-                "balance": str(quantity),  # Adding this field for compatibility
-                "TokenHolderPercentage": str(pct)
-            })
-            
+
+            holders.append(
+                {
+                    "TokenHolderAddress": address,
+                    "TokenHolderQuantity": str(quantity),
+                    "TokenHolderPercentage": str(pct),
+                }
+            )
+
             if len(holders) >= offset:
                 break
 
