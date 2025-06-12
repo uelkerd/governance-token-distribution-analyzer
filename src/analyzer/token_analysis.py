@@ -21,7 +21,11 @@ logger = logging.getLogger(__name__)
 class TokenDistributionAnalyzer:
     """Analyzes token distribution data for governance tokens."""
 
-    def __init__(self, etherscan_api: Optional[EtherscanAPI] = None):
+    def __init__(
+        self,
+        etherscan_api: Optional[EtherscanAPI] = None,
+        config: Optional[Config] = None,
+    ):
         """
         Initialize the token distribution analyzer.
 
@@ -29,7 +33,8 @@ class TokenDistributionAnalyzer:
             etherscan_api: Optional EtherscanAPI instance. If None, a new instance will be created.
             config: Optional Config instance. If None, a new instance will be created.
         """
-        self.etherscan_api = etherscan_api or EtherscanAPI()
+        self.config = config or Config()
+        self.etherscan_api = etherscan_api or EtherscanAPI(self.config.get_api_key())
 
     def get_token_holders(
         self, protocol_key: str, limit: int = 100
@@ -45,7 +50,9 @@ class TokenDistributionAnalyzer:
             List of token holders with their addresses and balances.
         """
         # Use the Config class first, fall back to the global variable
-        protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(protocol_key)
+        protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(
+            protocol_key
+        )
         if not protocol:
             logger.error(f"Protocol '{protocol_key}' not found in configuration")
             return []
@@ -88,6 +95,71 @@ class TokenDistributionAnalyzer:
                 break
 
         return holders[:limit]
+
+    def calculate_gini_coefficient(self, balances: List[float]) -> float:
+        """
+        Calculate the Gini coefficient for token balances.
+
+        The Gini coefficient is a measure of inequality where:
+        - 0 represents perfect equality (everyone has the same amount)
+        - 1 represents perfect inequality (one person has everything)
+
+        Args:
+            balances: List of token balances.
+
+        Returns:
+            Gini coefficient as a float between 0 and 1.
+        """
+        if not balances or sum(balances) == 0:
+            return 0
+
+        # Sort balances in ascending order
+        balances_sorted = sorted(balances)
+        n = len(balances_sorted)
+
+        # Calculate cumulative sum
+        cum_balances = np.cumsum(balances_sorted)
+
+        # Calculate Gini coefficient using the formula
+        # G = (2 * sum(i * x_i) / (n * sum(x_i))) - (n + 1) / n
+        indices = np.arange(1, n + 1)
+        return (
+            2 * np.sum(indices * balances_sorted) / (n * np.sum(balances_sorted))
+            - (n + 1) / n
+        )
+
+    def calculate_herfindahl_index(
+        self, balances: List[float], total_supply: Optional[float] = None
+    ) -> float:
+        """
+        Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
+
+        HHI is a measure of market concentration, calculated as the sum of
+        squared market shares. Higher values indicate more concentration.
+
+        Args:
+            balances: List of token balances.
+            total_supply: Total token supply. If None, sum of balances is used.
+
+        Returns:
+            HHI as a float between 0 and 10000.
+        """
+        if not balances:
+            return 0
+
+        if total_supply is None or total_supply <= 0:
+            total_supply = sum(balances)
+
+        if total_supply <= 0:
+            return 0
+
+        # Calculate market shares as percentages (0-100)
+        market_shares = [(balance / total_supply) * 100 for balance in balances]
+
+        # Calculate HHI as sum of squared market shares
+        hhi = sum(share**2 for share in market_shares)
+
+        return hhi
 
     def calculate_concentration_metrics(
         self, holders: List[Dict[str, Any]], total_supply: str
@@ -142,10 +214,10 @@ class TokenDistributionAnalyzer:
                     top_holders[threshold] = sum(percentages)
 
             # Calculate Gini coefficient
-            gini = self._calculate_gini_coefficient(balances)
+            gini = self.calculate_gini_coefficient(balances)
 
             # Calculate Herfindahl-Hirschman Index (HHI)
-            hhi = self._calculate_herfindahl_index(balances, total_supply_float)
+            hhi = self.calculate_herfindahl_index(balances, total_supply_float)
 
             return {
                 "top_holders_percentage": top_holders,
@@ -161,65 +233,6 @@ class TokenDistributionAnalyzer:
                 "herfindahl_index": None,
             }
 
-    def _calculate_gini_coefficient(self, balances: List[float]) -> float:
-        """
-        Calculate the Gini coefficient for token balances.
-
-        The Gini coefficient is a measure of inequality where:
-        - 0 represents perfect equality (everyone has the same amount)
-        - 1 represents perfect inequality (one person has everything)
-
-        Args:
-            balances: List of token balances.
-
-        Returns:
-            Dictionary of concentration metrics and analysis.
-        """
-        if not balances or sum(balances) == 0:
-            return 0
-
-        # Sort balances in ascending order
-        balances_sorted = sorted(balances)
-        n = len(balances_sorted)
-
-        # Calculate cumulative sum
-        cum_balances = np.cumsum(balances_sorted)
-
-        # Calculate Gini coefficient using the formula
-        # G = (2 * sum(i * x_i) / (n * sum(x_i))) - (n + 1) / n
-        indices = np.arange(1, n + 1)
-        return (
-            2 * np.sum(indices * balances_sorted) / (n * np.sum(balances_sorted))
-            - (n + 1) / n
-        )
-
-    def _calculate_herfindahl_index(
-        self, balances: List[float], total_supply: float
-    ) -> float:
-        """
-        Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
-
-        HHI is a measure of market concentration, calculated as the sum of
-        squared market shares. Higher values indicate more concentration.
-
-        Args:
-            balances: List of token balances.
-            total_supply: Total token supply.
-
-        Returns:
-            Dictionary with x and y coordinates for the Lorenz curve.
-        """
-        if not balances or total_supply == 0:
-            return 0
-
-        # Calculate market shares as percentages (0-100)
-        market_shares = [(balance / total_supply) * 100 for balance in balances]
-
-        # Calculate HHI as sum of squared market shares
-        hhi = sum(share**2 for share in market_shares)
-
-        return hhi
-
 
 def analyze_compound_token() -> Dict[str, Any]:
     """
@@ -233,9 +246,9 @@ def analyze_compound_token() -> Dict[str, Any]:
     try:
         # Create Config instance
         config = Config()
-        
+
         # Create API client
-        etherscan_api = EtherscanAPI()
+        etherscan_api = EtherscanAPI(config.get_api_key())
 
         # Get token info from config
         protocol_key = "compound"
