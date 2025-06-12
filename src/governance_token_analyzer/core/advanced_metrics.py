@@ -13,6 +13,7 @@ import numpy as np
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def calculate_palma_ratio(balances: List[float]) -> float:
     """Calculate the Palma ratio, which is the ratio of the share of total income held by the
     top 10% to that held by the bottom 40%.
@@ -45,9 +46,10 @@ def calculate_palma_ratio(balances: List[float]) -> float:
 
     # Avoid division by zero
     if bottom_40_share == 0:
-        return float('inf')  # Infinite inequality
+        return float("inf")  # Infinite inequality
 
     return top_10_share / bottom_40_share
+
 
 def calculate_hoover_index(balances: List[float]) -> float:
     """Calculate the Hoover index (also known as Robin Hood index), which represents
@@ -73,6 +75,7 @@ def calculate_hoover_index(balances: List[float]) -> float:
 
     # The Hoover index is half of the relative mean deviation
     return sum_deviations / (2 * total)
+
 
 def calculate_theil_index(balances: List[float]) -> float:
     """Calculate the Theil index, which is a measure of economic inequality.
@@ -103,7 +106,10 @@ def calculate_theil_index(balances: List[float]) -> float:
 
     return theil
 
-def calculate_nakamoto_coefficient(balances: List[float], threshold: float = 51.0) -> int:
+
+def calculate_nakamoto_coefficient(
+    balances: List[float], threshold: float = 51.0
+) -> int:
     """Calculate the Nakamoto coefficient, which is the minimum number of entities
     required to achieve a specified threshold of control (usually 51%).
 
@@ -130,6 +136,7 @@ def calculate_nakamoto_coefficient(balances: List[float], threshold: float = 51.
 
     # If the threshold cannot be reached (unlikely in practice)
     return len(sorted_balances)
+
 
 def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
     """Calculate the Lorenz curve coordinates for token distribution.
@@ -165,7 +172,10 @@ def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
 
     return {"x": x_values, "y": y_values}
 
-def calculate_top_percentiles(balances: List[float], percentiles: List[int] = [1, 5, 10, 20, 50]) -> Dict[str, float]:
+
+def calculate_top_percentiles(
+    balances: List[float], percentiles: List[int] = [1, 5, 10, 20, 50]
+) -> Dict[str, float]:
     """Calculate the percentage of tokens held by the top X% of holders for specified percentiles.
 
     Args:
@@ -195,6 +205,7 @@ def calculate_top_percentiles(balances: List[float], percentiles: List[int] = [1
 
     return result
 
+
 def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]:
     """Calculate all concentration metrics available in this module.
 
@@ -208,7 +219,9 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
     positive_balances = [b for b in balances if b > 0]
 
     if not positive_balances:
-        logger.warning("No positive balances provided for concentration metrics calculation")
+        logger.warning(
+            "No positive balances provided for concentration metrics calculation"
+        )
         return {
             "gini_coefficient": 0,
             "herfindahl_index": 0,
@@ -217,7 +230,7 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
             "theil_index": 0,
             "nakamoto_coefficient": 0,
             "top_percentile_concentration": {},
-            "lorenz_curve": {"x": [0, 1], "y": [0, 1]}
+            "lorenz_curve": {"x": [0, 1], "y": [0, 1]},
         }
 
     # Sort balances in descending order for consistent calculations
@@ -231,7 +244,7 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
             "theil_index": calculate_theil_index(sorted_balances),
             "nakamoto_coefficient": calculate_nakamoto_coefficient(sorted_balances),
             "top_percentile_concentration": calculate_top_percentiles(sorted_balances),
-            "lorenz_curve": calculate_lorenz_curve(sorted_balances)
+            "lorenz_curve": calculate_lorenz_curve(sorted_balances),
         }
     except Exception as e:
         logger.error(f"Error calculating concentration metrics: {str(e)}")
@@ -242,5 +255,5 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
             "theil_index": None,
             "nakamoto_coefficient": None,
             "top_percentile_concentration": {},
-            "lorenz_curve": {"x": [0, 1], "y": [0, 1]}
+            "lorenz_curve": {"x": [0, 1], "y": [0, 1]},
         }

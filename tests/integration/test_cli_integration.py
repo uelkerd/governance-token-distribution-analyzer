@@ -39,12 +39,9 @@ def data_manager(temp_data_dir):
 @pytest.fixture
 def sample_data(data_manager):
     """Generate sample historical data for testing."""
-    for protocol in ['compound', 'uniswap', 'aave']:
+    for protocol in ["compound", "uniswap", "aave"]:
         historical_data.simulate_historical_data(
-            protocol,
-            num_snapshots=5,
-            interval_days=7,
-            data_manager=data_manager
+            protocol, num_snapshots=5, interval_days=7, data_manager=data_manager
         )
     return data_manager.data_dir
 
@@ -58,12 +55,17 @@ class TestCliIntegration:
 
         # Create a test command
         cmd = [
-            'historical-analysis',
-            '--protocol', 'compound',
-            '--metric', 'gini_coefficient',
-            '--data-dir', sample_data,
-            '--output-dir', temp_output_dir,
-            '--format', 'png'
+            "historical-analysis",
+            "--protocol",
+            "compound",
+            "--metric",
+            "gini_coefficient",
+            "--data-dir",
+            sample_data,
+            "--output-dir",
+            temp_output_dir,
+            "--format",
+            "png",
         ]
 
         # Run the command
@@ -73,10 +75,7 @@ class TestCliIntegration:
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
         # Check that output files were created
-        expected_output = os.path.join(
-            temp_output_dir,
-            'compound_gini_coefficient.png'
-        )
+        expected_output = os.path.join(temp_output_dir, "compound_gini_coefficient.png")
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
 
@@ -86,13 +85,18 @@ class TestCliIntegration:
 
         # Create a test command
         cmd = [
-            'compare-protocols',
-            '--protocols', 'compound,uniswap,aave',
-            '--metric', 'gini_coefficient',
-            '--historical',
-            '--data-dir', sample_data,
-            '--output-dir', temp_output_dir,
-            '--format', 'png'
+            "compare-protocols",
+            "--protocols",
+            "compound,uniswap,aave",
+            "--metric",
+            "gini_coefficient",
+            "--historical",
+            "--data-dir",
+            sample_data,
+            "--output-dir",
+            temp_output_dir,
+            "--format",
+            "png",
         ]
 
         # Run the command
@@ -103,8 +107,7 @@ class TestCliIntegration:
 
         # Check that output files were created
         expected_output = os.path.join(
-            temp_output_dir,
-            'protocol_comparison_gini_coefficient.png'
+            temp_output_dir, "protocol_comparison_gini_coefficient.png"
         )
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
@@ -115,12 +118,16 @@ class TestCliIntegration:
 
         # Create a test command
         cmd = [
-            'generate-report',
-            '--protocol', 'compound',
-            '--include-historical',
-            '--data-dir', sample_data,
-            '--output-dir', temp_output_dir,
-            '--format', 'html'
+            "generate-report",
+            "--protocol",
+            "compound",
+            "--include-historical",
+            "--data-dir",
+            sample_data,
+            "--output-dir",
+            temp_output_dir,
+            "--format",
+            "html",
         ]
 
         # Run the command
@@ -130,17 +137,14 @@ class TestCliIntegration:
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
         # Check that output files were created
-        expected_output = os.path.join(
-            temp_output_dir,
-            'compound_report.html'
-        )
+        expected_output = os.path.join(temp_output_dir, "compound_report.html")
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
 
         # Verify report contains historical analysis section
         with open(expected_output) as f:
             content = f.read()
-            assert 'Historical Analysis' in content
+            assert "Historical Analysis" in content
 
     def test_export_historical_data_command(self, sample_data, temp_output_dir):
         """Test that the export-historical-data command works correctly."""
@@ -148,12 +152,17 @@ class TestCliIntegration:
 
         # Create a test command
         cmd = [
-            'export-historical-data',
-            '--protocol', 'compound',
-            '--metric', 'gini_coefficient',
-            '--data-dir', sample_data,
-            '--output-dir', temp_output_dir,
-            '--format', 'json'
+            "export-historical-data",
+            "--protocol",
+            "compound",
+            "--metric",
+            "gini_coefficient",
+            "--data-dir",
+            sample_data,
+            "--output-dir",
+            temp_output_dir,
+            "--format",
+            "json",
         ]
 
         # Run the command
@@ -164,8 +173,7 @@ class TestCliIntegration:
 
         # Check that output files were created
         expected_output = os.path.join(
-            temp_output_dir,
-            'compound_gini_coefficient_historical.json'
+            temp_output_dir, "compound_gini_coefficient_historical.json"
         )
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
@@ -173,12 +181,12 @@ class TestCliIntegration:
         # Verify the JSON content
         with open(expected_output) as f:
             data = json.load(f)
-            assert 'protocol' in data
-            assert data['protocol'] == 'compound'
-            assert 'metric' in data
-            assert data['metric'] == 'gini_coefficient'
-            assert 'data_points' in data
-            assert len(data['data_points']) > 0
+            assert "protocol" in data
+            assert data["protocol"] == "compound"
+            assert "metric" in data
+            assert data["metric"] == "gini_coefficient"
+            assert "data_points" in data
+            assert len(data["data_points"]) > 0
 
     def test_simulate_historical_command(self, temp_data_dir, temp_output_dir):
         """Test that the simulate-historical command works correctly."""
@@ -186,12 +194,17 @@ class TestCliIntegration:
 
         # Create a test command
         cmd = [
-            'simulate-historical',
-            '--protocol', 'compound',
-            '--snapshots', '3',
-            '--interval', '30',
-            '--data-dir', temp_data_dir,
-            '--output-dir', temp_output_dir
+            "simulate-historical",
+            "--protocol",
+            "compound",
+            "--snapshots",
+            "3",
+            "--interval",
+            "30",
+            "--data-dir",
+            temp_data_dir,
+            "--output-dir",
+            temp_output_dir,
         ]
 
         # Run the command
@@ -202,5 +215,5 @@ class TestCliIntegration:
 
         # Verify that snapshots were created
         data_manager = historical_data.HistoricalDataManager(data_dir=temp_data_dir)
-        snapshots = data_manager.get_snapshots('compound')
+        snapshots = data_manager.get_snapshots("compound")
         assert len(snapshots) == 3

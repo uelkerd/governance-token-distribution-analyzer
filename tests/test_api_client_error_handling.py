@@ -1,5 +1,4 @@
-"""Tests for error handling in the API Client module.
-"""
+"""Tests for error handling in the API Client module."""
 
 from unittest.mock import patch
 

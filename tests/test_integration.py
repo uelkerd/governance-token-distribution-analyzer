@@ -9,7 +9,8 @@ import sys
 import pytest
 
 # Ensure the package can be imported
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 def test_imports():
     """Test that all components can be imported correctly."""
@@ -26,9 +27,10 @@ def test_imports():
     # Visualization
 
     # Verify we can access classes and functions from the modules
-    assert hasattr(advanced_metrics, 'calculate_all_concentration_metrics')
-    assert hasattr(data_simulator, 'TokenDistributionSimulator')
-    assert hasattr(token_analysis, 'TokenDistributionAnalyzer')
+    assert hasattr(advanced_metrics, "calculate_all_concentration_metrics")
+    assert hasattr(data_simulator, "TokenDistributionSimulator")
+    assert hasattr(token_analysis, "TokenDistributionAnalyzer")
+
 
 def test_simulator_integration():
     """Test that the simulator can generate data and be analyzed with metrics."""
@@ -47,11 +49,12 @@ def test_simulator_integration():
     metrics = calculate_all_concentration_metrics(quantities)
 
     # Verify we got reasonable results
-    assert 'nakamoto_coefficient' in metrics
-    assert metrics['nakamoto_coefficient'] > 0
-    assert 'palma_ratio' in metrics
-    assert 'hoover_index' in metrics
-    assert 'lorenz_curve' in metrics
+    assert "nakamoto_coefficient" in metrics
+    assert metrics["nakamoto_coefficient"] > 0
+    assert "palma_ratio" in metrics
+    assert "hoover_index" in metrics
+    assert "lorenz_curve" in metrics
+
 
 if __name__ == "__main__":
     pytest.main(["-v", __file__])

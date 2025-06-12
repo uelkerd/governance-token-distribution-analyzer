@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+
 class Config:
     """Configuration class for the Governance Token Distribution Analyzer."""
 
@@ -40,10 +41,17 @@ class Config:
 
         # API Endpoints
         self.etherscan_base_url = "https://api.etherscan.io/api"
-        self.infura_base_url = f"https://mainnet.infura.io/v3/{self.infura_project_id}" if self.infura_project_id else ""
+        self.infura_base_url = (
+            f"https://mainnet.infura.io/v3/{self.infura_project_id}"
+            if self.infura_project_id
+            else ""
+        )
 
         # Default settings
-        self.default_output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/sample_outputs")
+        self.default_output_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "data/sample_outputs",
+        )
 
     def get_api_key(self):
         """Get the Etherscan API key."""
@@ -57,6 +65,7 @@ class Config:
         """Get the token contract address for a specific protocol."""
         protocol_info = self.get_protocol_info(protocol_name)
         return protocol_info["token_address"] if protocol_info else None
+
 
 # For backwards compatibility, keep the original variables
 ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")
@@ -83,7 +92,11 @@ PROTOCOLS = {
 
 # API Endpoints
 ETHERSCAN_BASE_URL = "https://api.etherscan.io/api"
-INFURA_BASE_URL = f"https://mainnet.infura.io/v3/{INFURA_PROJECT_ID}" if INFURA_PROJECT_ID else ""
+INFURA_BASE_URL = (
+    f"https://mainnet.infura.io/v3/{INFURA_PROJECT_ID}" if INFURA_PROJECT_ID else ""
+)
 
 # Default settings
-DEFAULT_OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/sample_outputs")
+DEFAULT_OUTPUT_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/sample_outputs"
+)

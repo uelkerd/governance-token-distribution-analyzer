@@ -24,7 +24,7 @@ class TestEtherscanAPI:
         mock_response.json.return_value = {
             "status": "1",
             "message": "OK",
-            "result": "1000000000000000000000000"
+            "result": "1000000000000000000000000",
         }
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
@@ -53,8 +53,8 @@ class TestEtherscanAPI:
             "message": "OK",
             "result": [
                 {"TokenHolderAddress": "0xabc", "TokenHolderQuantity": "1000"},
-                {"TokenHolderAddress": "0xdef", "TokenHolderQuantity": "500"}
-            ]
+                {"TokenHolderAddress": "0xdef", "TokenHolderQuantity": "500"},
+            ],
         }
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
@@ -83,7 +83,7 @@ class TestEtherscanAPI:
         mock_response.json.return_value = {
             "status": "0",
             "message": "Error! Invalid API Key",
-            "result": None
+            "result": None,
         }
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
@@ -101,7 +101,9 @@ class TestTheGraphAPI:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.api = TheGraphAPI(subgraph_url="https://api.thegraph.com/subgraphs/name/test")
+        self.api = TheGraphAPI(
+            subgraph_url="https://api.thegraph.com/subgraphs/name/test"
+        )
 
     @patch("src.analyzer.api.requests.post")
     def test_execute_query(self, mock_post):
@@ -110,9 +112,7 @@ class TestTheGraphAPI:
         mock_response = MagicMock()
         mock_response.json.return_value = {
             "data": {
-                "tokens": [
-                    {"id": "0x1234", "name": "Test Token", "symbol": "TEST"}
-                ]
+                "tokens": [{"id": "0x1234", "name": "Test Token", "symbol": "TEST"}]
             }
         }
         mock_response.raise_for_status.return_value = None

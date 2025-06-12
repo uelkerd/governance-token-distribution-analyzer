@@ -28,6 +28,7 @@ def load_compound_data():
         st.error(f"Error loading Compound data: {str(e)}")
         return None
 
+
 # Page title
 st.title("Compound Token Distribution Analysis")
 
@@ -39,8 +40,8 @@ if data:
     # Top Holders Section
     st.header("Top Token Holders")
 
-    if 'top_holders' in data:
-        top_holders_df = pd.DataFrame(data['top_holders'])
+    if "top_holders" in data:
+        top_holders_df = pd.DataFrame(data["top_holders"])
         st.dataframe(top_holders_df)
     else:
         st.info("Top holders data not available")
@@ -51,46 +52,57 @@ if data:
     col1, col2 = st.columns(2)
 
     with col1:
-        if 'concentration_metrics' in data:
-            metrics = data['concentration_metrics']
-            st.metric("Gini Coefficient", f"{metrics.get('gini_coefficient', 'N/A'):.4f}")
-            st.metric("Herfindahl Index", f"{metrics.get('herfindahl_index', 'N/A'):.4f}")
+        if "concentration_metrics" in data:
+            metrics = data["concentration_metrics"]
+            st.metric(
+                "Gini Coefficient", f"{metrics.get('gini_coefficient', 'N/A'):.4f}"
+            )
+            st.metric(
+                "Herfindahl Index", f"{metrics.get('herfindahl_index', 'N/A'):.4f}"
+            )
 
             # Show CR metrics in expandable section
             with st.expander("Concentration Ratios"):
-                if 'top_holders_percentage' in metrics:
-                    for k, v in metrics['top_holders_percentage'].items():
+                if "top_holders_percentage" in metrics:
+                    for k, v in metrics["top_holders_percentage"].items():
                         st.metric(f"CR{k}", f"{v:.2f}%")
         else:
             st.info("Concentration metrics not available")
 
     with col2:
-        if 'concentration_metrics' in data and 'lorenz_curve' in data['concentration_metrics']:
-            lorenz_data = data['concentration_metrics']['lorenz_curve']
+        if (
+            "concentration_metrics" in data
+            and "lorenz_curve" in data["concentration_metrics"]
+        ):
+            lorenz_data = data["concentration_metrics"]["lorenz_curve"]
 
             fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=[0] + lorenz_data['x'],
-                y=[0] + lorenz_data['y'],
-                mode='lines',
-                name='Lorenz Curve',
-                line=dict(color='blue')
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=[0] + lorenz_data["x"],
+                    y=[0] + lorenz_data["y"],
+                    mode="lines",
+                    name="Lorenz Curve",
+                    line=dict(color="blue"),
+                )
+            )
 
             # Add perfect equality line
-            fig.add_trace(go.Scatter(
-                x=[0, 1],
-                y=[0, 1],
-                mode='lines',
-                name='Perfect Equality',
-                line=dict(color='red', dash='dash')
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=[0, 1],
+                    y=[0, 1],
+                    mode="lines",
+                    name="Perfect Equality",
+                    line=dict(color="red", dash="dash"),
+                )
+            )
 
             fig.update_layout(
-                title='Lorenz Curve - Token Distribution Inequality',
-                xaxis_title='Cumulative % of Holders',
-                yaxis_title='Cumulative % of Tokens',
-                legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)
+                title="Lorenz Curve - Token Distribution Inequality",
+                xaxis_title="Cumulative % of Holders",
+                yaxis_title="Cumulative % of Tokens",
+                legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
             )
             st.plotly_chart(fig, use_container_width=True)
         else:
@@ -99,14 +111,16 @@ if data:
     # Distribution Visualization
     st.header("Distribution Visualization")
 
-    if 'top_holders' in data:
+    if "top_holders" in data:
         top_n = st.slider("Number of top holders to display", 5, 20, 10)
 
-        holders = data['top_holders'][:top_n]
-        others_pct = 100 - sum(h['percentage'] for h in holders)
+        holders = data["top_holders"][:top_n]
+        others_pct = 100 - sum(h["percentage"] for h in holders)
 
-        labels = [f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}" for h in holders]
-        values = [h['percentage'] for h in holders]
+        labels = [
+            f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}" for h in holders
+        ]
+        values = [h["percentage"] for h in holders]
 
         if others_pct > 0:
             labels.append("Others")
@@ -118,7 +132,7 @@ if data:
             title="Compound Token Distribution",
             hole=0.4,
         )
-        fig.update_traces(textposition='inside', textinfo='percent+label')
+        fig.update_traces(textposition="inside", textinfo="percent+label")
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("Holder distribution data not available")
@@ -126,13 +140,15 @@ if data:
     # Advanced Metrics
     st.header("Advanced Concentration Metrics")
 
-    if 'concentration_metrics' in data:
-        metrics = data['concentration_metrics']
+    if "concentration_metrics" in data:
+        metrics = data["concentration_metrics"]
 
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            st.metric("Nakamoto Coefficient", metrics.get('nakamoto_coefficient', 'N/A'))
+            st.metric(
+                "Nakamoto Coefficient", metrics.get("nakamoto_coefficient", "N/A")
+            )
 
         with col2:
             st.metric("Palma Ratio", f"{metrics.get('palma_ratio', 'N/A'):.2f}")
@@ -144,15 +160,18 @@ if data:
         with st.expander("Additional Metrics"):
             st.metric("Hoover Index", f"{metrics.get('hoover_index', 'N/A'):.4f}")
 
-            if 'top_percentile_concentration' in metrics:
+            if "top_percentile_concentration" in metrics:
                 st.subheader("Top Percentile Concentration")
 
-                percentiles = metrics['top_percentile_concentration']
+                percentiles = metrics["top_percentile_concentration"]
                 fig = px.bar(
                     x=list(percentiles.keys()),
                     y=list(percentiles.values()),
-                    labels={'x': 'Top N% of Holders', 'y': 'Percentage of Total Tokens'},
-                    title="Token Concentration by Top Percentiles"
+                    labels={
+                        "x": "Top N% of Holders",
+                        "y": "Percentage of Total Tokens",
+                    },
+                    title="Token Concentration by Top Percentiles",
                 )
                 st.plotly_chart(fig, use_container_width=True)
     else:

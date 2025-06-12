@@ -30,11 +30,14 @@ def generate_sample_voting_data(num_proposals=10, num_voters=50, num_blocks=3):
     voters = []
     for i in range(num_voters):
         block_id = i % num_blocks
-        voters.append({
-            'address': f"0x{i:040x}",
-            'balance': 100 * (num_voters - i) + np.random.normal(0, 10),  # Larger balance for lower index
-            'block': block_id
-        })
+        voters.append(
+            {
+                "address": f"0x{i:040x}",
+                "balance": 100 * (num_voters - i)
+                + np.random.normal(0, 10),  # Larger balance for lower index
+                "block": block_id,
+            }
+        )
 
     # Generate proposals with votes
     for i in range(num_proposals):
@@ -43,10 +46,10 @@ def generate_sample_voting_data(num_proposals=10, num_voters=50, num_blocks=3):
 
         # Decide outcome based on proposal number
         if i % 2 == 0:
-            desired_outcome = 'passed'
+            desired_outcome = "passed"
             base_support = 0.7  # 70% base support
         else:
-            desired_outcome = 'rejected'
+            desired_outcome = "rejected"
             base_support = 0.3  # 30% base support
 
         # Create votes
@@ -56,31 +59,39 @@ def generate_sample_voting_data(num_proposals=10, num_voters=50, num_blocks=3):
                 continue
 
             # Decide vote based on block and some randomness
-            block_id = voter['block']
-            block_support_adjustment = 0.2 * (block_id - num_blocks // 2)  # Different blocks vote differently
+            block_id = voter["block"]
+            block_support_adjustment = 0.2 * (
+                block_id - num_blocks // 2
+            )  # Different blocks vote differently
 
             support_probability = base_support + block_support_adjustment
             support = 1 if np.random.random() < support_probability else 0
 
-            votes.append({
-                'voter': voter['address'],
-                'support': support,
-                'voting_power': voter['balance']
-            })
+            votes.append(
+                {
+                    "voter": voter["address"],
+                    "support": support,
+                    "voting_power": voter["balance"],
+                }
+            )
 
         # Calculate actual outcome based on votes
-        power_for = sum(v['voting_power'] for v in votes if v['support'] == 1)
-        power_against = sum(v['voting_power'] for v in votes if v['support'] == 0)
-        actual_outcome = 'passed' if power_for > power_against else 'rejected'
+        power_for = sum(v["voting_power"] for v in votes if v["support"] == 1)
+        power_against = sum(v["voting_power"] for v in votes if v["support"] == 0)
+        actual_outcome = "passed" if power_for > power_against else "rejected"
 
-        proposals.append({
-            'id': f"PROP-{i+1}",
-            'title': f"Proposal {i+1}",
-            'description': f"This is a sample proposal {i+1}",
-            'votes': votes,
-            'outcome': actual_outcome,
-            'created_at': (datetime.now() - timedelta(days=num_proposals-i)).isoformat()
-        })
+        proposals.append(
+            {
+                "id": f"PROP-{i + 1}",
+                "title": f"Proposal {i + 1}",
+                "description": f"This is a sample proposal {i + 1}",
+                "votes": votes,
+                "outcome": actual_outcome,
+                "created_at": (
+                    datetime.now() - timedelta(days=num_proposals - i)
+                ).isoformat(),
+            }
+        )
 
     return proposals, [v for v in voters]
 
@@ -93,15 +104,15 @@ def main():
     # Generate sample data
     print("\n1. Generating sample voting data...")
     proposals, token_holders = generate_sample_voting_data(
-        num_proposals=10,
-        num_voters=50,
-        num_blocks=3
+        num_proposals=10, num_voters=50, num_blocks=3
     )
 
-    print(f"  Generated {len(proposals)} proposals with {len(token_holders)} token holders")
+    print(
+        f"  Generated {len(proposals)} proposals with {len(token_holders)} token holders"
+    )
 
     # Create token balance map
-    token_balances = {holder['address']: holder['balance'] for holder in token_holders}
+    token_balances = {holder["address"]: holder["balance"] for holder in token_holders}
 
     # Initialize the voting block analyzer
     print("\n2. Analyzing voting blocks...")
@@ -119,14 +130,16 @@ def main():
     voting_blocks = analyzer.identify_voting_blocks(similarity_threshold=0.7)
     print(f"  Identified {len(voting_blocks)} voting blocks:")
     for i, block in enumerate(voting_blocks):
-        print(f"    Block {i+1}: {len(block)} addresses")
+        print(f"    Block {i + 1}: {len(block)} addresses")
 
     # Calculate voting power by block
     block_power = analyzer.calculate_voting_power(voting_blocks, token_balances)
     print("\n3. Voting block power analysis:")
     for block_id, data in block_power.items():
-        print(f"  {block_id}: {data['address_count']} addresses, "
-              f"{data['total_tokens']:.1f} tokens ({data['percentage']:.1f}% of total)")
+        print(
+            f"  {block_id}: {data['address_count']} addresses, "
+            f"{data['total_tokens']:.1f} tokens ({data['percentage']:.1f}% of total)"
+        )
 
     # Analyze block voting patterns
     if voting_blocks:
@@ -156,9 +169,11 @@ def main():
 
     print(f"  Analyzed influence for {len(influence)} proposals")
     for prop_id, data in list(influence.items())[:3]:  # Show first 3 proposals
-        print(f"  {prop_id} ({data['outcome']}): "
-              f"Participation: {data['participation_percentage']:.1f}%, "
-              f"Top 10 influence: {data['top_10_influence']['percentage_of_supply']:.1f}% of supply")
+        print(
+            f"  {prop_id} ({data['outcome']}): "
+            f"Participation: {data['participation_percentage']:.1f}%, "
+            f"Top 10 influence: {data['top_10_influence']['percentage_of_supply']:.1f}% of supply"
+        )
 
     # Detect voting anomalies
     print("\n7. Detecting voting anomalies...")

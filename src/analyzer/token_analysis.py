@@ -16,10 +16,15 @@ from .config import PROTOCOLS, Config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class TokenDistributionAnalyzer:
     """Analyzes token distribution data for governance tokens."""
 
-    def __init__(self, etherscan_api: Optional[EtherscanAPI] = None, config: Optional[Config] = None):
+    def __init__(
+        self,
+        etherscan_api: Optional[EtherscanAPI] = None,
+        config: Optional[Config] = None,
+    ):
         """Initialize the token distribution analyzer.
 
         Args:
@@ -29,7 +34,9 @@ class TokenDistributionAnalyzer:
         self.config = config or Config()
         self.etherscan_api = etherscan_api or EtherscanAPI(self.config.get_api_key())
 
-    def get_token_holders(self, protocol_key: str, limit: int = 100) -> List[Dict[str, Any]]:
+    def get_token_holders(
+        self, protocol_key: str, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """Get the top token holders for a specific protocol.
 
         Args:
@@ -40,13 +47,17 @@ class TokenDistributionAnalyzer:
             List of token holders with their addresses and balances.
         """
         # Use the Config class first, fall back to the global variable
-        protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(protocol_key)
+        protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(
+            protocol_key
+        )
         if not protocol:
             logger.error(f"Protocol '{protocol_key}' not found in configuration")
             return []
 
         token_address = protocol["token_address"]
-        logger.info(f"Fetching top {limit} holders for {protocol['name']} ({protocol['symbol']})")
+        logger.info(
+            f"Fetching top {limit} holders for {protocol['name']} ({protocol['symbol']})"
+        )
 
         # We may need to make multiple API calls to get all holders up to the limit
         page = 1
@@ -59,7 +70,7 @@ class TokenDistributionAnalyzer:
                 response = self.etherscan_api.get_token_holders(
                     token_address=token_address,
                     page=page,
-                    offset=min(page_size, limit - len(holders))
+                    offset=min(page_size, limit - len(holders)),
                 )
 
                 if "result" not in response or not response["result"]:
@@ -108,9 +119,14 @@ class TokenDistributionAnalyzer:
         # Calculate Gini coefficient using the formula
         # G = (2 * sum(i * x_i) / (n * sum(x_i))) - (n + 1) / n
         indices = np.arange(1, n + 1)
-        return (2 * np.sum(indices * balances_sorted) / (n * np.sum(balances_sorted)) - (n + 1) / n)
+        return (
+            2 * np.sum(indices * balances_sorted) / (n * np.sum(balances_sorted))
+            - (n + 1) / n
+        )
 
-    def calculate_herfindahl_index(self, balances: List[float], total_supply: Optional[float] = None) -> float:
+    def calculate_herfindahl_index(
+        self, balances: List[float], total_supply: Optional[float] = None
+    ) -> float:
         """Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
 
         HHI is a measure of market concentration, calculated as the sum of
@@ -136,11 +152,13 @@ class TokenDistributionAnalyzer:
         market_shares = [(balance / total_supply) * 100 for balance in balances]
 
         # Calculate HHI as sum of squared market shares
-        hhi = sum(share ** 2 for share in market_shares)
+        hhi = sum(share**2 for share in market_shares)
 
         return hhi
 
-    def calculate_concentration_metrics(self, holders: List[Dict[str, Any]], total_supply: str) -> Dict[str, Any]:
+    def calculate_concentration_metrics(
+        self, holders: List[Dict[str, Any]], total_supply: str
+    ) -> Dict[str, Any]:
         """Calculate concentration metrics for token holders.
 
         Args:
@@ -155,7 +173,7 @@ class TokenDistributionAnalyzer:
             return {
                 "top_holders_percentage": {},
                 "gini_coefficient": None,
-                "herfindahl_index": None
+                "herfindahl_index": None,
             }
 
         try:
@@ -173,7 +191,9 @@ class TokenDistributionAnalyzer:
 
             # Calculate percentages of total supply
             if total_supply_float > 0:
-                percentages = [balance / total_supply_float * 100 for balance in balances]
+                percentages = [
+                    balance / total_supply_float * 100 for balance in balances
+                ]
             else:
                 logger.warning("Total supply is zero or negative")
                 percentages = [0] * len(balances)
@@ -196,7 +216,7 @@ class TokenDistributionAnalyzer:
             return {
                 "top_holders_percentage": top_holders,
                 "gini_coefficient": gini,
-                "herfindahl_index": hhi
+                "herfindahl_index": hhi,
             }
 
         except Exception as e:
@@ -204,8 +224,9 @@ class TokenDistributionAnalyzer:
             return {
                 "top_holders_percentage": {},
                 "gini_coefficient": None,
-                "herfindahl_index": None
+                "herfindahl_index": None,
             }
+
 
 class ConcentrationAnalyzer:
     """Analyzes token concentration metrics for governance tokens."""
@@ -218,7 +239,9 @@ class ConcentrationAnalyzer:
         """
         self.token_analyzer = token_analyzer or TokenDistributionAnalyzer()
 
-    def analyze_protocol_concentration(self, protocol_key: str, limit: int = 100) -> Dict[str, Any]:
+    def analyze_protocol_concentration(
+        self, protocol_key: str, limit: int = 100
+    ) -> Dict[str, Any]:
         """Analyze the concentration metrics for a specific protocol.
 
         Args:
@@ -229,7 +252,9 @@ class ConcentrationAnalyzer:
             Dictionary of concentration metrics and analysis.
         """
         # Get protocol info
-        protocol = self.token_analyzer.config.get_protocol_info(protocol_key) or PROTOCOLS.get(protocol_key)
+        protocol = self.token_analyzer.config.get_protocol_info(
+            protocol_key
+        ) or PROTOCOLS.get(protocol_key)
         if not protocol:
             logger.error(f"Protocol '{protocol_key}' not found in configuration")
             return {}
@@ -242,17 +267,23 @@ class ConcentrationAnalyzer:
 
         # Get total supply (ideally this should come from a proper API call)
         # For now, we'll use a placeholder or sum of known holder balances
-        total_supply = sum(float(holder.get("TokenHolderQuantity", 0)) for holder in holders)
+        total_supply = sum(
+            float(holder.get("TokenHolderQuantity", 0)) for holder in holders
+        )
         total_supply_str = str(total_supply)
 
         # Calculate concentration metrics
-        metrics = self.token_analyzer.calculate_concentration_metrics(holders, total_supply_str)
+        metrics = self.token_analyzer.calculate_concentration_metrics(
+            holders, total_supply_str
+        )
 
         # Calculate Lorenz curve
         lorenz_curve = self.calculate_lorenz_curve(holders, total_supply_str)
 
         # Calculate Nakamoto coefficient
-        nakamoto_coefficient = self.calculate_nakamoto_coefficient(holders, total_supply_str)
+        nakamoto_coefficient = self.calculate_nakamoto_coefficient(
+            holders, total_supply_str
+        )
 
         return {
             "protocol": protocol_key,
@@ -260,10 +291,12 @@ class ConcentrationAnalyzer:
             "total_holders_analyzed": len(holders),
             "concentration_metrics": metrics,
             "lorenz_curve": lorenz_curve,
-            "nakamoto_coefficient": nakamoto_coefficient
+            "nakamoto_coefficient": nakamoto_coefficient,
         }
 
-    def calculate_lorenz_curve(self, holders: List[Dict[str, Any]], total_supply: str) -> Dict[str, List[float]]:
+    def calculate_lorenz_curve(
+        self, holders: List[Dict[str, Any]], total_supply: str
+    ) -> Dict[str, List[float]]:
         """Calculate the Lorenz curve data points for token distribution.
 
         The Lorenz curve shows the cumulative share of tokens held by
@@ -284,23 +317,30 @@ class ConcentrationAnalyzer:
             total_supply_float = float(total_supply)
 
             # Extract balances and sort in ascending order
-            balances = [float(holder.get("TokenHolderQuantity", 0)) for holder in holders]
+            balances = [
+                float(holder.get("TokenHolderQuantity", 0)) for holder in holders
+            ]
             balances.sort()
 
             # Calculate cumulative sums
             cum_balances = np.cumsum(balances)
 
             # Calculate percentages
-            x = [i / len(balances) for i in range(1, len(balances) + 1)]  # Cumulative % of holders
-            y = [bal / total_supply_float for bal in cum_balances]  # Cumulative % of tokens
+            x = [
+                i / len(balances) for i in range(1, len(balances) + 1)
+            ]  # Cumulative % of holders
+            y = [
+                bal / total_supply_float for bal in cum_balances
+            ]  # Cumulative % of tokens
 
             return {"x": x, "y": y}
         except Exception as e:
             logger.error(f"Error calculating Lorenz curve: {str(e)}")
             return {"x": [], "y": []}
 
-    def calculate_nakamoto_coefficient(self, holders: List[Dict[str, Any]], total_supply: str,
-                                     threshold: float = 51.0) -> int:
+    def calculate_nakamoto_coefficient(
+        self, holders: List[Dict[str, Any]], total_supply: str, threshold: float = 51.0
+    ) -> int:
         """Calculate the Nakamoto coefficient.
 
         The Nakamoto coefficient is the minimum number of entities required to
@@ -322,14 +362,19 @@ class ConcentrationAnalyzer:
             total_supply_float = float(total_supply)
 
             # Extract balances and sort in descending order
-            balances = [(float(holder.get("TokenHolderQuantity", 0)), holder.get("TokenHolderAddress", ""))
-                         for holder in holders]
+            balances = [
+                (
+                    float(holder.get("TokenHolderQuantity", 0)),
+                    holder.get("TokenHolderAddress", ""),
+                )
+                for holder in holders
+            ]
             balances.sort(reverse=True)
 
             # Calculate cumulative percentage
             cumulative_pct = 0
             for i, (balance, _) in enumerate(balances, 1):
-                cumulative_pct += (balance / total_supply_float * 100)
+                cumulative_pct += balance / total_supply_float * 100
                 if cumulative_pct >= threshold:
                     return i
 
@@ -338,6 +383,7 @@ class ConcentrationAnalyzer:
         except Exception as e:
             logger.error(f"Error calculating Nakamoto coefficient: {str(e)}")
             return 0
+
 
 def analyze_compound_token() -> Dict[str, Any]:
     """Analyze the Compound (COMP) token distribution as a proof of concept.
@@ -366,7 +412,9 @@ def analyze_compound_token() -> Dict[str, Any]:
         # Get token supply
         supply_response = etherscan_api.get_token_supply(token_address)
         if "result" not in supply_response:
-            logger.error(f"Failed to get token supply: {supply_response.get('error', 'Unknown error')}")
+            logger.error(
+                f"Failed to get token supply: {supply_response.get('error', 'Unknown error')}"
+            )
             return {"error": "Failed to get token supply"}
 
         total_supply = supply_response["result"]
@@ -388,13 +436,17 @@ def analyze_compound_token() -> Dict[str, Any]:
         for i, holder in enumerate(top_holders, 1):
             address = holder.get("TokenHolderAddress", "N/A")
             quantity = holder.get("TokenHolderQuantity", "0")
-            percentage = float(quantity) / float(total_supply) * 100 if total_supply else 0
-            formatted_holders.append({
-                "rank": i,
-                "address": address,
-                "tokens": quantity,
-                "percentage": percentage
-            })
+            percentage = (
+                float(quantity) / float(total_supply) * 100 if total_supply else 0
+            )
+            formatted_holders.append(
+                {
+                    "rank": i,
+                    "address": address,
+                    "tokens": quantity,
+                    "percentage": percentage,
+                }
+            )
 
         return {
             "protocol": protocol_key,
@@ -403,7 +455,7 @@ def analyze_compound_token() -> Dict[str, Any]:
             "token_address": token_address,
             "total_supply": total_supply,
             "top_holders": formatted_holders,
-            "concentration_metrics": metrics
+            "concentration_metrics": metrics,
         }
 
     except Exception as e:

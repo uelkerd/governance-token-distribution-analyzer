@@ -15,6 +15,7 @@ import numpy as np
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class TokenDistributionSimulator:
     """Simulates realistic token distribution data for testing and analysis.
 
@@ -34,10 +35,9 @@ class TokenDistributionSimulator:
             np.random.seed(seed)
             random.seed(seed)
 
-    def generate_power_law_distribution(self,
-                                       num_holders: int = 100,
-                                       alpha: float = 1.5,
-                                       total_supply: int = 10_000_000) -> List[Dict[str, Any]]:
+    def generate_power_law_distribution(
+        self, num_holders: int = 100, alpha: float = 1.5, total_supply: int = 10_000_000
+    ) -> List[Dict[str, Any]]:
         """Generate a power-law distribution of token holders.
 
         Power-law distributions are common in token ecosystems where a small number
@@ -69,7 +69,7 @@ class TokenDistributionSimulator:
             {
                 "TokenHolderAddress": addr,
                 "TokenHolderQuantity": str(qty),
-                "TokenHolderPercentage": str(pct)
+                "TokenHolderPercentage": str(pct),
             }
             for addr, qty, pct in zip(addresses, quantities, percentages)
         ]
@@ -79,10 +79,12 @@ class TokenDistributionSimulator:
 
         return holders
 
-    def generate_protocol_dominated_distribution(self,
-                                               num_holders: int = 100,
-                                               protocol_percentage: float = 30.0,
-                                               total_supply: int = 10_000_000) -> List[Dict[str, Any]]:
+    def generate_protocol_dominated_distribution(
+        self,
+        num_holders: int = 100,
+        protocol_percentage: float = 30.0,
+        total_supply: int = 10_000_000,
+    ) -> List[Dict[str, Any]]:
         """Generate a distribution where protocol-owned wallets hold significant tokens.
 
         This mimics scenarios like DAO treasuries, development funds, or staking contracts
@@ -106,7 +108,9 @@ class TokenDistributionSimulator:
         protocol_quantities = [int(w * protocol_tokens) for w in protocol_weights]
 
         # Generate protocol addresses
-        protocol_addresses = [f"0x{random.randint(0, 2**160):040x}" for _ in range(num_protocol_wallets)]
+        protocol_addresses = [
+            f"0x{random.randint(0, 2**160):040x}" for _ in range(num_protocol_wallets)
+        ]
 
         # Generate power-law distribution for community holders
         num_community_holders = num_holders - num_protocol_wallets
@@ -114,10 +118,14 @@ class TokenDistributionSimulator:
 
         # Normalize to community token supply
         total_weight = sum(community_weights)
-        community_quantities = [int(w / total_weight * community_tokens) for w in community_weights]
+        community_quantities = [
+            int(w / total_weight * community_tokens) for w in community_weights
+        ]
 
         # Generate community addresses
-        community_addresses = [f"0x{random.randint(0, 2**160):040x}" for _ in range(num_community_holders)]
+        community_addresses = [
+            f"0x{random.randint(0, 2**160):040x}" for _ in range(num_community_holders)
+        ]
 
         # Combine protocol and community holders
         quantities = protocol_quantities + community_quantities
@@ -131,7 +139,7 @@ class TokenDistributionSimulator:
             {
                 "TokenHolderAddress": addr,
                 "TokenHolderQuantity": str(qty),
-                "TokenHolderPercentage": str(pct)
+                "TokenHolderPercentage": str(pct),
             }
             for addr, qty, pct in zip(addresses, quantities, percentages)
         ]
@@ -141,10 +149,12 @@ class TokenDistributionSimulator:
 
         return holders
 
-    def generate_community_distribution(self,
-                                      num_holders: int = 100,
-                                      gini_target: float = 0.6,
-                                      total_supply: int = 10_000_000) -> List[Dict[str, Any]]:
+    def generate_community_distribution(
+        self,
+        num_holders: int = 100,
+        gini_target: float = 0.6,
+        total_supply: int = 10_000_000,
+    ) -> List[Dict[str, Any]]:
         """Generate a more equal distribution typically seen in community-focused projects.
 
         This creates a distribution with a target Gini coefficient, mimicking
@@ -202,7 +212,7 @@ class TokenDistributionSimulator:
             {
                 "TokenHolderAddress": addr,
                 "TokenHolderQuantity": str(qty),
-                "TokenHolderPercentage": str(pct)
+                "TokenHolderPercentage": str(pct),
             }
             for addr, qty, pct in zip(addresses, quantities, percentages)
         ]
@@ -212,8 +222,9 @@ class TokenDistributionSimulator:
 
         return holders
 
-    def generate_token_holders_response(self,
-                                      holders: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def generate_token_holders_response(
+        self, holders: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Format holders data to match the API response structure.
 
         Args:
@@ -222,20 +233,18 @@ class TokenDistributionSimulator:
         Returns:
             Dictionary matching the format of API responses
         """
-        return {
-            "status": "1",
-            "message": "OK",
-            "result": holders
-        }
+        return {"status": "1", "message": "OK", "result": holders}
 
-    def generate_historical_distribution(self,
-                                       distribution_type: str = "power_law",
-                                       num_periods: int = 12,
-                                       num_holders: int = 100,
-                                       start_date: Optional[datetime] = None,
-                                       period_days: int = 30,
-                                       total_supply: int = 10_000_000,
-                                       concentration_trend: str = "decreasing") -> Dict[str, List[Dict[str, Any]]]:
+    def generate_historical_distribution(
+        self,
+        distribution_type: str = "power_law",
+        num_periods: int = 12,
+        num_holders: int = 100,
+        start_date: Optional[datetime] = None,
+        period_days: int = 30,
+        total_supply: int = 10_000_000,
+        concentration_trend: str = "decreasing",
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """Generate a time series of token distributions.
 
         This simulates how token distribution evolves over time, either becoming
@@ -273,19 +282,23 @@ class TokenDistributionSimulator:
                 date_str = current_date.strftime("%Y-%m-%d")
 
                 holders = self.generate_power_law_distribution(
-                    num_holders=num_holders,
-                    alpha=alphas[i],
-                    total_supply=total_supply
+                    num_holders=num_holders, alpha=alphas[i], total_supply=total_supply
                 )
 
-                historical_data[date_str] = self.generate_token_holders_response(holders)
+                historical_data[date_str] = self.generate_token_holders_response(
+                    holders
+                )
 
         elif distribution_type == "protocol_dominated":
             # Protocol percentage parameter
             if concentration_trend == "increasing":
-                percentages = np.linspace(20.0, 40.0, num_periods)  # Protocol gaining more control
+                percentages = np.linspace(
+                    20.0, 40.0, num_periods
+                )  # Protocol gaining more control
             elif concentration_trend == "decreasing":
-                percentages = np.linspace(40.0, 20.0, num_periods)  # Protocol distributing tokens
+                percentages = np.linspace(
+                    40.0, 20.0, num_periods
+                )  # Protocol distributing tokens
             else:  # stable
                 percentages = [30.0] * num_periods
 
@@ -296,10 +309,12 @@ class TokenDistributionSimulator:
                 holders = self.generate_protocol_dominated_distribution(
                     num_holders=num_holders,
                     protocol_percentage=percentages[i],
-                    total_supply=total_supply
+                    total_supply=total_supply,
                 )
 
-                historical_data[date_str] = self.generate_token_holders_response(holders)
+                historical_data[date_str] = self.generate_token_holders_response(
+                    holders
+                )
 
         elif distribution_type == "community":
             # Gini target parameter
@@ -317,12 +332,15 @@ class TokenDistributionSimulator:
                 holders = self.generate_community_distribution(
                     num_holders=num_holders,
                     gini_target=ginis[i],
-                    total_supply=total_supply
+                    total_supply=total_supply,
                 )
 
-                historical_data[date_str] = self.generate_token_holders_response(holders)
+                historical_data[date_str] = self.generate_token_holders_response(
+                    holders
+                )
 
         return historical_data
+
 
 # Simple usage example
 if __name__ == "__main__":
@@ -335,9 +353,7 @@ if __name__ == "__main__":
 
     # Generate a historical series
     historical = simulator.generate_historical_distribution(
-        distribution_type="power_law",
-        num_periods=6,
-        concentration_trend="decreasing"
+        distribution_type="power_law", num_periods=6, concentration_trend="decreasing"
     )
 
     print(f"Power law distribution: {len(power_law_holders)} holders")

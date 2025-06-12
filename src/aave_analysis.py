@@ -23,9 +23,10 @@ from src.analyzer.token_analysis import TokenDistributionAnalyzer
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()]
+    handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
+
 
 class AaveAnalyzer:
     """Analyzer for Aave (AAVE) governance token distribution."""
@@ -97,7 +98,9 @@ class AaveAnalyzer:
                             continue
                     else:
                         # If no numeric value found, skip this holder
-                        logger.warning(f"Could not extract balance from holder data: {holder}")
+                        logger.warning(
+                            f"Could not extract balance from holder data: {holder}"
+                        )
                         continue
 
                 balances.append(balance)
@@ -114,9 +117,15 @@ class AaveAnalyzer:
         # Calculate percentage held by top holders
         total_supply = sum(balances)
         top_5_pct = sum(balances[:5]) / total_supply * 100 if len(balances) >= 5 else 0
-        top_10_pct = sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
-        top_20_pct = sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
-        top_50_pct = sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
+        top_10_pct = (
+            sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
+        )
+        top_20_pct = (
+            sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
+        )
+        top_50_pct = (
+            sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
+        )
 
         # Calculate staking statistics specific to Aave
         # In a real implementation, this would query the Aave staking contract
@@ -134,13 +143,11 @@ class AaveAnalyzer:
                     "top_5_pct": top_5_pct,
                     "top_10_pct": top_10_pct,
                     "top_20_pct": top_20_pct,
-                    "top_50_pct": top_50_pct
+                    "top_50_pct": top_50_pct,
                 },
-                "staking": {
-                    "staked_percentage": staked_percentage
-                }
+                "staking": {"staked_percentage": staked_percentage},
             },
-            "holders": holders
+            "holders": holders,
         }
 
         return results
@@ -166,6 +173,7 @@ class AaveAnalyzer:
         logger.info(f"Analysis results saved to {filepath}")
         return filepath
 
+
 def main():
     """Main function to run the Aave token analysis."""
     logger.info("Starting Aave token analysis")
@@ -187,15 +195,22 @@ def main():
         print("\nAAVE Token Distribution Analysis:")
         print(f"Gini Coefficient: {results['metrics']['gini_coefficient']:.4f}")
         print(f"Herfindahl Index: {results['metrics']['herfindahl_index']:.4f}")
-        print(f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%")
-        print(f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%")
-        print(f"Staked percentage: {results['metrics']['staking']['staked_percentage']:.2f}%")
+        print(
+            f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%"
+        )
+        print(
+            f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%"
+        )
+        print(
+            f"Staked percentage: {results['metrics']['staking']['staked_percentage']:.2f}%"
+        )
 
         return 0
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

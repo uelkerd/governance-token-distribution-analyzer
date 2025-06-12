@@ -14,6 +14,7 @@ from .config import ETHERSCAN_API_KEY, ETHERSCAN_BASE_URL, Config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class EtherscanAPI:
     """Client for interacting with the Etherscan API."""
 
@@ -34,7 +35,9 @@ class EtherscanAPI:
         self.base_url = ETHERSCAN_BASE_URL
 
         if not self.api_key:
-            logger.warning("No Etherscan API key provided. API calls may be rate limited.")
+            logger.warning(
+                "No Etherscan API key provided. API calls may be rate limited."
+            )
 
     def _make_request(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Make a request to the Etherscan API.
@@ -49,7 +52,7 @@ class EtherscanAPI:
             requests.exceptions.RequestException: If the request fails.
         """
         # Add API key to parameters
-        params['apikey'] = self.api_key
+        params["apikey"] = self.api_key
 
         try:
             # Make the request
@@ -60,10 +63,10 @@ class EtherscanAPI:
             data = response.json()
 
             # Check for API errors
-            if data.get('status') == '0':
-                error_message = data.get('message', 'Unknown API error')
+            if data.get("status") == "0":
+                error_message = data.get("message", "Unknown API error")
                 logger.error(f"API error: {error_message}")
-                return {'error': error_message}
+                return {"error": error_message}
 
             return data
 
@@ -81,14 +84,16 @@ class EtherscanAPI:
             Dict[str, Any]: Token supply information.
         """
         params = {
-            'module': 'stats',
-            'action': 'tokensupply',
-            'contractaddress': token_address,
+            "module": "stats",
+            "action": "tokensupply",
+            "contractaddress": token_address,
         }
 
         return self._make_request(params)
 
-    def get_token_holders(self, token_address: str, page: int = 1, offset: int = 100) -> Dict[str, Any]:
+    def get_token_holders(
+        self, token_address: str, page: int = 1, offset: int = 100
+    ) -> Dict[str, Any]:
         """Get a list of token holders.
 
         Note: This requires a paid Etherscan API key for the tokenholderslist endpoint.
@@ -109,17 +114,19 @@ class EtherscanAPI:
 
         # First, try the token holder list endpoint (requires paid API)
         params = {
-            'module': 'token',
-            'action': 'tokenholderlist',
-            'contractaddress': token_address,
-            'page': page,
-            'offset': offset,
+            "module": "token",
+            "action": "tokenholderlist",
+            "contractaddress": token_address,
+            "page": page,
+            "offset": offset,
         }
 
         try:
             result = self._make_request(params)
-            if 'result' in result and not isinstance(result['result'], str):
-                logger.info(f"Successfully retrieved {len(result['result'])} token holders from API")
+            if "result" in result and not isinstance(result["result"], str):
+                logger.info(
+                    f"Successfully retrieved {len(result['result'])} token holders from API"
+                )
                 return result
         except Exception as e:
             logger.warning(f"Token holder list endpoint failed: {str(e)}")
@@ -130,7 +137,9 @@ class EtherscanAPI:
             logger.info("Attempting to get token holders via transfer events...")
             holders_data = self._get_holders_from_transfers(token_address, offset)
             if holders_data:
-                logger.info(f"Successfully retrieved {len(holders_data['result'])} token holders from transfer events")
+                logger.info(
+                    f"Successfully retrieved {len(holders_data['result'])} token holders from transfer events"
+                )
                 return holders_data
         except Exception as e:
             logger.warning(f"Transfer events approach failed: {str(e)}")
@@ -139,89 +148,98 @@ class EtherscanAPI:
         logger.warning("All API methods failed - using simulated data for testing")
         return self._generate_simulated_holders(token_address, page, offset)
 
-    def _get_holders_from_transfers(self, token_address: str, limit: int) -> Dict[str, Any]:
+    def _get_holders_from_transfers(
+        self, token_address: str, limit: int
+    ) -> Dict[str, Any]:
         """Get token holders by analyzing recent transfer events.
-        
+
         This method works with free Etherscan API tier.
-        
+
         Args:
             token_address: Token contract address
             limit: Maximum number of holders to return
-            
+
         Returns:
             Dict with holder data in Etherscan format
         """
         # Get recent token transfers
         params = {
-            'module': 'account',
-            'action': 'tokentx',
-            'contractaddress': token_address,
-            'page': 1,
-            'offset': 1000,  # Get more transfers to find unique holders
-            'sort': 'desc'
+            "module": "account",
+            "action": "tokentx",
+            "contractaddress": token_address,
+            "page": 1,
+            "offset": 1000,  # Get more transfers to find unique holders
+            "sort": "desc",
         }
-        
+
         transfers_result = self._make_request(params)
-        if 'result' not in transfers_result:
+        if "result" not in transfers_result:
             raise Exception("Failed to get token transfers")
-        
-        transfers = transfers_result['result']
+
+        transfers = transfers_result["result"]
         if isinstance(transfers, str):
             raise Exception(f"API error: {transfers}")
-        
+
         # Extract unique recipient addresses and their latest balances
         holder_addresses = set()
         for transfer in transfers:
-            if transfer.get('to') and transfer['to'] != '0x0000000000000000000000000000000000000000':
-                holder_addresses.add(transfer['to'])
-            if len(holder_addresses) >= limit * 2:  # Get extra to account for zero balances
+            if (
+                transfer.get("to")
+                and transfer["to"] != "0x0000000000000000000000000000000000000000"
+            ):
+                holder_addresses.add(transfer["to"])
+            if (
+                len(holder_addresses) >= limit * 2
+            ):  # Get extra to account for zero balances
                 break
-        
+
         # Get current balances for these addresses
         holders = []
-        for address in list(holder_addresses)[:limit * 2]:  # Check more than needed
+        for address in list(holder_addresses)[: limit * 2]:  # Check more than needed
             try:
                 balance_result = self.get_token_balance(token_address, address)
-                if 'result' in balance_result:
-                    balance = int(balance_result['result'])
+                if "result" in balance_result:
+                    balance = int(balance_result["result"])
                     if balance > 0:  # Only include addresses with positive balance
-                        holders.append({
-                            "TokenHolderAddress": address,
-                            "TokenHolderQuantity": str(balance),
-                            "balance": str(balance)
-                        })
-                        
+                        holders.append(
+                            {
+                                "TokenHolderAddress": address,
+                                "TokenHolderQuantity": str(balance),
+                                "balance": str(balance),
+                            }
+                        )
+
                         if len(holders) >= limit:
                             break
             except Exception as e:
                 logger.debug(f"Failed to get balance for {address}: {e}")
                 continue
-        
+
         # Sort by balance (descending)
-        holders.sort(key=lambda x: int(x['TokenHolderQuantity']), reverse=True)
-        
+        holders.sort(key=lambda x: int(x["TokenHolderQuantity"]), reverse=True)
+
         # Calculate percentages if we have total supply
         try:
             supply_result = self.get_token_supply(token_address)
-            if 'result' in supply_result:
-                total_supply = int(supply_result['result'])
+            if "result" in supply_result:
+                total_supply = int(supply_result["result"])
                 for holder in holders:
-                    balance = int(holder['TokenHolderQuantity'])
+                    balance = int(holder["TokenHolderQuantity"])
                     percentage = (balance / total_supply) * 100
-                    holder['TokenHolderPercentage'] = f"{percentage:.6f}"
+                    holder["TokenHolderPercentage"] = f"{percentage:.6f}"
         except Exception as e:
             logger.debug(f"Failed to calculate percentages: {e}")
             # Set default percentages
             for i, holder in enumerate(holders):
-                holder['TokenHolderPercentage'] = f"{(100 / len(holders)) * (len(holders) - i):.6f}"
-        
-        return {
-            "status": "1",
-            "message": "OK",
-            "result": holders[:limit]
-        }
+                holder["TokenHolderPercentage"] = (
+                    f"{(100 / len(holders)) * (len(holders) - i):.6f}"
+                )
 
-    def _generate_simulated_holders(self, token_address: str, page: int, offset: int) -> Dict[str, Any]:
+        return {"status": "1", "message": "OK", "result": holders[:limit]}
+
+    def _generate_simulated_holders(
+        self, token_address: str, page: int, offset: int
+    ) -> Dict[str, Any]:
         """Generate simulated token holder data for testing purposes.
 
         Args:
@@ -234,7 +252,7 @@ class EtherscanAPI:
         """
         # Get the total supply to make realistic percentages
         supply_response = self.get_token_supply(token_address)
-        total_supply = int(supply_response.get('result', '10000000000000000000000000'))
+        total_supply = int(supply_response.get("result", "10000000000000000000000000"))
 
         # Create simulated holders with a realistic distribution
         # - A few large holders (whales)
@@ -271,24 +289,22 @@ class EtherscanAPI:
             else:
                 # Retail - holds smaller amounts
                 idx = i - whale_count - institution_count
-                pct = 0.1 * (0.9 ** idx)  # Exponential decay
+                pct = 0.1 * (0.9**idx)  # Exponential decay
                 quantity = int(total_supply * pct / 100)
 
-            holders.append({
-                "TokenHolderAddress": address,
-                "TokenHolderQuantity": str(quantity),
-                "balance": str(quantity),  # Adding this field for compatibility
-                "TokenHolderPercentage": str(pct)
-            })
+            holders.append(
+                {
+                    "TokenHolderAddress": address,
+                    "TokenHolderQuantity": str(quantity),
+                    "balance": str(quantity),  # Adding this field for compatibility
+                    "TokenHolderPercentage": str(pct),
+                }
+            )
 
             if len(holders) >= offset:
                 break
 
-        return {
-            "status": "1",
-            "message": "OK",
-            "result": holders
-        }
+        return {"status": "1", "message": "OK", "result": holders}
 
     def get_token_balance(self, token_address: str, address: str) -> Dict[str, Any]:
         """Get the token balance for a specific address.
@@ -301,11 +317,11 @@ class EtherscanAPI:
             Dict[str, Any]: Token balance information.
         """
         params = {
-            'module': 'account',
-            'action': 'tokenbalance',
-            'contractaddress': token_address,
-            'address': address,
-            'tag': 'latest',
+            "module": "account",
+            "action": "tokenbalance",
+            "contractaddress": token_address,
+            "address": address,
+            "tag": "latest",
         }
 
         return self._make_request(params)
@@ -322,7 +338,9 @@ class TheGraphAPI:
         """
         self.subgraph_url = subgraph_url
 
-    def execute_query(self, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def execute_query(
+        self, query: str, variables: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Execute a GraphQL query against the subgraph.
 
         Args:
@@ -335,9 +353,9 @@ class TheGraphAPI:
         Raises:
             requests.exceptions.RequestException: If the request fails.
         """
-        payload = {'query': query}
+        payload = {"query": query}
         if variables:
-            payload['variables'] = variables
+            payload["variables"] = variables
 
         try:
             response = requests.post(self.subgraph_url, json=payload)

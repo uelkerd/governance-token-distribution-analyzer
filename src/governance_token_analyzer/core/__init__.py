@@ -1,5 +1,4 @@
-"""Core modules for governance token analysis.
-"""
+"""Core modules for governance token analysis."""
 
 from . import (
     data_processor,
@@ -10,9 +9,9 @@ from . import (
 )
 
 __all__ = [
-    'data_processor',
-    'historical_data',
-    'metrics',
-    'voting_block_analysis',
-    'delegation_pattern_analysis'
+    "data_processor",
+    "historical_data",
+    "metrics",
+    "voting_block_analysis",
+    "delegation_pattern_analysis",
 ]

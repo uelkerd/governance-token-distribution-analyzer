@@ -34,7 +34,9 @@ class TestAdvancedMetrics(unittest.TestCase):
         nakamoto = calculate_nakamoto_coefficient(extreme_balances)
 
         # Verify expected values
-        self.assertAlmostEqual(hoover, 0.9, places=1)  # Should be close to 1 (complete inequality)
+        self.assertAlmostEqual(
+            hoover, 0.9, places=1
+        )  # Should be close to 1 (complete inequality)
         self.assertEqual(nakamoto, 1)  # Only 1 entity needed for control
 
     def test_perfect_equality(self):
@@ -48,7 +50,9 @@ class TestAdvancedMetrics(unittest.TestCase):
         nakamoto = calculate_nakamoto_coefficient(equal_balances)
 
         # Verify expected values for equal distribution
-        self.assertAlmostEqual(palma, 0.25)  # For equal distribution with this calculation method
+        self.assertAlmostEqual(
+            palma, 0.25
+        )  # For equal distribution with this calculation method
         self.assertAlmostEqual(hoover, 0.0)  # Perfect equality = 0
         self.assertAlmostEqual(theil, 0.0)  # Perfect equality = 0
         self.assertEqual(nakamoto, 6)  # Need 6 out of 10 holders for 51% control
@@ -73,7 +77,9 @@ class TestAdvancedMetrics(unittest.TestCase):
             self.assertEqual(nak_51, 2)  # Need 2 holders for 51% control
 
         # Similarly for 67% control
-        top_two_percentage = ((self.test_balances[0] + self.test_balances[1]) / total) * 100
+        top_two_percentage = (
+            (self.test_balances[0] + self.test_balances[1]) / total
+        ) * 100
         if top_two_percentage > 67.0:
             self.assertEqual(nak_67, 2)  # With our test data, top 2 holders have >67%
         else:
@@ -123,6 +129,7 @@ class TestAdvancedMetrics(unittest.TestCase):
         self.assertIn("10", percentiles)
         self.assertIn("20", percentiles)
         self.assertIn("50", percentiles)
+
 
 if __name__ == "__main__":
     unittest.main()

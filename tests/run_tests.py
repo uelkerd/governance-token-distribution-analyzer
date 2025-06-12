@@ -23,7 +23,7 @@ def run_unittest_tests():
 
     # Discover tests
     start_dir = Path(__file__).parent
-    test_suite = loader.discover(start_dir, pattern='test_*.py')
+    test_suite = loader.discover(start_dir, pattern="test_*.py")
 
     # Run tests
     runner = unittest.TextTestRunner(verbosity=2)
@@ -31,6 +31,7 @@ def run_unittest_tests():
 
     # Return success or failure
     return 0 if result.wasSuccessful() else 1
+
 
 def run_pytest_tests():
     """Run all tests using pytest."""
@@ -41,9 +42,10 @@ def run_pytest_tests():
     # Run pytest
     return pytest.main(["-v", str(Path(__file__).parent)])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Run tests using pytest by default
-    if len(sys.argv) > 1 and sys.argv[1] == '--unittest':
+    if len(sys.argv) > 1 and sys.argv[1] == "--unittest":
         sys.exit(run_unittest_tests())
     else:
         sys.exit(run_pytest_tests())

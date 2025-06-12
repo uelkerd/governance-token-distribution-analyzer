@@ -9,4 +9,4 @@ from . import core, protocols, visualization
 __version__ = "0.1.0"
 __author__ = "Governance Token Analyzer Team"
 
-__all__ = ['core', 'protocols', 'visualization']
+__all__ = ["core", "protocols", "visualization"]

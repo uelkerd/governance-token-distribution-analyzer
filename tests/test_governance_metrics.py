@@ -33,7 +33,7 @@ class TestGovernanceMetrics(unittest.TestCase):
                 "passed_timestamp": datetime(2023, 1, 15).timestamp(),
                 "implemented_timestamp": datetime(2023, 1, 25).timestamp(),
                 "implemented": True,
-                "protocol": "compound"
+                "protocol": "compound",
             },
             {
                 "id": "PROP-2",
@@ -46,16 +46,36 @@ class TestGovernanceMetrics(unittest.TestCase):
                 "proposer": "0xabc",
                 "comments": ["Not a good time", "Too aggressive"],
                 "revisions": 0,
-                "protocol": "compound"
-            }
+                "protocol": "compound",
+            },
         ]
 
         self.token_distribution = [
-            {"TokenHolderAddress": "0x123", "TokenHolderQuantity": "600000", "TokenHolderPercentage": "30.0"},
-            {"TokenHolderAddress": "0x456", "TokenHolderQuantity": "400000", "TokenHolderPercentage": "20.0"},
-            {"TokenHolderAddress": "0x789", "TokenHolderQuantity": "300000", "TokenHolderPercentage": "15.0"},
-            {"TokenHolderAddress": "0xabc", "TokenHolderQuantity": "100000", "TokenHolderPercentage": "5.0"},
-            {"TokenHolderAddress": "0xdef", "TokenHolderQuantity": "50000", "TokenHolderPercentage": "2.5"}
+            {
+                "TokenHolderAddress": "0x123",
+                "TokenHolderQuantity": "600000",
+                "TokenHolderPercentage": "30.0",
+            },
+            {
+                "TokenHolderAddress": "0x456",
+                "TokenHolderQuantity": "400000",
+                "TokenHolderPercentage": "20.0",
+            },
+            {
+                "TokenHolderAddress": "0x789",
+                "TokenHolderQuantity": "300000",
+                "TokenHolderPercentage": "15.0",
+            },
+            {
+                "TokenHolderAddress": "0xabc",
+                "TokenHolderQuantity": "100000",
+                "TokenHolderPercentage": "5.0",
+            },
+            {
+                "TokenHolderAddress": "0xdef",
+                "TokenHolderQuantity": "50000",
+                "TokenHolderPercentage": "2.5",
+            },
         ]
 
         self.total_eligible_votes = 2000000
@@ -67,13 +87,15 @@ class TestGovernanceMetrics(unittest.TestCase):
             {
                 "proposal_id": p["id"],
                 "votes_cast": p["votes_cast"],
-                "voter_addresses": p["voter_addresses"]
+                "voter_addresses": p["voter_addresses"],
             }
             for p in self.sample_proposals
         ]
 
         # Calculate participation metrics
-        metrics = self.analyzer.calculate_voter_participation(proposal_votes, self.total_eligible_votes)
+        metrics = self.analyzer.calculate_voter_participation(
+            proposal_votes, self.total_eligible_votes
+        )
 
         # Verify that all expected metrics are present
         self.assertIn("participation_rate", metrics)
@@ -91,7 +113,9 @@ class TestGovernanceMetrics(unittest.TestCase):
         # Unique voter percentage = (4 / 2000000) * 100 = 0.0002%
         # This is a simplification as we're treating each address as a token
         expected_unique_percentage = (4 / self.total_eligible_votes) * 100
-        self.assertAlmostEqual(metrics["unique_voters_percentage"], expected_unique_percentage)
+        self.assertAlmostEqual(
+            metrics["unique_voters_percentage"], expected_unique_percentage
+        )
 
     def test_calculate_proposal_success_rate(self):
         """Test that proposal success rate metrics are calculated correctly."""
@@ -113,9 +137,7 @@ class TestGovernanceMetrics(unittest.TestCase):
         """Test that the comprehensive governance effectiveness metrics are calculated correctly."""
         # Calculate all metrics
         all_metrics = self.analyzer.analyze_governance_effectiveness(
-            self.sample_proposals,
-            self.token_distribution,
-            self.total_eligible_votes
+            self.sample_proposals, self.token_distribution, self.total_eligible_votes
         )
 
         # Verify that all expected metric categories are present
@@ -142,9 +164,7 @@ class TestGovernanceMetrics(unittest.TestCase):
         """Test that the analyzer handles empty proposal lists gracefully."""
         # Calculate metrics with empty proposals
         all_metrics = self.analyzer.analyze_governance_effectiveness(
-            [],
-            self.token_distribution,
-            self.total_eligible_votes
+            [], self.token_distribution, self.total_eligible_votes
         )
 
         # Verify that all expected metric categories are present but empty
@@ -153,5 +173,6 @@ class TestGovernanceMetrics(unittest.TestCase):
         self.assertIn("timestamp", all_metrics)
         self.assertEqual(all_metrics["protocol"], "unknown")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

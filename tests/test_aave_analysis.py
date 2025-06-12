@@ -27,19 +27,19 @@ class TestAaveAnalyzer(unittest.TestCase):
                 {
                     "TokenHolderAddress": "0x1111111111111111111111111111111111111111",
                     "TokenHolderQuantity": "1000000",
-                    "TokenHolderPercentage": "10.0"
+                    "TokenHolderPercentage": "10.0",
                 },
                 {
                     "TokenHolderAddress": "0x2222222222222222222222222222222222222222",
                     "TokenHolderQuantity": "800000",
-                    "TokenHolderPercentage": "8.0"
+                    "TokenHolderPercentage": "8.0",
                 },
                 {
                     "TokenHolderAddress": "0x3333333333333333333333333333333333333333",
                     "TokenHolderQuantity": "600000",
-                    "TokenHolderPercentage": "6.0"
-                }
-            ]
+                    "TokenHolderPercentage": "6.0",
+                },
+            ],
         }
 
         # Configure the mock API to return our simulated data
@@ -70,43 +70,46 @@ class TestAaveAnalyzer(unittest.TestCase):
         self.mock_api.get_token_holders.assert_called_once()
 
         # Verify the results contain the expected fields
-        self.assertEqual(results['token'], 'AAVE')
-        self.assertEqual(results['contract_address'], self.analyzer.AAVE_CONTRACT_ADDRESS)
-        self.assertIn('timestamp', results)
+        self.assertEqual(results["token"], "AAVE")
+        self.assertEqual(
+            results["contract_address"], self.analyzer.AAVE_CONTRACT_ADDRESS
+        )
+        self.assertIn("timestamp", results)
 
         # Verify metrics were calculated
-        self.assertIn('metrics', results)
-        self.assertIn('gini_coefficient', results['metrics'])
-        self.assertIn('herfindahl_index', results['metrics'])
-        self.assertIn('concentration', results['metrics'])
+        self.assertIn("metrics", results)
+        self.assertIn("gini_coefficient", results["metrics"])
+        self.assertIn("herfindahl_index", results["metrics"])
+        self.assertIn("concentration", results["metrics"])
 
         # Verify AAVE-specific staking metrics are included
-        self.assertIn('staking', results['metrics'])
-        self.assertIn('staked_percentage', results['metrics']['staking'])
+        self.assertIn("staking", results["metrics"])
+        self.assertIn("staked_percentage", results["metrics"]["staking"])
 
     def test_save_analysis_results(self):
         """Test that analysis results can be saved to a file."""
         # Create sample results to save
         results = {
-            'token': 'AAVE',
-            'metrics': {
-                'gini_coefficient': 0.5,
-                'staking': {'staked_percentage': 35.0}
-            }
+            "token": "AAVE",
+            "metrics": {
+                "gini_coefficient": 0.5,
+                "staking": {"staked_percentage": 35.0},
+            },
         }
 
         # Call the method with a temporary file
-        with patch('builtins.open', unittest.mock.mock_open()) as mock_file:
+        with patch("builtins.open", unittest.mock.mock_open()) as mock_file:
             filepath = self.analyzer.save_analysis_results(results, "test_output.json")
 
         # Verify the file was opened for writing
-        mock_file.assert_called_once_with(os.path.join('data', 'test_output.json'), 'w')
+        mock_file.assert_called_once_with(os.path.join("data", "test_output.json"), "w")
 
         # Verify json.dump was called with our results
         mock_file().write.assert_called()
 
         # Verify the filepath was returned
-        self.assertEqual(filepath, os.path.join('data', 'test_output.json'))
+        self.assertEqual(filepath, os.path.join("data", "test_output.json"))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

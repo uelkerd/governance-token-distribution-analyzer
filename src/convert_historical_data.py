@@ -22,10 +22,7 @@ def convert_historical_data(token, input_file, output_file=None):
         old_data = json.load(f)
 
     # Create the new format data
-    new_data = {
-        "token": token,
-        "data_points": []
-    }
+    new_data = {"token": token, "data_points": []}
 
     # Convert each data point
     for i, date in enumerate(old_data["dates"]):
@@ -41,9 +38,11 @@ def convert_historical_data(token, input_file, output_file=None):
                     "top_5_pct": old_data["top_5_pct"][i],
                     "top_10_pct": old_data["top_10_pct"][i],
                     "top_20_pct": old_data["top_20_pct"][i],
-                    "top_50_pct": old_data.get("top_50_pct", [0] * len(old_data["dates"]))[i]
-                }
-            }
+                    "top_50_pct": old_data.get(
+                        "top_50_pct", [0] * len(old_data["dates"])
+                    )[i],
+                },
+            },
         }
 
         new_data["data_points"].append(data_point)
@@ -52,11 +51,12 @@ def convert_historical_data(token, input_file, output_file=None):
     if output_file is None:
         output_file = input_file
 
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         json.dump(new_data, f, indent=2)
 
     print(f"Converted {len(new_data['data_points'])} data points for {token} token")
     return new_data
+
 
 def main():
     """Convert historical data for all tokens."""
@@ -74,6 +74,7 @@ def main():
         convert_historical_data("COMP", comp_input)
 
     print("Conversion complete!")
+
 
 if __name__ == "__main__":
     main()

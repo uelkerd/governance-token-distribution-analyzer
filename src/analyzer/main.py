@@ -14,9 +14,10 @@ from .config import PROTOCOLS
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()]
+    handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
+
 
 def fetch_token_data(protocol_key: str) -> Dict[str, Any]:
     """Fetch basic token data for a protocol.
@@ -57,8 +58,9 @@ def fetch_token_data(protocol_key: str) -> Dict[str, Any]:
             "name": protocol["name"],
             "symbol": protocol["symbol"],
             "token_address": token_address,
-            "error": str(e)
+            "error": str(e),
         }
+
 
 def analyze_protocols(protocol_keys: List[str]) -> List[Dict[str, Any]]:
     """Analyze the specified protocols.
@@ -77,6 +79,7 @@ def analyze_protocols(protocol_keys: List[str]) -> List[Dict[str, Any]]:
 
     return results
 
+
 def main():
     """Main function to run the analyzer."""
     logger.info("Starting Governance Token Distribution Analyzer")
@@ -94,12 +97,15 @@ def main():
         supply = result.get("supply", "Unknown")
 
         if "error" in result:
-            logger.warning(f"{protocol_name} ({symbol}): Error fetching data - {result['error']}")
+            logger.warning(
+                f"{protocol_name} ({symbol}): Error fetching data - {result['error']}"
+            )
         else:
             logger.info(f"{protocol_name} ({symbol}): Token Supply = {supply}")
 
     logger.info("Analysis complete")
     return results
+
 
 if __name__ == "__main__":
     try:
