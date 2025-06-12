@@ -17,7 +17,10 @@ from datetime import datetime
 src_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(src_dir))
 
-from src.analyzer.token_analysis import analyze_compound_token, TokenDistributionAnalyzer
+from src.analyzer.token_analysis import (
+    analyze_compound_token,
+    TokenDistributionAnalyzer,
+)
 from src.analyzer.config import Config, DEFAULT_OUTPUT_DIR
 from src.analyzer.api import EtherscanAPI
 

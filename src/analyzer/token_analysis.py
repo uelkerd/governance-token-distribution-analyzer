@@ -45,7 +45,9 @@ class TokenDistributionAnalyzer:
             List of token holders with their addresses and balances.
         """
         # Use the Config class first, fall back to the global variable
-        protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(protocol_key)
+        protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(
+            protocol_key
+        )
         if not protocol:
             logger.error(f"Protocol '{protocol_key}' not found in configuration")
             return []
@@ -233,7 +235,7 @@ def analyze_compound_token() -> Dict[str, Any]:
     try:
         # Create Config instance
         config = Config()
-        
+
         # Create API client
         etherscan_api = EtherscanAPI()
 

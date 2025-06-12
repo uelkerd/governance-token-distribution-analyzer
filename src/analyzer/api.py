@@ -32,7 +32,7 @@ class EtherscanAPI:
             self.api_key = config.get_api_key() or ETHERSCAN_API_KEY
         else:
             self.api_key = api_key
-        
+
         self.base_url = ETHERSCAN_BASE_URL
 
         if not self.api_key:
