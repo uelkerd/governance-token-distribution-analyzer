@@ -1,18 +1,16 @@
-"""
-API Client Module for governance token data collection.
+"""API Client Module for governance token data collection.
 
 This module provides utilities for fetching data from various blockchain APIs
 including Etherscan, The Graph, and protocol-specific endpoints.
 """
 
-import os
-import requests
-import json
 import logging
-from typing import Dict, List, Any, Optional, Union
-from datetime import datetime, timedelta
-import time
+import os
 import random
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
+
+import requests
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -118,8 +116,7 @@ class APIClient:
     def get_token_holders(
         self, protocol: str, limit: int = 100, use_real_data: bool = False
     ) -> List[Dict[str, Any]]:
-        """
-        Get token holders for a specific protocol.
+        """Get token holders for a specific protocol.
 
         Args:
             protocol: Protocol name (compound, uniswap, aave)
@@ -149,8 +146,7 @@ class APIClient:
     def get_governance_proposals(
         self, protocol: str, limit: int = 10, use_real_data: bool = False
     ) -> List[Dict[str, Any]]:
-        """
-        Get governance proposals for a specific protocol.
+        """Get governance proposals for a specific protocol.
 
         Args:
             protocol: Protocol name (compound, uniswap, aave)
@@ -179,8 +175,7 @@ class APIClient:
     def get_governance_votes(
         self, protocol: str, proposal_id: int, use_real_data: bool = False
     ) -> List[Dict[str, Any]]:
-        """
-        Get votes for a specific governance proposal.
+        """Get votes for a specific governance proposal.
 
         Args:
             protocol: Protocol name (compound, uniswap, aave)
@@ -211,8 +206,7 @@ class APIClient:
     def get_protocol_data(
         self, protocol: str, use_real_data: bool = False
     ) -> Dict[str, Any]:
-        """
-        Get comprehensive data for a protocol including token holders, proposals, and votes.
+        """Get comprehensive data for a protocol including token holders, proposals, and votes.
 
         Args:
             protocol: Protocol name ('compound', 'uniswap', 'aave')
@@ -263,8 +257,7 @@ class APIClient:
     def _fetch_token_holders(
         self, protocol: str, token_address: str, limit: int
     ) -> List[Dict[str, Any]]:
-        """
-        Fetch token holders for a specific protocol using real API data.
+        """Fetch token holders for a specific protocol using real API data.
 
         Args:
             protocol: Protocol name
@@ -296,8 +289,7 @@ class APIClient:
     def _fetch_compound_token_holders(
         self, token_address: str, limit: int
     ) -> List[Dict[str, Any]]:
-        """
-        Fetch Compound token holders using Ethplorer API.
+        """Fetch Compound token holders using Ethplorer API.
 
         Args:
             token_address: COMP token contract address
@@ -306,7 +298,7 @@ class APIClient:
         Returns:
             List of token holder dictionaries
         """
-        logger.info(f"Fetching COMP token holders")
+        logger.info("Fetching COMP token holders")
         holders = []
 
         try:
@@ -347,8 +339,7 @@ class APIClient:
             return self._generate_sample_holder_data("compound", limit)
 
     def _get_address_info(self, address: str) -> Dict[str, Any]:
-        """
-        Get additional information about an Ethereum address.
+        """Get additional information about an Ethereum address.
 
         Args:
             address: Ethereum address
@@ -405,8 +396,7 @@ class APIClient:
     def _fetch_uniswap_token_holders(
         self, token_address: str, limit: int
     ) -> List[Dict[str, Any]]:
-        """
-        Fetch Uniswap token holders using Ethplorer API.
+        """Fetch Uniswap token holders using Ethplorer API.
 
         Args:
             token_address: UNI token contract address
@@ -415,7 +405,7 @@ class APIClient:
         Returns:
             List of token holder dictionaries
         """
-        logger.info(f"Fetching UNI token holders")
+        logger.info("Fetching UNI token holders")
         holders = []
 
         try:
@@ -458,8 +448,7 @@ class APIClient:
     def _fetch_aave_token_holders(
         self, token_address: str, limit: int
     ) -> List[Dict[str, Any]]:
-        """
-        Fetch Aave token holders using Ethplorer API.
+        """Fetch Aave token holders using Ethplorer API.
 
         Args:
             token_address: AAVE token contract address
@@ -468,7 +457,7 @@ class APIClient:
         Returns:
             List of token holder dictionaries
         """
-        logger.info(f"Fetching AAVE token holders")
+        logger.info("Fetching AAVE token holders")
         holders = []
 
         try:
@@ -511,8 +500,7 @@ class APIClient:
     def _fetch_governance_proposals(
         self, protocol: str, limit: int
     ) -> List[Dict[str, Any]]:
-        """
-        Fetch governance proposals for a specific protocol using real API data.
+        """Fetch governance proposals for a specific protocol using real API data.
 
         Args:
             protocol: Protocol name
@@ -534,8 +522,7 @@ class APIClient:
             raise ValueError(f"Unsupported protocol: {protocol}")
 
     def _fetch_compound_proposals(self, limit: int) -> List[Dict[str, Any]]:
-        """
-        Fetch Compound governance proposals using GraphQL.
+        """Fetch Compound governance proposals using GraphQL.
 
         Args:
             limit: Number of proposals to retrieve
@@ -543,7 +530,7 @@ class APIClient:
         Returns:
             List of proposal dictionaries
         """
-        logger.info(f"Fetching Compound governance proposals")
+        logger.info("Fetching Compound governance proposals")
         proposals = []
 
         try:
@@ -655,8 +642,7 @@ class APIClient:
             return self._generate_sample_proposal_data("compound", limit)
 
     def _fetch_uniswap_proposals(self, limit: int) -> List[Dict[str, Any]]:
-        """
-        Fetch Uniswap governance proposals using GraphQL.
+        """Fetch Uniswap governance proposals using GraphQL.
 
         Args:
             limit: Number of proposals to retrieve
@@ -664,7 +650,7 @@ class APIClient:
         Returns:
             List of proposal dictionaries
         """
-        logger.info(f"Fetching Uniswap governance proposals")
+        logger.info("Fetching Uniswap governance proposals")
         proposals = []
 
         try:
@@ -781,8 +767,7 @@ class APIClient:
             return self._generate_sample_proposal_data("uniswap", limit)
 
     def _fetch_aave_proposals(self, limit: int) -> List[Dict[str, Any]]:
-        """
-        Fetch Aave governance proposals using GraphQL.
+        """Fetch Aave governance proposals using GraphQL.
 
         Args:
             limit: Number of proposals to retrieve
@@ -790,7 +775,7 @@ class APIClient:
         Returns:
             List of proposal dictionaries
         """
-        logger.info(f"Fetching Aave governance proposals")
+        logger.info("Fetching Aave governance proposals")
         proposals = []
 
         try:
@@ -914,8 +899,7 @@ class APIClient:
     def _fetch_governance_votes(
         self, protocol: str, proposal_id: int
     ) -> List[Dict[str, Any]]:
-        """
-        Fetch governance votes for a specific proposal using real API data.
+        """Fetch governance votes for a specific proposal using real API data.
 
         Args:
             protocol: Protocol name
@@ -937,8 +921,7 @@ class APIClient:
             raise ValueError(f"Unsupported protocol: {protocol}")
 
     def _fetch_compound_votes(self, proposal_id: int) -> List[Dict[str, Any]]:
-        """
-        Fetch votes for a Compound governance proposal.
+        """Fetch votes for a Compound governance proposal.
 
         Args:
             proposal_id: ID of the proposal
@@ -1021,8 +1004,7 @@ class APIClient:
             return self._generate_sample_vote_data("compound", proposal_id)
 
     def _fetch_uniswap_votes(self, proposal_id: int) -> List[Dict[str, Any]]:
-        """
-        Fetch votes for a Uniswap governance proposal.
+        """Fetch votes for a Uniswap governance proposal.
 
         Args:
             proposal_id: ID of the proposal
@@ -1105,8 +1087,7 @@ class APIClient:
             return self._generate_sample_vote_data("uniswap", proposal_id)
 
     def _fetch_aave_votes(self, proposal_id: int) -> List[Dict[str, Any]]:
-        """
-        Fetch votes for an Aave governance proposal.
+        """Fetch votes for an Aave governance proposal.
 
         Args:
             proposal_id: ID of the proposal
@@ -1187,8 +1168,7 @@ class APIClient:
             return self._generate_sample_vote_data("aave", proposal_id)
 
     def _calculate_participation_rate(self, proposals: List[Dict[str, Any]]) -> float:
-        """
-        Calculate governance participation rate based on proposals.
+        """Calculate governance participation rate based on proposals.
 
         Args:
             proposals: List of proposal dictionaries
@@ -1229,8 +1209,7 @@ class APIClient:
     def _generate_sample_holder_data(
         self, protocol: str, count: int
     ) -> List[Dict[str, Any]]:
-        """
-        Generate sample token holder data for a specific protocol.
+        """Generate sample token holder data for a specific protocol.
 
         Args:
             protocol: Protocol name
@@ -1335,8 +1314,7 @@ class APIClient:
     def _generate_power_law_distribution(
         self, count: int, total: float, alpha: float = 1.5
     ) -> List[float]:
-        """
-        Generate a power-law distribution of values.
+        """Generate a power-law distribution of values.
 
         Args:
             count: Number of values to generate
@@ -1358,8 +1336,7 @@ class APIClient:
     def _generate_sample_proposal_data(
         self, protocol: str, count: int
     ) -> List[Dict[str, Any]]:
-        """
-        Generate sample governance proposal data for a specific protocol.
+        """Generate sample governance proposal data for a specific protocol.
 
         Args:
             protocol: Protocol name
@@ -1520,8 +1497,7 @@ class APIClient:
     def _generate_sample_vote_data(
         self, protocol: str, proposal_id: int
     ) -> List[Dict[str, Any]]:
-        """
-        Generate sample vote data for a specific proposal.
+        """Generate sample vote data for a specific proposal.
 
         Args:
             protocol: Protocol name

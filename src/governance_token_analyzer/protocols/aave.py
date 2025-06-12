@@ -1,10 +1,9 @@
-"""
-Aave Protocol Module for analyzing AAVE token distribution.
+"""Aave Protocol Module for analyzing AAVE token distribution.
 This module handles fetching and processing data for the Aave protocol.
 """
 
-import pandas as pd
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List
+
 from ..core.api_client import APIClient
 
 # Initialize API client
@@ -12,13 +11,12 @@ api_client = APIClient()
 
 
 def get_token_holders(limit: int = 100, use_real_data: bool = False) -> List[Dict[str, Any]]:
-    """
-    Get list of top AAVE token holders.
-    
+    """Get list of top AAVE token holders.
+
     Args:
         limit: Number of holders to retrieve
         use_real_data: Whether to use real data from APIs (vs. sample data)
-        
+
     Returns:
         List of token holder dictionaries
     """
@@ -26,13 +24,12 @@ def get_token_holders(limit: int = 100, use_real_data: bool = False) -> List[Dic
 
 
 def get_governance_proposals(limit: int = 10, use_real_data: bool = False) -> List[Dict[str, Any]]:
-    """
-    Get list of Aave governance proposals.
-    
+    """Get list of Aave governance proposals.
+
     Args:
         limit: Number of proposals to retrieve
         use_real_data: Whether to use real data from APIs (vs. sample data)
-        
+
     Returns:
         List of proposal dictionaries
     """
@@ -40,13 +37,12 @@ def get_governance_proposals(limit: int = 10, use_real_data: bool = False) -> Li
 
 
 def get_governance_votes(proposal_id: int, use_real_data: bool = False) -> List[Dict[str, Any]]:
-    """
-    Get list of votes for a specific proposal.
-    
+    """Get list of votes for a specific proposal.
+
     Args:
         proposal_id: ID of the proposal
         use_real_data: Whether to use real data from APIs (vs. sample data)
-        
+
     Returns:
         List of vote dictionaries
     """
@@ -54,9 +50,8 @@ def get_governance_votes(proposal_id: int, use_real_data: bool = False) -> List[
 
 
 def get_sample_data() -> Dict[str, Any]:
-    """
-    Get sample data for testing.
-    
+    """Get sample data for testing.
+
     Returns:
         Dictionary containing sample data for token holders and governance
     """
@@ -64,9 +59,8 @@ def get_sample_data() -> Dict[str, Any]:
 
 
 def get_protocol_info() -> Dict[str, Any]:
-    """
-    Get basic information about the Aave protocol.
-    
+    """Get basic information about the Aave protocol.
+
     Returns:
         Dictionary containing basic protocol information
     """
@@ -81,26 +75,25 @@ def get_protocol_info() -> Dict[str, Any]:
 
 
 def calculate_voting_power_distribution() -> Dict[str, float]:
-    """
-    Calculate the distribution of voting power across holders.
-    
+    """Calculate the distribution of voting power across holders.
+
     Returns:
         Dictionary containing voting power distribution metrics
     """
     holders = get_token_holders()
-    
+
     # Calculate voting power distribution
     total_supply = sum(holder['balance'] for holder in holders)
-    
+
     # Calculate percentage held by top holders
     top_10_percentage = sum(holder['balance'] for holder in holders[:10]) / total_supply * 100
     top_20_percentage = sum(holder['balance'] for holder in holders[:20]) / total_supply * 100
     top_50_percentage = sum(holder['balance'] for holder in holders[:50]) / total_supply * 100
-    
+
     # Calculate delegated voting power
     total_delegated = sum(holder.get('delegated_power', 0) for holder in holders)
     delegation_percentage = (total_delegated / total_supply) * 100
-    
+
     return {
         'top_10_percentage': top_10_percentage,
         'top_20_percentage': top_20_percentage,
@@ -111,14 +104,13 @@ def calculate_voting_power_distribution() -> Dict[str, float]:
 
 # Deprecated functions - for backward compatibility only
 import warnings
-import random
-from datetime import datetime, timedelta
+
 
 def _generate_sample_holder_data(count: int) -> List[Dict[str, Any]]:
     """Generate sample token holder data for testing."""
     warnings.warn(
         "_generate_sample_holder_data is deprecated, use api_client.get_token_holders instead",
-        DeprecationWarning, 
+        DeprecationWarning,
         stacklevel=2
     )
     return api_client._generate_sample_holder_data('aave', count)
@@ -128,7 +120,7 @@ def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
     """Generate sample governance proposal data for testing."""
     warnings.warn(
         "_generate_sample_proposal_data is deprecated, use api_client.get_governance_proposals instead",
-        DeprecationWarning, 
+        DeprecationWarning,
         stacklevel=2
     )
     return api_client._generate_sample_proposal_data('aave', count)
@@ -138,7 +130,7 @@ def _generate_sample_vote_data(proposal_id: int) -> List[Dict[str, Any]]:
     """Generate sample vote data for a specific proposal."""
     warnings.warn(
         "_generate_sample_vote_data is deprecated, use api_client.get_governance_votes instead",
-        DeprecationWarning, 
+        DeprecationWarning,
         stacklevel=2
     )
-    return api_client._generate_sample_vote_data('aave', proposal_id) 
+    return api_client._generate_sample_vote_data('aave', proposal_id)

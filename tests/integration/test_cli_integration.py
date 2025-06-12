@@ -1,18 +1,16 @@
-"""
-Integration tests for the CLI components that interact with historical data analysis and reporting.
+"""Integration tests for the CLI components that interact with historical data analysis and reporting.
 These tests verify that CLI commands correctly utilize the historical data and report generation functionality.
 """
 
-import pytest
-import os
-import tempfile
-import shutil
-from datetime import datetime, timedelta
 import json
+import os
+import shutil
+import tempfile
+
+import pytest
 from click.testing import CliRunner
 
 from governance_token_analyzer.cli import main
-from governance_token_analyzer.cli import historical_analysis
 from governance_token_analyzer.core import historical_data
 
 
@@ -53,11 +51,11 @@ def sample_data(data_manager):
 
 class TestCliIntegration:
     """Integration tests for CLI components."""
-    
+
     def test_historical_analysis_command(self, sample_data, temp_output_dir):
         """Test that the historical-analysis command works correctly."""
         runner = CliRunner()
-        
+
         # Create a test command
         cmd = [
             'historical-analysis',
@@ -67,13 +65,13 @@ class TestCliIntegration:
             '--output-dir', temp_output_dir,
             '--format', 'png'
         ]
-        
+
         # Run the command
         result = runner.invoke(main.cli, cmd)
-        
+
         # Check that the command executed successfully
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
-        
+
         # Check that output files were created
         expected_output = os.path.join(
             temp_output_dir,
@@ -81,11 +79,11 @@ class TestCliIntegration:
         )
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
-    
+
     def test_compare_protocols_command(self, sample_data, temp_output_dir):
         """Test that the compare-protocols command works correctly with historical data."""
         runner = CliRunner()
-        
+
         # Create a test command
         cmd = [
             'compare-protocols',
@@ -96,25 +94,25 @@ class TestCliIntegration:
             '--output-dir', temp_output_dir,
             '--format', 'png'
         ]
-        
+
         # Run the command
         result = runner.invoke(main.cli, cmd)
-        
+
         # Check that the command executed successfully
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
-        
+
         # Check that output files were created
         expected_output = os.path.join(
-            temp_output_dir, 
+            temp_output_dir,
             'protocol_comparison_gini_coefficient.png'
         )
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
-    
+
     def test_generate_report_command(self, sample_data, temp_output_dir):
         """Test that the generate-report command works correctly with historical data."""
         runner = CliRunner()
-        
+
         # Create a test command
         cmd = [
             'generate-report',
@@ -124,13 +122,13 @@ class TestCliIntegration:
             '--output-dir', temp_output_dir,
             '--format', 'html'
         ]
-        
+
         # Run the command
         result = runner.invoke(main.cli, cmd)
-        
+
         # Check that the command executed successfully
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
-        
+
         # Check that output files were created
         expected_output = os.path.join(
             temp_output_dir,
@@ -138,16 +136,16 @@ class TestCliIntegration:
         )
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
-        
+
         # Verify report contains historical analysis section
-        with open(expected_output, 'r') as f:
+        with open(expected_output) as f:
             content = f.read()
             assert 'Historical Analysis' in content
-    
+
     def test_export_historical_data_command(self, sample_data, temp_output_dir):
         """Test that the export-historical-data command works correctly."""
         runner = CliRunner()
-        
+
         # Create a test command
         cmd = [
             'export-historical-data',
@@ -157,23 +155,23 @@ class TestCliIntegration:
             '--output-dir', temp_output_dir,
             '--format', 'json'
         ]
-        
+
         # Run the command
         result = runner.invoke(main.cli, cmd)
-        
+
         # Check that the command executed successfully
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
-        
+
         # Check that output files were created
         expected_output = os.path.join(
-            temp_output_dir, 
+            temp_output_dir,
             'compound_gini_coefficient_historical.json'
         )
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
-        
+
         # Verify the JSON content
-        with open(expected_output, 'r') as f:
+        with open(expected_output) as f:
             data = json.load(f)
             assert 'protocol' in data
             assert data['protocol'] == 'compound'
@@ -181,11 +179,11 @@ class TestCliIntegration:
             assert data['metric'] == 'gini_coefficient'
             assert 'data_points' in data
             assert len(data['data_points']) > 0
-    
+
     def test_simulate_historical_command(self, temp_data_dir, temp_output_dir):
         """Test that the simulate-historical command works correctly."""
         runner = CliRunner()
-        
+
         # Create a test command
         cmd = [
             'simulate-historical',
@@ -195,14 +193,14 @@ class TestCliIntegration:
             '--data-dir', temp_data_dir,
             '--output-dir', temp_output_dir
         ]
-        
+
         # Run the command
         result = runner.invoke(main.cli, cmd)
-        
+
         # Check that the command executed successfully
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
-        
+
         # Verify that snapshots were created
         data_manager = historical_data.HistoricalDataManager(data_dir=temp_data_dir)
         snapshots = data_manager.get_snapshots('compound')
-        assert len(snapshots) == 3 
+        assert len(snapshots) == 3

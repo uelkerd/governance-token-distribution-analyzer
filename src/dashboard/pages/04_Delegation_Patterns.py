@@ -1,20 +1,19 @@
-"""
-Delegation Patterns Analysis Page
+"""Delegation Patterns Analysis Page
 
 This page provides visualizations and metrics for delegation pattern analysis,
 showing how voting power is delegated and flows between addresses.
 """
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-import networkx as nx
+import json
 import os
 import sys
-import json
 from pathlib import Path
+
+import networkx as nx
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
 
 # Add the src directory to the Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -40,9 +39,9 @@ def load_analysis_data(protocol):
     """Load analysis data for the selected protocol."""
     output_dir = Path(DEFAULT_OUTPUT_DIR)
     file_path = output_dir / f"{protocol.lower()}_analysis.json"
-    
+
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path) as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         st.error(f"Error loading data for {protocol}: {str(e)}")
@@ -53,45 +52,45 @@ data = load_analysis_data(protocol)
 
 if data and 'delegation_patterns' in data:
     delegation_data = data['delegation_patterns']
-    
+
     # Display protocol info
     st.markdown(f"## {data.get('name', protocol)} ({data.get('symbol', '')})")
-    
+
     # Summary metrics in columns
     col1, col2, col3, col4 = st.columns(4)
-    
+
     with col1:
         delegator_count = delegation_data.get('total_delegators', 0)
         st.metric("Total Delegators", delegator_count)
         st.caption("Addresses delegating voting power")
-    
+
     with col2:
         delegatee_count = delegation_data.get('total_delegatees', 0)
         st.metric("Total Delegatees", delegatee_count)
         st.caption("Addresses receiving delegations")
-    
+
     with col3:
         delegated_power = delegation_data.get('total_delegated_power', 0)
         st.metric("Delegated Power", f"{delegated_power:,.2f}")
         st.caption("Total voting power delegated")
-    
+
     with col4:
         delegation_pct = delegation_data.get('delegation_percentage', 0)
         st.metric("Delegation %", f"{delegation_pct:.2f}%")
         st.caption("% of total voting power delegated")
-    
+
     # Main content area
     tab1, tab2, tab3 = st.tabs(["Delegation Overview", "Network Visualization", "Delegation Metrics"])
-    
+
     with tab1:
         st.subheader("Delegation Overview")
-        
+
         # Top delegatees table
         if 'top_delegatees' in delegation_data:
             st.markdown("### Top Delegatees")
-            
+
             top_delegatees = delegation_data['top_delegatees']
-            
+
             delegatees_data = []
             for delegatee in top_delegatees:
                 delegatees_data.append({
@@ -100,22 +99,22 @@ if data and 'delegation_patterns' in data:
                     'Delegated Power %': f"{delegatee['delegated_power_percentage']:.2f}%",
                     'Delegator Count': delegatee['delegator_count']
                 })
-            
+
             delegatees_df = pd.DataFrame(delegatees_data)
             st.dataframe(delegatees_df, use_container_width=True)
-            
+
             # Visualize top delegatees
             st.subheader("Top Delegatees by Delegated Power")
-            
+
             # Convert to numeric for visualization
             viz_data = pd.DataFrame(top_delegatees)
-            
+
             # Use only top 10 for clearer visualization
             viz_data = viz_data.head(10)
-            
+
             # Create short address labels
             viz_data['short_address'] = viz_data['address'].apply(lambda x: f"{x[:6]}...{x[-4:]}")
-            
+
             fig = px.bar(
                 viz_data,
                 x='short_address',
@@ -129,29 +128,29 @@ if data and 'delegation_patterns' in data:
                 color_continuous_scale=px.colors.sequential.Viridis,
                 hover_data=['delegated_power', 'delegator_count']
             )
-            
+
             st.plotly_chart(fig, use_container_width=True)
-        
+
         # Delegation distribution
         if 'delegation_distribution' in delegation_data:
             st.subheader("Delegation Distribution")
-            
+
             distribution = delegation_data['delegation_distribution']
-            
+
             # Create a DataFrame for visualization
             distribution_data = []
-            
+
             for category, value in distribution.items():
                 # Format category name for display
                 formatted_category = ' '.join(word.capitalize() for word in category.split('_'))
-                
+
                 distribution_data.append({
                     'Category': formatted_category,
                     'Percentage': value
                 })
-            
+
             distribution_df = pd.DataFrame(distribution_data)
-            
+
             # Create pie chart
             fig = px.pie(
                 distribution_df,
@@ -160,25 +159,25 @@ if data and 'delegation_patterns' in data:
                 title=f"Delegation Distribution in {protocol}",
                 color_discrete_sequence=px.colors.qualitative.Plotly
             )
-            
+
             fig.update_traces(textposition='inside', textinfo='percent+label')
             st.plotly_chart(fig, use_container_width=True)
-    
+
     with tab2:
         st.subheader("Delegation Network Visualization")
-        
+
         # Network visualization settings
         st.sidebar.markdown("## Network Settings")
         show_labels = st.sidebar.checkbox("Show Address Labels", value=False)
         min_delegation = st.sidebar.slider("Minimum Delegation Amount (%)", 0.0, 5.0, 0.1)
-        
+
         # Create network visualization using NetworkX and Plotly
         if 'delegation_network' in delegation_data:
             network = delegation_data['delegation_network']
-            
+
             # Create a graph
             G = nx.DiGraph()  # Directed graph for delegations
-            
+
             # Add nodes (addresses)
             for node in network['nodes']:
                 G.add_node(
@@ -187,7 +186,7 @@ if data and 'delegation_patterns' in data:
                     delegated_power=node.get('delegated_power', 0),
                     is_delegatee=node.get('is_delegatee', False)
                 )
-            
+
             # Add edges (delegations)
             for edge in network['edges']:
                 if edge.get('weight', 0) >= min_delegation:
@@ -197,11 +196,11 @@ if data and 'delegation_patterns' in data:
                         weight=edge['weight'],
                         amount=edge.get('amount', 0)
                     )
-            
+
             # Calculate layout - use a circular layout for delegations
             if len(G.nodes()) > 0:
                 pos = nx.spring_layout(G, k=0.5, iterations=50)
-                
+
                 # Create edge traces
                 edge_traces = []
                 for edge in G.edges(data=True):
@@ -209,7 +208,7 @@ if data and 'delegation_patterns' in data:
                     x1, y1 = pos[edge[1]]
                     weight = edge[2]['weight']
                     amount = edge[2].get('amount', 0)
-                    
+
                     edge_trace = go.Scatter(
                         x=[x0, x1, None],
                         y=[y0, y1, None],
@@ -219,7 +218,7 @@ if data and 'delegation_patterns' in data:
                         mode='lines'
                     )
                     edge_traces.append(edge_trace)
-                
+
                 # Create delegator node trace
                 delegator_nodes = [node for node in G.nodes() if not G.nodes[node]['is_delegatee']]
                 delegator_trace = go.Scatter(
@@ -235,7 +234,7 @@ if data and 'delegation_patterns' in data:
                     hoverinfo='text',
                     name='Delegators'
                 )
-                
+
                 # Create delegatee node trace
                 delegatee_nodes = [node for node in G.nodes() if G.nodes[node]['is_delegatee']]
                 delegatee_trace = go.Scatter(
@@ -251,10 +250,10 @@ if data and 'delegation_patterns' in data:
                     hoverinfo='text',
                     name='Delegatees'
                 )
-                
+
                 # Create the figure
                 fig = go.Figure(data=edge_traces + [delegator_trace, delegatee_trace])
-                
+
                 # Add node labels if requested
                 if show_labels:
                     annotations = []
@@ -266,9 +265,9 @@ if data and 'delegation_patterns' in data:
                             showarrow=False,
                             font=dict(size=8)
                         ))
-                    
+
                     fig.update_layout(annotations=annotations)
-                
+
                 fig.update_layout(
                     title=f"Delegation Network for {protocol}",
                     showlegend=True,
@@ -276,36 +275,36 @@ if data and 'delegation_patterns' in data:
                     margin=dict(b=0, l=0, r=0, t=40),
                     height=700
                 )
-                
+
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("No delegation data meeting the minimum threshold.")
         else:
             st.info("Delegation network data not available for this protocol.")
-    
+
     with tab3:
         st.subheader("Delegation Metrics & Analysis")
-        
+
         # Delegation classification
         if 'delegation_classification' in delegation_data:
             st.markdown("### Delegation Classification")
-            
+
             classification = delegation_data['delegation_classification']
-            
+
             # Create a DataFrame for visualization
             class_data = []
-            
+
             for category, count in classification.items():
                 # Format category name for display
                 formatted_category = ' '.join(word.capitalize() for word in category.split('_'))
-                
+
                 class_data.append({
                     'Category': formatted_category,
                     'Count': count
                 })
-            
+
             class_df = pd.DataFrame(class_data)
-            
+
             # Create bar chart
             fig = px.bar(
                 class_df,
@@ -315,48 +314,48 @@ if data and 'delegation_patterns' in data:
                 color='Count',
                 color_continuous_scale=px.colors.sequential.Viridis
             )
-            
+
             st.plotly_chart(fig, use_container_width=True)
-        
+
         # Delegation concentration metrics
         if 'delegation_concentration' in delegation_data:
             st.markdown("### Delegation Concentration Metrics")
-            
+
             concentration = delegation_data['delegation_concentration']
-            
+
             metrics_data = []
             for metric, value in concentration.items():
                 # Format metric name for display
                 formatted_metric = ' '.join(word.capitalize() for word in metric.split('_'))
-                
+
                 if 'percentage' in metric or 'ratio' in metric:
                     formatted_value = f"{value:.2f}%"
                 elif 'index' in metric or 'coefficient' in metric:
                     formatted_value = f"{value:.4f}"
                 else:
                     formatted_value = f"{value:,.2f}"
-                
+
                 metrics_data.append({
                     'Metric': formatted_metric,
                     'Value': formatted_value
                 })
-            
+
             metrics_df = pd.DataFrame(metrics_data)
             st.dataframe(metrics_df, use_container_width=True)
-        
+
         # Historical delegation trends
         if 'historical_delegation' in delegation_data:
             st.markdown("### Historical Delegation Trends")
-            
+
             historical = delegation_data['historical_delegation']
-            
+
             # Convert to DataFrame
             hist_df = pd.DataFrame(historical)
-            
+
             # Ensure timestamp is datetime
             if 'timestamp' in hist_df.columns:
                 hist_df['timestamp'] = pd.to_datetime(hist_df['timestamp'])
-            
+
             # Create line chart
             fig = px.line(
                 hist_df,
@@ -369,7 +368,7 @@ if data and 'delegation_patterns' in data:
                 },
                 markers=True
             )
-            
+
             # Add trend line if enough data points
             if len(hist_df) > 1:
                 fig.add_traces(
@@ -380,8 +379,8 @@ if data and 'delegation_patterns' in data:
                         trendline="ols"
                     ).data[1]
                 )
-            
+
             st.plotly_chart(fig, use_container_width=True)
 else:
     st.error(f"Unable to load delegation data for {protocol}")
-    st.info("Please make sure you've run the delegation pattern analysis for this protocol first. Note that not all protocols support delegation.") 
+    st.info("Please make sure you've run the delegation pattern analysis for this protocol first. Note that not all protocols support delegation.")

@@ -1,17 +1,17 @@
+"""Tests for error handling in the API Client module.
 """
-Tests for error handling in the API Client module.
-"""
+
+from unittest.mock import patch
 
 import pytest
 import requests
 import responses
-import os
-from unittest.mock import patch, MagicMock
+
 from governance_token_analyzer.core.api_client import (
-    APIClient,
-    TOKEN_ADDRESSES,
-    GRAPHQL_ENDPOINTS,
     ETHPLORER_API_URL,
+    GRAPHQL_ENDPOINTS,
+    TOKEN_ADDRESSES,
+    APIClient,
 )
 
 

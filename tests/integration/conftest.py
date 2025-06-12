@@ -1,7 +1,8 @@
 import os
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add the project root to the Python path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -18,11 +19,11 @@ def setup_test_environment():
     # Create test data directory if it doesn't exist
     test_data_dir = Path(__file__).parent / "test_data"
     test_data_dir.mkdir(exist_ok=True)
-    
+
     # Set up any environment variables needed for testing
     os.environ["GOVERNANCE_ANALYZER_ENV"] = "test"
-    
+
     yield
-    
+
     # Clean up after tests if needed
-    # test_data_dir.rmdir()  # Uncomment if you want to clean up test data directory after tests 
+    # test_data_dir.rmdir()  # Uncomment if you want to clean up test data directory after tests
