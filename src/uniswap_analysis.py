@@ -1,15 +1,13 @@
+"""Analysis module for Uniswap (UNI) governance token distribution.
 """
-Analysis module for Uniswap (UNI) governance token distribution.
-"""
-
-import logging
-from datetime import datetime
-import os
 import json
+import logging
+import os
+from datetime import datetime
 
 from analyzer.api import EtherscanAPI
-from analyzer.token_analysis import TokenDistributionAnalyzer
 from analyzer.config import Config
+from analyzer.token_analysis import TokenDistributionAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +19,7 @@ class UniswapAnalyzer:
     UNI_CONTRACT_ADDRESS = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
 
     def __init__(self, api_client=None, config=None):
-        """
-        Initialize the Uniswap analyzer with API client and configuration.
+        """Initialize the Uniswap analyzer with API client and configuration.
 
         Args:
             api_client: An instance of EtherscanAPI or compatible client
@@ -33,8 +30,7 @@ class UniswapAnalyzer:
         self.analyzer = TokenDistributionAnalyzer(self.api_client, self.config)
 
     def get_token_holders(self, limit=100):
-        """
-        Get Uniswap token holders.
+        """Get Uniswap token holders.
 
         Args:
             limit: Maximum number of holders to retrieve
@@ -46,8 +42,7 @@ class UniswapAnalyzer:
         return self.api_client.get_token_holders(self.UNI_CONTRACT_ADDRESS, limit)
 
     def analyze_distribution(self, limit=100):
-        """
-        Analyze the distribution of UNI tokens.
+        """Analyze the distribution of UNI tokens.
 
         Args:
             limit: Maximum number of holders to analyze
@@ -106,15 +101,9 @@ class UniswapAnalyzer:
         # Calculate percentage held by top holders
         total_supply = sum(balances)
         top_5_pct = sum(balances[:5]) / total_supply * 100 if len(balances) >= 5 else 0
-        top_10_pct = (
-            sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
-        )
-        top_20_pct = (
-            sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
-        )
-        top_50_pct = (
-            sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
-        )
+        top_10_pct = sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
+        top_20_pct = sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
+        top_50_pct = sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
 
         results = {
             "token": "UNI",
@@ -136,8 +125,7 @@ class UniswapAnalyzer:
         return results
 
     def save_analysis_results(self, results, filename=None):
-        """
-        Save analysis results to a JSON file.
+        """Save analysis results to a JSON file.
 
         Args:
             results: Analysis results dictionary
@@ -166,7 +154,7 @@ def main():
     analyzer.save_analysis_results(results)
 
     # Print some key metrics
-    print(f"UNI Token Distribution Analysis:")
+    print("UNI Token Distribution Analysis:")
     print(f"Gini Coefficient: {results['metrics']['gini_coefficient']:.4f}")
     print(f"Herfindahl Index: {results['metrics']['herfindahl_index']:.4f}")
     print(

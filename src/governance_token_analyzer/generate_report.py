@@ -1,30 +1,29 @@
 #!/usr/bin/env python
-"""
-Governance Token Distribution Report Generator
+"""Governance Token Distribution Report Generator
 
 This script generates comprehensive reports on governance token distribution patterns
 including visualizations, metrics, and insights across multiple protocols.
 """
 
-import os
-import sys
 import json
 import logging
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from pathlib import Path
+import os
+import sys
 from datetime import datetime
-from typing import Dict, List, Any, Optional
-import matplotlib.gridspec as gridspec
+from pathlib import Path
+from typing import Dict, List
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sns
 
 # Add the src directory to the Python path
 src_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(src_dir))
 
 # Import project modules
-from src.analyzer.config import Config, DEFAULT_OUTPUT_DIR
+from src.analyzer.config import DEFAULT_OUTPUT_DIR, Config
 
 # Configure logging
 logging.basicConfig(
@@ -39,8 +38,7 @@ class ReportGenerator:
     """Generates comprehensive reports on governance token distribution."""
 
     def __init__(self, output_dir: str = "reports"):
-        """
-        Initialize the report generator.
+        """Initialize the report generator.
 
         Args:
             output_dir: Directory to save generated reports
@@ -61,21 +59,18 @@ class ReportGenerator:
         self.colors = sns.color_palette("viridis", 10)
 
         # Custom style for matplotlib
-        plt.rcParams.update(
-            {
-                "figure.figsize": (10, 6),
-                "axes.labelsize": 12,
-                "axes.titlesize": 14,
-                "xtick.labelsize": 10,
-                "ytick.labelsize": 10,
-                "legend.fontsize": 10,
-                "font.family": "sans-serif",
-            }
-        )
+        plt.rcParams.update({
+            'figure.figsize': (10, 6),
+            'axes.labelsize': 12,
+            'axes.titlesize': 14,
+            'xtick.labelsize': 10,
+            'ytick.labelsize': 10,
+            'legend.fontsize': 10,
+            'font.family': 'sans-serif'
+        })
 
     def load_protocol_data(self, protocols: List[str]) -> Dict[str, Dict]:
-        """
-        Load analysis data for multiple protocols.
+        """Load analysis data for multiple protocols.
 
         Args:
             protocols: List of protocol names to include in the report
@@ -94,7 +89,7 @@ class ReportGenerator:
                     logger.error(f"Analysis file not found: {file_path}")
                     continue
 
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     protocol_data = json.load(f)
 
                 data[protocol] = protocol_data
@@ -103,11 +98,8 @@ class ReportGenerator:
 
         return data
 
-    def generate_comparative_concentration_chart(
-        self, protocol_data: Dict[str, Dict]
-    ) -> str:
-        """
-        Generate a comparative chart of concentration metrics across protocols.
+    def generate_comparative_concentration_chart(self, protocol_data: Dict[str, Dict]) -> str:
+        """Generate a comparative chart of concentration metrics across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -121,26 +113,22 @@ class ReportGenerator:
         hhi_values = []
 
         for protocol, data in protocol_data.items():
-            protocols.append(data.get("symbol", protocol.upper()))
+            protocols.append(data.get('symbol', protocol.upper()))
 
             # Extract metrics (with fallbacks if not available)
-            metrics = data.get("concentration_metrics", {})
-            gini_values.append(metrics.get("gini_coefficient", 0))
-            hhi_values.append(
-                metrics.get("herfindahl_index", 0) / 10000
-            )  # Normalize HHI to 0-1
+            metrics = data.get('concentration_metrics', {})
+            gini_values.append(metrics.get('gini_coefficient', 0))
+            hhi_values.append(metrics.get('herfindahl_index', 0) / 10000)  # Normalize HHI to 0-1
 
         # Create a DataFrame for easier plotting
-        df = pd.DataFrame(
-            {
-                "Protocol": protocols,
-                "Gini Coefficient": gini_values,
-                "Normalized HHI": hhi_values,
-            }
-        )
+        df = pd.DataFrame({
+            'Protocol': protocols,
+            'Gini Coefficient': gini_values,
+            'Normalized HHI': hhi_values
+        })
 
         # Sort by Gini coefficient
-        df = df.sort_values("Gini Coefficient")
+        df = df.sort_values('Gini Coefficient')
 
         # Create the plot
         plt.figure(figsize=(12, 8))
@@ -150,20 +138,8 @@ class ReportGenerator:
         r1 = np.arange(len(protocols))
         r2 = [x + bar_width for x in r1]
 
-        plt.bar(
-            r1,
-            df["Gini Coefficient"],
-            width=bar_width,
-            label="Gini Coefficient",
-            color=self.colors[0],
-        )
-        plt.bar(
-            r2,
-            df["Normalized HHI"],
-            width=bar_width,
-            label="Normalized HHI",
-            color=self.colors[2],
-        )
+        plt.bar(r1, df['Gini Coefficient'], width=bar_width, label='Gini Coefficient', color=self.colors[0])
+        plt.bar(r2, df['Normalized HHI'], width=bar_width, label='Normalized HHI', color=self.colors[2])
 
         # Add labels and title
         plt.xlabel("Protocol")
@@ -173,8 +149,8 @@ class ReportGenerator:
         plt.legend()
 
         # Add a reference line for high concentration
-        plt.axhline(y=0.6, color="r", linestyle="--", alpha=0.7)
-        plt.text(len(protocols) - 1, 0.62, "High Concentration Threshold", color="r")
+        plt.axhline(y=0.6, color='r', linestyle='--', alpha=0.7)
+        plt.text(len(protocols)-1, 0.62, 'High Concentration Threshold', color='r')
 
         # Save the chart
         chart_path = self.output_dir / "comparative_concentration.png"
@@ -186,8 +162,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_distribution_comparison(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a comparison of token distribution patterns across protocols.
+        """Generate a comparison of token distribution patterns across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -210,24 +185,19 @@ class ReportGenerator:
 
         # Create pie charts for each protocol
         for i, (protocol, data) in enumerate(protocol_data.items()):
-            ax = plt.subplot(rows, cols, i + 1)
+            ax = plt.subplot(rows, cols, i+1)
 
             # Extract top holders data
-            top_holders = data.get("top_holders", [])
+            top_holders = data.get('top_holders', [])
 
             if not top_holders:
-                ax.text(
-                    0.5,
-                    0.5,
-                    f"No holder data for {protocol}",
-                    horizontalalignment="center",
-                    verticalalignment="center",
-                )
+                ax.text(0.5, 0.5, f"No holder data for {protocol}",
+                       horizontalalignment='center', verticalalignment='center')
                 continue
 
             # Extract top 5 holders plus "Others"
-            labels = [f"#{h.get('rank', i + 1)}" for i, h in enumerate(top_holders[:5])]
-            sizes = [h.get("percentage", 0) for h in top_holders[:5]]
+            labels = [f"#{h.get('rank', i+1)}" for i, h in enumerate(top_holders[:5])]
+            sizes = [h.get('percentage', 0) for h in top_holders[:5]]
 
             # Add "Others" slice
             others_pct = 100 - sum(sizes)
@@ -237,15 +207,9 @@ class ReportGenerator:
 
             # Create pie chart
             explode = [0.1] + [0] * (len(sizes) - 1)  # Explode the first slice
-            wedges, texts, autotexts = ax.pie(
-                sizes,
-                explode=explode,
-                labels=None,
-                autopct="%1.1f%%",
-                shadow=True,
-                startangle=90,
-                colors=self.colors,
-            )
+            wedges, texts, autotexts = ax.pie(sizes, explode=explode, labels=None,
+                                             autopct='%1.1f%%', shadow=True,
+                                             startangle=90, colors=self.colors)
 
             # Add legend and title
             ax.legend(
@@ -270,8 +234,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_top_holders_bar_chart(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a bar chart comparing top holder percentages across protocols.
+        """Generate a bar chart comparing top holder percentages across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -286,28 +249,26 @@ class ReportGenerator:
         top20_pct = []
 
         for protocol, data in protocol_data.items():
-            protocols.append(data.get("symbol", protocol.upper()))
+            protocols.append(data.get('symbol', protocol.upper()))
 
             # Extract top holders percentages
-            metrics = data.get("concentration_metrics", {})
-            percentages = metrics.get("top_holders_percentage", {})
+            metrics = data.get('concentration_metrics', {})
+            percentages = metrics.get('top_holders_percentage', {})
 
-            top5_pct.append(percentages.get("5", 0) if "5" in percentages else 0)
-            top10_pct.append(percentages.get("10", 0) if "10" in percentages else 0)
-            top20_pct.append(percentages.get("20", 0) if "20" in percentages else 0)
+            top5_pct.append(percentages.get('5', 0) if '5' in percentages else 0)
+            top10_pct.append(percentages.get('10', 0) if '10' in percentages else 0)
+            top20_pct.append(percentages.get('20', 0) if '20' in percentages else 0)
 
         # Create DataFrame for plotting
-        df = pd.DataFrame(
-            {
-                "Protocol": protocols,
-                "Top 5 Holders": top5_pct,
-                "Top 10 Holders": top10_pct,
-                "Top 20 Holders": top20_pct,
-            }
-        )
+        df = pd.DataFrame({
+            'Protocol': protocols,
+            'Top 5 Holders': top5_pct,
+            'Top 10 Holders': top10_pct,
+            'Top 20 Holders': top20_pct
+        })
 
         # Sort by top 5 holders percentage
-        df = df.sort_values("Top 5 Holders")
+        df = df.sort_values('Top 5 Holders')
 
         # Create the plot
         plt.figure(figsize=(12, 8))
@@ -317,27 +278,9 @@ class ReportGenerator:
         bar_width = 0.25
 
         # Create bars
-        plt.bar(
-            x_pos - bar_width,
-            df["Top 5 Holders"],
-            width=bar_width,
-            label="Top 5 Holders",
-            color=self.colors[0],
-        )
-        plt.bar(
-            x_pos,
-            df["Top 10 Holders"],
-            width=bar_width,
-            label="Top 10 Holders",
-            color=self.colors[2],
-        )
-        plt.bar(
-            x_pos + bar_width,
-            df["Top 20 Holders"],
-            width=bar_width,
-            label="Top 20 Holders",
-            color=self.colors[4],
-        )
+        plt.bar(x_pos - bar_width, df['Top 5 Holders'], width=bar_width, label='Top 5 Holders', color=self.colors[0])
+        plt.bar(x_pos, df['Top 10 Holders'], width=bar_width, label='Top 10 Holders', color=self.colors[2])
+        plt.bar(x_pos + bar_width, df['Top 20 Holders'], width=bar_width, label='Top 20 Holders', color=self.colors[4])
 
         # Add labels and title
         plt.xlabel("Protocol")
@@ -347,8 +290,8 @@ class ReportGenerator:
         plt.legend()
 
         # Add a reference line at 50% for majority control
-        plt.axhline(y=50, color="r", linestyle="--", alpha=0.7)
-        plt.text(len(protocols) - 1, 52, "50% Control Threshold", color="r")
+        plt.axhline(y=50, color='r', linestyle='--', alpha=0.7)
+        plt.text(len(protocols)-1, 52, '50% Control Threshold', color='r')
 
         # Save the chart
         chart_path = self.output_dir / "top_holders_comparison.png"
@@ -360,8 +303,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_html_report(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a comprehensive HTML report with all analysis results.
+        """Generate a comprehensive HTML report with all analysis results.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -440,13 +382,13 @@ class ReportGenerator:
         <body>
             <h1>Governance Token Distribution Analysis Report</h1>
             <p>Generated on: {timestamp}</p>
-            
+
             <div class="summary">
                 <h2>Executive Summary</h2>
                 <p>This report provides an analysis of token distribution patterns across {len(protocol_data)} governance tokens
                 in the DeFi ecosystem. The analysis focuses on concentration metrics, distribution patterns, and comparative insights.</p>
             </div>
-            
+
             <h2>Protocols Analyzed</h2>
             <table>
                 <tr>
@@ -459,8 +401,8 @@ class ReportGenerator:
 
         # Add protocol data rows
         for protocol, data in protocol_data.items():
-            symbol = data.get("symbol", "N/A")
-            gini = data.get("concentration_metrics", {}).get("gini_coefficient", "N/A")
+            symbol = data.get('symbol', 'N/A')
+            gini = data.get('concentration_metrics', {}).get('gini_coefficient', 'N/A')
 
             # Get top 10 holders percentage
             top_10_pct = "N/A"
@@ -481,62 +423,44 @@ class ReportGenerator:
 
         html_content += """
             </table>
-            
+
             <h2>Comparative Analysis</h2>
-            
+
             <div class="chart-container">
                 <h3>Token Concentration Comparison</h3>
                 <img src="comparative_concentration.png" alt="Token Concentration Comparison">
                 <p>Comparison of concentration metrics (Gini Coefficient and Herfindahl Index)
                 across governance tokens. Higher values indicate more concentrated token distribution.</p>
             </div>
-            
+
             <div class="chart-container">
                 <h3>Token Distribution Comparison</h3>
                 <img src="distribution_comparison.png" alt="Token Distribution Comparison">
                 <p>Pie charts showing the percentage of tokens held by top holders for each protocol.</p>
             </div>
-            
+
             <div class="chart-container">
                 <h3>Top Holders Comparison</h3>
                 <img src="top_holders_comparison.png" alt="Top Holders Comparison">
                 <p>Comparison of token percentages held by top 5, 10, and 20 holders across protocols.</p>
             </div>
-            
+
             <h2>Key Findings</h2>
             <ul>
         """
 
         # Generate key findings based on the data
         # Find most concentrated protocol
-        most_concentrated = max(
-            protocol_data.items(),
-            key=lambda x: x[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0),
-        )
-        most_concentrated_name = most_concentrated[1].get("name", most_concentrated[0])
-        most_concentrated_gini = (
-            most_concentrated[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0)
-        )
+        most_concentrated = max(protocol_data.items(),
+                               key=lambda x: x[1].get('concentration_metrics', {}).get('gini_coefficient', 0))
+        most_concentrated_name = most_concentrated[1].get('name', most_concentrated[0])
+        most_concentrated_gini = most_concentrated[1].get('concentration_metrics', {}).get('gini_coefficient', 0)
 
         # Find least concentrated protocol
-        least_concentrated = min(
-            protocol_data.items(),
-            key=lambda x: x[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 1),
-        )
-        least_concentrated_name = least_concentrated[1].get(
-            "name", least_concentrated[0]
-        )
-        least_concentrated_gini = (
-            least_concentrated[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0)
-        )
+        least_concentrated = min(protocol_data.items(),
+                                key=lambda x: x[1].get('concentration_metrics', {}).get('gini_coefficient', 1))
+        least_concentrated_name = least_concentrated[1].get('name', least_concentrated[0])
+        least_concentrated_gini = least_concentrated[1].get('concentration_metrics', {}).get('gini_coefficient', 0)
 
         html_content += f"""
                 <li>{most_concentrated_name} shows the highest token concentration with a Gini coefficient of {most_concentrated_gini:.4f}</li>
@@ -545,18 +469,18 @@ class ReportGenerator:
 
         # Add more findings based on available metrics
         for protocol, data in protocol_data.items():
-            metrics = data.get("concentration_metrics", {})
-            top_holders_pct = metrics.get("top_holders_percentage", {})
+            metrics = data.get('concentration_metrics', {})
+            top_holders_pct = metrics.get('top_holders_percentage', {})
 
-            if top_holders_pct and "5" in top_holders_pct and top_holders_pct["5"] > 50:
+            if top_holders_pct and '5' in top_holders_pct and top_holders_pct['5'] > 50:
                 html_content += f"""
-                    <li>In {data.get("name", protocol)}, the top 5 holders control {top_holders_pct["5"]:.2f}% of tokens, 
+                    <li>In {data.get('name', protocol)}, the top 5 holders control {top_holders_pct['5']:.2f}% of tokens,
                     which could lead to governance centralization risks</li>
                 """
 
         html_content += """
             </ul>
-            
+
             <h2>Recommendations</h2>
             <ol>
                 <li>Protocols with high concentration should consider mechanisms to encourage wider token distribution</li>
@@ -564,7 +488,7 @@ class ReportGenerator:
                 <li>Regular monitoring of token distribution trends is essential for maintaining decentralized governance</li>
                 <li>Consider implementing token delegation mechanisms to increase governance participation</li>
             </ol>
-            
+
             <div class="footer">
                 <p>Generated by Governance Token Distribution Analyzer | © 2023</p>
             </div>
@@ -581,8 +505,7 @@ class ReportGenerator:
         return str(report_path)
 
     def generate_full_report(self, protocols: List[str] = None) -> str:
-        """
-        Generate a full report including all protocols.
+        """Generate a full report including all protocols.
 
         Args:
             protocols: List of protocol names to include (default: all available)
@@ -591,7 +514,7 @@ class ReportGenerator:
             Path to the generated report
         """
         if protocols is None:
-            protocols = ["compound", "uniswap", "aave"]
+            protocols = ['compound', 'uniswap', 'aave']
 
         # Load data for all protocols
         protocol_data = self.load_protocol_data(protocols)

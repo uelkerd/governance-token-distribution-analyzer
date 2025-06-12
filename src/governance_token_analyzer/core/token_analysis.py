@@ -1,17 +1,16 @@
-"""
-Token Analysis Module for the Governance Token Distribution Analyzer.
+"""Token Analysis Module for the Governance Token Distribution Analyzer.
 
 This module provides functions to analyze token distribution data,
 including concentration metrics and governance participation.
 """
 
 import logging
-import pandas as pd
+from typing import Any, Dict, List, Optional
+
 import numpy as np
-from typing import Dict, List, Any, Tuple, Optional
 
 from .api import EtherscanAPI
-from .config import Config, PROTOCOLS
+from .config import PROTOCOLS, Config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,13 +20,8 @@ logger = logging.getLogger(__name__)
 class TokenDistributionAnalyzer:
     """Analyzes token distribution data for governance tokens."""
 
-    def __init__(
-        self,
-        etherscan_api: Optional[EtherscanAPI] = None,
-        config: Optional[Config] = None,
-    ):
-        """
-        Initialize the token distribution analyzer.
+    def __init__(self, etherscan_api: Optional[EtherscanAPI] = None, config: Optional[Config] = None):
+        """Initialize the token distribution analyzer.
 
         Args:
             etherscan_api: Optional EtherscanAPI instance. If None, a new instance will be created.
@@ -36,11 +30,8 @@ class TokenDistributionAnalyzer:
         self.config = config or Config()
         self.etherscan_api = etherscan_api or EtherscanAPI(self.config.get_api_key())
 
-    def get_token_holders(
-        self, protocol_key: str, limit: int = 100
-    ) -> List[Dict[str, Any]]:
-        """
-        Get the top token holders for a specific protocol.
+    def get_token_holders(self, protocol_key: str, limit: int = 100) -> List[Dict[str, Any]]:
+        """Get the top token holders for a specific protocol.
 
         Args:
             protocol_key: Key of the protocol in the PROTOCOLS dictionary.
@@ -58,9 +49,7 @@ class TokenDistributionAnalyzer:
             return []
 
         token_address = protocol["token_address"]
-        logger.info(
-            f"Fetching top {limit} holders for {protocol['name']} ({protocol['symbol']})"
-        )
+        logger.info(f"Fetching top {limit} holders for {protocol['name']} ({protocol['symbol']})")
 
         # We may need to make multiple API calls to get all holders up to the limit
         page = 1
@@ -97,8 +86,7 @@ class TokenDistributionAnalyzer:
         return holders[:limit]
 
     def calculate_gini_coefficient(self, balances: List[float]) -> float:
-        """
-        Calculate the Gini coefficient for token balances.
+        """Calculate the Gini coefficient for token balances.
 
         The Gini coefficient is a measure of inequality where:
         - 0 represents perfect equality (everyone has the same amount)
@@ -123,16 +111,10 @@ class TokenDistributionAnalyzer:
         # Calculate Gini coefficient using the formula
         # G = (2 * sum(i * x_i) / (n * sum(x_i))) - (n + 1) / n
         indices = np.arange(1, n + 1)
-        return (
-            2 * np.sum(indices * balances_sorted) / (n * np.sum(balances_sorted))
-            - (n + 1) / n
-        )
+        return (2 * np.sum(indices * balances_sorted) / (n * np.sum(balances_sorted)) - (n + 1) / n)
 
-    def calculate_herfindahl_index(
-        self, balances: List[float], total_supply: Optional[float] = None
-    ) -> float:
-        """
-        Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
+    def calculate_herfindahl_index(self, balances: List[float], total_supply: Optional[float] = None) -> float:
+        """Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
 
         HHI is a measure of market concentration, calculated as the sum of
         squared market shares. Higher values indicate more concentration.
@@ -157,15 +139,12 @@ class TokenDistributionAnalyzer:
         market_shares = [(balance / total_supply) * 100 for balance in balances]
 
         # Calculate HHI as sum of squared market shares
-        hhi = sum(share**2 for share in market_shares)
+        hhi = sum(share ** 2 for share in market_shares)
 
         return hhi
 
-    def calculate_concentration_metrics(
-        self, holders: List[Dict[str, Any]], total_supply: str
-    ) -> Dict[str, Any]:
-        """
-        Calculate concentration metrics for token holders.
+    def calculate_concentration_metrics(self, holders: List[Dict[str, Any]], total_supply: str) -> Dict[str, Any]:
+        """Calculate concentration metrics for token holders.
 
         Args:
             holders: List of token holders with their addresses and balances.
@@ -235,8 +214,7 @@ class TokenDistributionAnalyzer:
 
 
 def analyze_compound_token() -> Dict[str, Any]:
-    """
-    Analyze the Compound (COMP) token distribution as a proof of concept.
+    """Analyze the Compound (COMP) token distribution as a proof of concept.
 
     Returns:
         Dictionary containing the analysis results.
@@ -286,17 +264,13 @@ def analyze_compound_token() -> Dict[str, Any]:
         for i, holder in enumerate(top_holders, 1):
             address = holder.get("TokenHolderAddress", "N/A")
             quantity = holder.get("TokenHolderQuantity", "0")
-            percentage = (
-                float(quantity) / float(total_supply) * 100 if total_supply else 0
-            )
-            formatted_holders.append(
-                {
-                    "rank": i,
-                    "address": address,
-                    "tokens": quantity,
-                    "percentage": percentage,
-                }
-            )
+            percentage = float(quantity) / float(total_supply) * 100 if total_supply else 0
+            formatted_holders.append({
+                "rank": i,
+                "address": address,
+                "tokens": quantity,
+                "percentage": percentage
+            })
 
         return {
             "protocol": protocol_key,

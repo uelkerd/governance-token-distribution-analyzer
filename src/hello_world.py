@@ -1,16 +1,16 @@
-"""
-Hello World script to verify the environment is working correctly.
+"""Hello World script to verify the environment is working correctly.
 
 This script tests the basic functionality by making a simple API call
 to Etherscan to get the ETH balance of the Ethereum Foundation address.
 """
 
-import os
-import requests
 import logging
+import os
+
 import dotenv
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+import requests
 
 # Configure logging
 logging.basicConfig(
@@ -58,9 +58,10 @@ def main():
             logger.info(f"ETH Balance: {balance_eth:.2f} ETH")
 
             # Create a simple DataFrame
-            df = pd.DataFrame(
-                {"Entity": ["Ethereum Foundation"], "ETH Balance": [balance_eth]}
-            )
+            df = pd.DataFrame({
+                'Entity': ['Ethereum Foundation'],
+                'ETH Balance': [balance_eth]
+            })
 
             logger.info("DataFrame created successfully:")
             logger.info(f"\n{df}")
@@ -82,9 +83,7 @@ def main():
 
             logger.info(f"Plot saved to {output_path}")
 
-            logger.info(
-                "All tests passed successfully! Your environment is set up correctly."
-            )
+            logger.info("All tests passed successfully! Your environment is set up correctly.")
         else:
             logger.error(f"API Error: {data['message']}")
 
