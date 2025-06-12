@@ -5,21 +5,30 @@ This module handles fetching and processing data for the Aave protocol.
 from typing import Any, Dict, List
 
 from ..core.api_client import APIClient
+from ..core.config import Config
 
-# Initialize API client
+# Initialize API client and config
+config = Config()
 api_client = APIClient()
 
+# Determine if we should use real data by default based on API key availability
+DEFAULT_USE_REAL_DATA = bool(config.etherscan_api_key)
 
-def get_token_holders(limit: int = 100, use_real_data: bool = False) -> List[Dict[str, Any]]:
+
+def get_token_holders(limit: int = 100, use_real_data: bool = None) -> List[Dict[str, Any]]:
     """Get list of top AAVE token holders.
 
     Args:
         limit: Number of holders to retrieve
-        use_real_data: Whether to use real data from APIs (vs. sample data)
+        use_real_data: Whether to use real data from APIs. If None, automatically 
+                      determined based on API key availability.
 
     Returns:
         List of token holder dictionaries
     """
+    if use_real_data is None:
+        use_real_data = DEFAULT_USE_REAL_DATA
+    
     return api_client.get_token_holders('aave', limit, use_real_data)
 
 

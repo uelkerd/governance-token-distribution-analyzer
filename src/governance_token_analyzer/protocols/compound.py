@@ -5,47 +5,64 @@ This module handles fetching and processing data for the Compound protocol.
 from typing import Any, Dict, List
 
 from ..core.api_client import APIClient
+from ..core.config import Config
 
-# Initialize API client
+# Initialize API client and config
+config = Config()
 api_client = APIClient()
 
+# Determine if we should use real data by default based on API key availability
+DEFAULT_USE_REAL_DATA = bool(config.etherscan_api_key)
 
-def get_token_holders(limit: int = 100, use_real_data: bool = False) -> List[Dict[str, Any]]:
+
+def get_token_holders(limit: int = 100, use_real_data: bool = None) -> List[Dict[str, Any]]:
     """Get list of top COMP token holders.
 
     Args:
         limit: Number of holders to retrieve
-        use_real_data: Whether to use real data from APIs (vs. sample data)
+        use_real_data: Whether to use real data from APIs. If None, automatically 
+                      determined based on API key availability.
 
     Returns:
         List of token holder dictionaries
     """
+    if use_real_data is None:
+        use_real_data = DEFAULT_USE_REAL_DATA
+    
     return api_client.get_token_holders('compound', limit, use_real_data)
 
 
-def get_governance_proposals(limit: int = 10, use_real_data: bool = False) -> List[Dict[str, Any]]:
+def get_governance_proposals(limit: int = 10, use_real_data: bool = None) -> List[Dict[str, Any]]:
     """Get list of Compound governance proposals.
 
     Args:
         limit: Number of proposals to retrieve
-        use_real_data: Whether to use real data from APIs (vs. sample data)
+        use_real_data: Whether to use real data from APIs. If None, automatically 
+                      determined based on API key availability.
 
     Returns:
         List of proposal dictionaries
     """
+    if use_real_data is None:
+        use_real_data = DEFAULT_USE_REAL_DATA
+    
     return api_client.get_governance_proposals('compound', limit, use_real_data)
 
 
-def get_governance_votes(proposal_id: int, use_real_data: bool = False) -> List[Dict[str, Any]]:
+def get_governance_votes(proposal_id: int, use_real_data: bool = None) -> List[Dict[str, Any]]:
     """Get list of votes for a specific proposal.
 
     Args:
         proposal_id: ID of the proposal
-        use_real_data: Whether to use real data from APIs (vs. sample data)
+        use_real_data: Whether to use real data from APIs. If None, automatically 
+                      determined based on API key availability.
 
     Returns:
         List of vote dictionaries
     """
+    if use_real_data is None:
+        use_real_data = DEFAULT_USE_REAL_DATA
+    
     return api_client.get_governance_votes('compound', proposal_id, use_real_data)
 
 

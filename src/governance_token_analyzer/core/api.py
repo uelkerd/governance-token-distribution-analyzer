@@ -92,7 +92,7 @@ class EtherscanAPI:
         """Get a list of token holders.
 
         Note: This requires a paid Etherscan API key for the tokenholderslist endpoint.
-        For the free tier, we'll simulate this with a limited list of holders.
+        For the free tier, we'll use alternative methods to get holder data.
 
         Args:
             token_address (str): The Ethereum address of the token.
@@ -102,10 +102,12 @@ class EtherscanAPI:
         Returns:
             Dict[str, Any]: List of token holders.
         """
-        # For free tier API, we'll use account/txlist to get transactions and simulate holder data
-        # In a real implementation with a paid API key, use the tokenholderlist endpoint
+        # Check if we have an API key
+        if not self.api_key:
+            logger.warning("No Etherscan API key provided - using simulated data")
+            return self._generate_simulated_holders(token_address, page, offset)
 
-        # Attempt to use the token holder list endpoint first
+        # First, try the token holder list endpoint (requires paid API)
         params = {
             'module': 'token',
             'action': 'tokenholderlist',
@@ -117,16 +119,107 @@ class EtherscanAPI:
         try:
             result = self._make_request(params)
             if 'result' in result and not isinstance(result['result'], str):
+                logger.info(f"Successfully retrieved {len(result['result'])} token holders from API")
                 return result
         except Exception as e:
             logger.warning(f"Token holder list endpoint failed: {str(e)}")
 
-        # Fallback to simulated data if the API call doesn't work
-        logger.info("Using simulated token holder data (API requires paid tier for actual data)")
+        # Alternative approach: Use token transfer events to identify holders
+        # This works with free API tier
+        try:
+            logger.info("Attempting to get token holders via transfer events...")
+            holders_data = self._get_holders_from_transfers(token_address, offset)
+            if holders_data:
+                logger.info(f"Successfully retrieved {len(holders_data['result'])} token holders from transfer events")
+                return holders_data
+        except Exception as e:
+            logger.warning(f"Transfer events approach failed: {str(e)}")
 
-        # Generate simulated holder data for testing
-        simulated_data = self._generate_simulated_holders(token_address, page, offset)
-        return simulated_data
+        # Final fallback to simulated data
+        logger.warning("All API methods failed - using simulated data for testing")
+        return self._generate_simulated_holders(token_address, page, offset)
+
+    def _get_holders_from_transfers(self, token_address: str, limit: int) -> Dict[str, Any]:
+        """Get token holders by analyzing recent transfer events.
+        
+        This method works with free Etherscan API tier.
+        
+        Args:
+            token_address: Token contract address
+            limit: Maximum number of holders to return
+            
+        Returns:
+            Dict with holder data in Etherscan format
+        """
+        # Get recent token transfers
+        params = {
+            'module': 'account',
+            'action': 'tokentx',
+            'contractaddress': token_address,
+            'page': 1,
+            'offset': 1000,  # Get more transfers to find unique holders
+            'sort': 'desc'
+        }
+        
+        transfers_result = self._make_request(params)
+        if 'result' not in transfers_result:
+            raise Exception("Failed to get token transfers")
+        
+        transfers = transfers_result['result']
+        if isinstance(transfers, str):
+            raise Exception(f"API error: {transfers}")
+        
+        # Extract unique recipient addresses and their latest balances
+        holder_addresses = set()
+        for transfer in transfers:
+            if transfer.get('to') and transfer['to'] != '0x0000000000000000000000000000000000000000':
+                holder_addresses.add(transfer['to'])
+            if len(holder_addresses) >= limit * 2:  # Get extra to account for zero balances
+                break
+        
+        # Get current balances for these addresses
+        holders = []
+        for address in list(holder_addresses)[:limit * 2]:  # Check more than needed
+            try:
+                balance_result = self.get_token_balance(token_address, address)
+                if 'result' in balance_result:
+                    balance = int(balance_result['result'])
+                    if balance > 0:  # Only include addresses with positive balance
+                        holders.append({
+                            "TokenHolderAddress": address,
+                            "TokenHolderQuantity": str(balance),
+                            "balance": str(balance)
+                        })
+                        
+                        if len(holders) >= limit:
+                            break
+            except Exception as e:
+                logger.debug(f"Failed to get balance for {address}: {e}")
+                continue
+        
+        # Sort by balance (descending)
+        holders.sort(key=lambda x: int(x['TokenHolderQuantity']), reverse=True)
+        
+        # Calculate percentages if we have total supply
+        try:
+            supply_result = self.get_token_supply(token_address)
+            if 'result' in supply_result:
+                total_supply = int(supply_result['result'])
+                for holder in holders:
+                    balance = int(holder['TokenHolderQuantity'])
+                    percentage = (balance / total_supply) * 100
+                    holder['TokenHolderPercentage'] = f"{percentage:.6f}"
+        except Exception as e:
+            logger.debug(f"Failed to calculate percentages: {e}")
+            # Set default percentages
+            for i, holder in enumerate(holders):
+                holder['TokenHolderPercentage'] = f"{(100 / len(holders)) * (len(holders) - i):.6f}"
+        
+        return {
+            "status": "1",
+            "message": "OK",
+            "result": holders[:limit]
+        }
 
     def _generate_simulated_holders(self, token_address: str, page: int, offset: int) -> Dict[str, Any]:
         """Generate simulated token holder data for testing purposes.
