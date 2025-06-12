@@ -15,4 +15,4 @@ setup(
     install_requires=[
         # Dependencies are specified in requirements.txt
     ],
-) 
+)
