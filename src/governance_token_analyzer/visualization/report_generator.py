@@ -18,8 +18,7 @@ from . import charts, historical_charts
 
 
 class ReportGenerator:
-    """Generates comprehensive reports with visualizations and analysis.
-    """
+    """Generates comprehensive reports with visualizations and analysis."""
 
     def __init__(self, output_dir: str = "reports", template_dir: str = None):
         """Initialize the report generator.
@@ -195,7 +194,9 @@ class ReportGenerator:
         # Generate visualizations if requested
         visualizations = []
         if include_visualizations:
-            visualizations = self._generate_snapshot_visualizations(protocol_data, viz_dir)
+            visualizations = self._generate_snapshot_visualizations(
+                protocol_data, viz_dir
+            )
 
         # Generate report based on format
         if output_format == "html":
@@ -254,10 +255,12 @@ class ReportGenerator:
         os.makedirs(viz_dir, exist_ok=True)
 
         # Extract latest metrics from most recent snapshot
-        latest_metrics = self._extract_metrics(snapshots[-1]['data'])
+        latest_metrics = self._extract_metrics(snapshots[-1]["data"])
 
         # Generate historical visualizations
-        historical_visualizations = self._generate_historical_visualizations(snapshots, viz_dir)
+        historical_visualizations = self._generate_historical_visualizations(
+            snapshots, viz_dir
+        )
 
         # Generate report based on format
         if output_format == "html":
@@ -323,7 +326,9 @@ class ReportGenerator:
             protocol_metrics[protocol] = self._extract_metrics(data)
 
         # Generate comparison visualizations
-        comparison_visualizations = self._generate_comparison_visualizations(protocol_data, viz_dir)
+        comparison_visualizations = self._generate_comparison_visualizations(
+            protocol_data, viz_dir
+        )
 
         # Generate report based on format
         if output_format == "html":
@@ -374,20 +379,27 @@ class ReportGenerator:
                 metrics.append(metric)
 
         # Add token holder count
-        if 'token_holders' in protocol_data:
-            metrics.append({
-                'name': 'Token Holder Count',
-                'value': len(protocol_data['token_holders']),
-                'description': 'Total number of token holders'
-            })
+        if "token_holders" in protocol_data:
+            metrics.append(
+                {
+                    "name": "Token Holder Count",
+                    "value": len(protocol_data["token_holders"]),
+                    "description": "Total number of token holders",
+                }
+            )
 
         # Add governance participation if available
-        if 'governance_data' in protocol_data and 'participation_rate' in protocol_data['governance_data']:
-            metrics.append({
-                'name': 'Governance Participation Rate',
-                'value': f"{protocol_data['governance_data']['participation_rate']:.2f}%",
-                'description': 'Percentage of token supply that participates in governance'
-            })
+        if (
+            "governance_data" in protocol_data
+            and "participation_rate" in protocol_data["governance_data"]
+        ):
+            metrics.append(
+                {
+                    "name": "Governance Participation Rate",
+                    "value": f"{protocol_data['governance_data']['participation_rate']:.2f}%",
+                    "description": "Percentage of token supply that participates in governance",
+                }
+            )
 
         return metrics
 
@@ -400,19 +412,17 @@ class ReportGenerator:
             "proposal_count": "Number of governance proposals",
         }
 
-        return descriptions.get(metric_name, 'No description available')
+        return descriptions.get(metric_name, "No description available")
 
     def _generate_snapshot_visualizations(
-        self,
-        protocol_data: Dict[str, Any],
-        viz_dir: str
+        self, protocol_data: Dict[str, Any], viz_dir: str
     ) -> List[Dict[str, str]]:
         """Generate visualizations for a protocol snapshot."""
         visualizations = []
 
         # Create distribution chart
-        if 'token_holders' in protocol_data:
-            holder_df = pd.DataFrame(protocol_data['token_holders'])
+        if "token_holders" in protocol_data:
+            holder_df = pd.DataFrame(protocol_data["token_holders"])
 
             # Distribution chart
             fig = charts.create_distribution_chart(
@@ -422,11 +432,15 @@ class ReportGenerator:
             fig.savefig(dist_chart_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Token Holder Distribution',
-                'path': os.path.relpath(dist_chart_path, start=os.path.dirname(viz_dir)),
-                'description': 'Distribution of tokens among holders'
-            })
+            visualizations.append(
+                {
+                    "title": "Token Holder Distribution",
+                    "path": os.path.relpath(
+                        dist_chart_path, start=os.path.dirname(viz_dir)
+                    ),
+                    "description": "Distribution of tokens among holders",
+                }
+            )
 
             # Lorenz curve
             fig = charts.create_lorenz_curve(
@@ -436,18 +450,20 @@ class ReportGenerator:
             fig.savefig(lorenz_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Lorenz Curve',
-                'path': os.path.relpath(lorenz_path, start=os.path.dirname(viz_dir)),
-                'description': 'Lorenz curve showing inequality in token distribution'
-            })
+            visualizations.append(
+                {
+                    "title": "Lorenz Curve",
+                    "path": os.path.relpath(
+                        lorenz_path, start=os.path.dirname(viz_dir)
+                    ),
+                    "description": "Lorenz curve showing inequality in token distribution",
+                }
+            )
 
         return visualizations
 
     def _generate_historical_visualizations(
-        self,
-        snapshots: List[Dict[str, Any]],
-        viz_dir: str
+        self, snapshots: List[Dict[str, Any]], viz_dir: str
     ) -> List[Dict[str, str]]:
         """Generate visualizations for historical data."""
         visualizations = []
@@ -455,76 +471,84 @@ class ReportGenerator:
         # Create a time series from snapshots
         time_series_data = []
         for snapshot in snapshots:
-            timestamp = datetime.fromisoformat(snapshot['timestamp'])
+            timestamp = datetime.fromisoformat(snapshot["timestamp"])
 
             # Extract metrics
-            metrics = snapshot['data'].get('metrics', {})
+            metrics = snapshot["data"].get("metrics", {})
 
             # Add governance data if available
-            governance_data = snapshot['data'].get('governance_data', {})
-            participation_rate = governance_data.get('participation_rate')
+            governance_data = snapshot["data"].get("governance_data", {})
+            participation_rate = governance_data.get("participation_rate")
 
-            time_series_data.append({
-                'timestamp': timestamp,
-                'gini_coefficient': metrics.get('gini_coefficient'),
-                'top_10_concentration': metrics.get('top_10_concentration'),
-                'participation_rate': participation_rate
-            })
+            time_series_data.append(
+                {
+                    "timestamp": timestamp,
+                    "gini_coefficient": metrics.get("gini_coefficient"),
+                    "top_10_concentration": metrics.get("top_10_concentration"),
+                    "participation_rate": participation_rate,
+                }
+            )
 
         # Convert to DataFrame
         df = pd.DataFrame(time_series_data)
-        df.set_index('timestamp', inplace=True)
+        df.set_index("timestamp", inplace=True)
 
         # Generate gini coefficient over time chart
         if "gini_coefficient" in df.columns:
             fig = historical_charts.plot_metric_over_time(
-                df,
-                'gini_coefficient',
-                title="Gini Coefficient Over Time"
+                df, "gini_coefficient", title="Gini Coefficient Over Time"
             )
             gini_path = os.path.join(viz_dir, "gini_over_time.png")
             fig.savefig(gini_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Gini Coefficient Over Time',
-                'path': os.path.relpath(gini_path, start=os.path.dirname(viz_dir)),
-                'description': 'Changes in token distribution inequality over time'
-            })
+            visualizations.append(
+                {
+                    "title": "Gini Coefficient Over Time",
+                    "path": os.path.relpath(gini_path, start=os.path.dirname(viz_dir)),
+                    "description": "Changes in token distribution inequality over time",
+                }
+            )
 
         # Generate top 10 concentration over time chart
         if "top_10_concentration" in df.columns:
             fig = historical_charts.plot_metric_over_time(
                 df,
-                'top_10_concentration',
-                title="Top 10 Holder Concentration Over Time"
+                "top_10_concentration",
+                title="Top 10 Holder Concentration Over Time",
             )
             top10_path = os.path.join(viz_dir, "top10_over_time.png")
             fig.savefig(top10_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Top 10 Holder Concentration Over Time',
-                'path': os.path.relpath(top10_path, start=os.path.dirname(viz_dir)),
-                'description': 'Changes in token concentration among top 10 holders over time'
-            })
+            visualizations.append(
+                {
+                    "title": "Top 10 Holder Concentration Over Time",
+                    "path": os.path.relpath(top10_path, start=os.path.dirname(viz_dir)),
+                    "description": "Changes in token concentration among top 10 holders over time",
+                }
+            )
 
         # Generate participation rate over time chart
         if "participation_rate" in df.columns:
             fig = historical_charts.plot_metric_over_time(
                 df,
-                'participation_rate',
-                title="Governance Participation Rate Over Time"
+                "participation_rate",
+                title="Governance Participation Rate Over Time",
             )
             participation_path = os.path.join(viz_dir, "participation_over_time.png")
             fig.savefig(participation_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Governance Participation Rate Over Time',
-                'path': os.path.relpath(participation_path, start=os.path.dirname(viz_dir)),
-                'description': 'Changes in governance participation over time'
-            })
+            visualizations.append(
+                {
+                    "title": "Governance Participation Rate Over Time",
+                    "path": os.path.relpath(
+                        participation_path, start=os.path.dirname(viz_dir)
+                    ),
+                    "description": "Changes in governance participation over time",
+                }
+            )
 
         # Generate concentration heatmap
         fig = historical_charts.create_concentration_heatmap(snapshots)
@@ -532,11 +556,13 @@ class ReportGenerator:
         fig.savefig(heatmap_path)
         plt.close(fig)
 
-        visualizations.append({
-            'title': 'Token Concentration Heatmap',
-            'path': os.path.relpath(heatmap_path, start=os.path.dirname(viz_dir)),
-            'description': 'Heatmap showing changes in token concentration over time'
-        })
+        visualizations.append(
+            {
+                "title": "Token Concentration Heatmap",
+                "path": os.path.relpath(heatmap_path, start=os.path.dirname(viz_dir)),
+                "description": "Heatmap showing changes in token concentration over time",
+            }
+        )
 
         # Create multi-metric dashboard
         metrics_to_include = [col for col in df.columns if not df[col].isnull().all()]
@@ -550,18 +576,20 @@ class ReportGenerator:
             fig.savefig(dashboard_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Governance Metrics Dashboard',
-                'path': os.path.relpath(dashboard_path, start=os.path.dirname(viz_dir)),
-                'description': 'Dashboard showing multiple governance metrics over time'
-            })
+            visualizations.append(
+                {
+                    "title": "Governance Metrics Dashboard",
+                    "path": os.path.relpath(
+                        dashboard_path, start=os.path.dirname(viz_dir)
+                    ),
+                    "description": "Dashboard showing multiple governance metrics over time",
+                }
+            )
 
         return visualizations
 
     def _generate_comparison_visualizations(
-        self,
-        protocol_data: Dict[str, Dict[str, Any]],
-        viz_dir: str
+        self, protocol_data: Dict[str, Dict[str, Any]], viz_dir: str
     ) -> List[Dict[str, str]]:
         """Generate visualizations comparing multiple protocols."""
         visualizations = []
@@ -575,62 +603,69 @@ class ReportGenerator:
         # Create bar chart comparing gini coefficients
         if all("gini_coefficient" in metrics for metrics in metrics_data.values()):
             protocols = list(protocol_data.keys())
-            gini_values = [metrics_data[p]['gini_coefficient'] for p in protocols]
+            gini_values = [metrics_data[p]["gini_coefficient"] for p in protocols]
 
             fig, ax = plt.subplots(figsize=(10, 6))
             ax.bar(protocols, gini_values)
-            ax.set_xlabel('Protocol')
-            ax.set_ylabel('Gini Coefficient')
-            ax.set_title('Gini Coefficient Comparison')
-            ax.grid(axis='y', alpha=0.3)
+            ax.set_xlabel("Protocol")
+            ax.set_ylabel("Gini Coefficient")
+            ax.set_title("Gini Coefficient Comparison")
+            ax.grid(axis="y", alpha=0.3)
 
             # Add value labels
             for i, v in enumerate(gini_values):
-                ax.text(i, v + 0.01, f"{v:.3f}", ha='center')
+                ax.text(i, v + 0.01, f"{v:.3f}", ha="center")
 
             gini_path = os.path.join(viz_dir, "gini_comparison.png")
             fig.savefig(gini_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Gini Coefficient Comparison',
-                'path': os.path.relpath(gini_path, start=os.path.dirname(viz_dir)),
-                'description': 'Comparison of token distribution inequality across protocols'
-            })
+            visualizations.append(
+                {
+                    "title": "Gini Coefficient Comparison",
+                    "path": os.path.relpath(gini_path, start=os.path.dirname(viz_dir)),
+                    "description": "Comparison of token distribution inequality across protocols",
+                }
+            )
 
         # Create bar chart comparing top 10 holder concentration
         if all("top_10_concentration" in metrics for metrics in metrics_data.values()):
             protocols = list(protocol_data.keys())
-            top10_values = [metrics_data[p]['top_10_concentration'] for p in protocols]
+            top10_values = [metrics_data[p]["top_10_concentration"] for p in protocols]
 
             fig, ax = plt.subplots(figsize=(10, 6))
             ax.bar(protocols, top10_values)
-            ax.set_xlabel('Protocol')
-            ax.set_ylabel('Top 10 Concentration (%)')
-            ax.set_title('Top 10 Holder Concentration Comparison')
-            ax.grid(axis='y', alpha=0.3)
+            ax.set_xlabel("Protocol")
+            ax.set_ylabel("Top 10 Concentration (%)")
+            ax.set_title("Top 10 Holder Concentration Comparison")
+            ax.grid(axis="y", alpha=0.3)
 
             # Add value labels
             for i, v in enumerate(top10_values):
-                ax.text(i, v + 1, f"{v:.1f}%", ha='center')
+                ax.text(i, v + 1, f"{v:.1f}%", ha="center")
 
             top10_path = os.path.join(viz_dir, "top10_comparison.png")
             fig.savefig(top10_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Top 10 Holder Concentration Comparison',
-                'path': os.path.relpath(top10_path, start=os.path.dirname(viz_dir)),
-                'description': 'Comparison of token concentration among top 10 holders across protocols'
-            })
+            visualizations.append(
+                {
+                    "title": "Top 10 Holder Concentration Comparison",
+                    "path": os.path.relpath(top10_path, start=os.path.dirname(viz_dir)),
+                    "description": "Comparison of token concentration among top 10 holders across protocols",
+                }
+            )
 
         # Create radar chart for multiple metrics
         # First, check which metrics are available for all protocols
-        common_metrics = ['gini_coefficient', 'top_10_concentration']
+        common_metrics = ["gini_coefficient", "top_10_concentration"]
 
-        if all(any(m in metrics_data[p] for m in common_metrics) for p in protocol_data.keys()):
+        if all(
+            any(m in metrics_data[p] for m in common_metrics)
+            for p in protocol_data.keys()
+        ):
             # Create radar chart data
-            metric_labels = [m.replace('_', ' ').title() for m in common_metrics]
+            metric_labels = [m.replace("_", " ").title() for m in common_metrics]
 
             # Normalize values for radar chart
             normalized_values = {}
@@ -677,17 +712,19 @@ class ReportGenerator:
             ax.set_ylim(0, 1)
 
             # Add legend
-            ax.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
+            ax.legend(loc="upper right", bbox_to_anchor=(0.1, 0.1))
 
             radar_path = os.path.join(viz_dir, "protocol_comparison_radar.png")
             fig.savefig(radar_path)
             plt.close(fig)
 
-            visualizations.append({
-                'title': 'Protocol Comparison Radar Chart',
-                'path': os.path.relpath(radar_path, start=os.path.dirname(viz_dir)),
-                'description': 'Radar chart comparing key metrics across protocols'
-            })
+            visualizations.append(
+                {
+                    "title": "Protocol Comparison Radar Chart",
+                    "path": os.path.relpath(radar_path, start=os.path.dirname(viz_dir)),
+                    "description": "Radar chart comparing key metrics across protocols",
+                }
+            )
 
         return visualizations
 
@@ -756,7 +793,10 @@ class ReportGenerator:
 
         return output_path
 
-def generate_historical_analysis_report(protocol, time_series_data, snapshots, output_path):
+
+def generate_historical_analysis_report(
+    protocol, time_series_data, snapshots, output_path
+):
     """Generate a historical analysis report for a protocol.
 
     This is a standalone function that creates a report with historical data analysis.
@@ -778,7 +818,10 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
         snapshots=snapshots, protocol_name=protocol, output_format="html"
     )
 
-def generate_comprehensive_report(protocol, snapshots, time_series_data, visualization_paths, output_path):
+
+def generate_comprehensive_report(
+    protocol, snapshots, time_series_data, visualization_paths, output_path
+):
     """Generate a comprehensive report with all analysis components.
 
     This is a standalone function that creates a comprehensive report with
@@ -913,8 +956,10 @@ def generate_comprehensive_report(protocol, snapshots, time_series_data, visuali
                     </tr>
             """
 
-            for metric, value in latest_snapshot['data']['metrics'].items():
-                formatted_value = f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
+            for metric, value in latest_snapshot["data"]["metrics"].items():
+                formatted_value = (
+                    f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
+                )
                 html_content += f"""
                     <tr>
                         <td>{metric.replace("_", " ").title()}</td>

@@ -81,4 +81,5 @@ class AnalysisError(Exception):
 
 class NetworkAnalysisError(Exception):
     """Exception raised for errors during network analysis."""
+
     pass

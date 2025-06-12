@@ -113,7 +113,7 @@ class APIClient:
         self.infura_api_key = infura_api_key
         self.graph_api_key = graph_api_key
         self.session = requests.Session()
-        
+
         # Configure logging
         self.logger = logging.getLogger(__name__)
 
@@ -258,109 +258,111 @@ class APIClient:
             "participation_rate": participation_rate,
             "timestamp": datetime.now().isoformat(),
         }
-        
+
     def _calculate_participation_rate(self, proposals: List[Dict[str, Any]]) -> float:
         """
         Calculate the participation rate based on proposal votes.
-        
+
         Args:
             proposals: List of proposal dictionaries
-            
+
         Returns:
             Float representing participation rate (0-1)
         """
         if not proposals:
             return 0.0
-            
+
         participation_sum = 0.0
         for proposal in proposals:
             if "participation_rate" in proposal:
                 participation_sum += proposal["participation_rate"]
-                
+
         return participation_sum / len(proposals)
-    
+
     def _generate_sample_holder_data(
         self, protocol: str, count: int
     ) -> List[Dict[str, Any]]:
         """
         Generate sample token holder data for testing.
-        
+
         Args:
             protocol: Protocol name
             count: Number of holders to generate
-            
+
         Returns:
             List of sample token holder dictionaries
         """
         info = PROTOCOL_INFO[protocol]
         total_supply = info["total_supply"]
-        
+
         # Generate a power-law distribution of token balances
         balances = self._generate_power_law_distribution(count, total_supply)
-        
+
         # Create sample addresses
         holders = []
         for i in range(count):
             # Use a deterministic address based on index
-            address = f"0x{i+1:040x}"
-            
+            address = f"0x{i + 1:040x}"
+
             # For the top holders, use "known" whale addresses if available
             if i < len(info.get("whale_addresses", [])):
                 address = info["whale_addresses"][i]
-                
+
             balance = balances[i]
             percentage = balance / total_supply
-            
-            holders.append({
-                "protocol": protocol,
-                "address": address,
-                "balance": balance,
-                "percentage": percentage,
-                "label": f"Whale {i+1}" if i < 5 else f"Holder {i+1}",
-                "is_contract": i % 5 == 0,  # Every 5th holder is a contract
-                "last_updated": datetime.now().isoformat()
-            })
-            
+
+            holders.append(
+                {
+                    "protocol": protocol,
+                    "address": address,
+                    "balance": balance,
+                    "percentage": percentage,
+                    "label": f"Whale {i + 1}" if i < 5 else f"Holder {i + 1}",
+                    "is_contract": i % 5 == 0,  # Every 5th holder is a contract
+                    "last_updated": datetime.now().isoformat(),
+                }
+            )
+
         return holders
-    
+
     def _generate_power_law_distribution(
         self, count: int, total: float, alpha: float = 1.5
     ) -> List[float]:
         """
         Generate a power-law distribution of values.
-        
+
         Args:
             count: Number of values to generate
             total: Sum of all values
             alpha: Power law exponent (higher = more concentrated)
-            
+
         Returns:
             List of values following a power-law distribution
         """
         # Generate raw power-law values
         values = [1.0 / ((i + 1) ** alpha) for i in range(count)]
-        
+
         # Normalize to the total
         total_raw = sum(values)
         normalized = [v * total / total_raw for v in values]
-        
+
         return normalized
-    
+
     def _generate_sample_proposal_data(
         self, protocol: str, count: int
     ) -> List[Dict[str, Any]]:
         """
         Generate sample governance proposal data for testing.
-        
+
         Args:
             protocol: Protocol name
             count: Number of proposals to generate
-            
+
         Returns:
             List of sample proposal dictionaries
         """
         proposals = []
-        
+
         # Common proposal templates for each protocol
         template_titles = {
             "compound": [
@@ -370,7 +372,7 @@ class APIClient:
                 "Implement {feature} for Protocol Security",
                 "Reduce Reserve Factor for {asset}",
                 "Update Oracle Implementation",
-                "Approve Grants Program Funding"
+                "Approve Grants Program Funding",
             ],
             "uniswap": [
                 "Deploy Uniswap v{version} on {chain}",
@@ -379,7 +381,7 @@ class APIClient:
                 "Update Protocol Fee Switch",
                 "Implement Cross-Chain Bridge Integration",
                 "Launch {feature} for Improved Liquidity",
-                "Authorize {amount} UNI for Development Fund"
+                "Authorize {amount} UNI for Development Fund",
             ],
             "aave": [
                 "List {asset} as Collateral",
@@ -388,19 +390,25 @@ class APIClient:
                 "Deploy Aave on {chain}",
                 "Implement {feature} for Risk Management",
                 "Allocate Ecosystem Reserve Funds",
-                "Update Oracle Price Feeds"
-            ]
+                "Update Oracle Price Feeds",
+            ],
         }
-        
+
         assets = ["ETH", "USDC", "DAI", "WBTC", "LINK", "UNI", "COMP", "AAVE", "MKR"]
         chains = ["Arbitrum", "Optimism", "Polygon", "Base", "Avalanche", "zkSync"]
-        features = ["Flash Loans", "Isolation Mode", "Safety Module", "Liquidity Mining", "Governance Delegation"]
-        
+        features = [
+            "Flash Loans",
+            "Isolation Mode",
+            "Safety Module",
+            "Liquidity Mining",
+            "Governance Delegation",
+        ]
+
         for i in range(count):
             # Select a random template and fill in variables
             templates = template_titles.get(protocol, template_titles["compound"])
             title_template = random.choice(templates)
-            
+
             # Replace template variables
             title = title_template.format(
                 asset=random.choice(assets),
@@ -409,78 +417,87 @@ class APIClient:
                 version=random.choice(["3", "4"]),
                 pair=f"{random.choice(assets)}-{random.choice(assets)}",
                 program=random.choice(["Ecosystem", "Developer", "Community"]),
-                amount=f"{random.randint(10, 100)}M"
+                amount=f"{random.randint(10, 100)}M",
             )
-            
+
             # Create a detailed description
-            description = f"This proposal aims to {title.lower()}. " \
-                         f"The implementation includes several key components that will benefit the protocol by " \
-                         f"enhancing security, improving capital efficiency, and attracting more users."
-            
+            description = (
+                f"This proposal aims to {title.lower()}. "
+                f"The implementation includes several key components that will benefit the protocol by "
+                f"enhancing security, improving capital efficiency, and attracting more users."
+            )
+
             # Generate random proposal details
             proposal_id = i + 1
             created_date = datetime.now() - timedelta(days=random.randint(1, 365))
             end_date = created_date + timedelta(days=random.randint(3, 14))
-            
+
             # Randomize proposal state based on end date
             if end_date > datetime.now():
                 state = random.choice(["active", "pending"])
             else:
                 state = random.choice(["executed", "defeated", "expired", "succeeded"])
-            
+
             # Generate random vote counts
             for_votes = random.randint(100000, 10000000)
             against_votes = random.randint(10000, for_votes)
             abstain_votes = random.randint(5000, 100000)
             total_votes = for_votes + against_votes + abstain_votes
-            
+
             # Calculate participation rate (0-1)
             info = PROTOCOL_INFO[protocol]
             participation_rate = total_votes / info["total_supply"]
-            
+
             # Create the proposal object
-            proposals.append({
-                "protocol": protocol,
-                "id": proposal_id,
-                "title": title,
-                "description": description,
-                "proposer": random.choice(info.get("whale_addresses", [f"0x{random.getrandbits(160):040x}"])),
-                "created_at": created_date.isoformat(),
-                "end_date": end_date.isoformat(),
-                "state": state,
-                "for_votes": for_votes,
-                "against_votes": against_votes,
-                "abstain_votes": abstain_votes,
-                "total_votes": total_votes,
-                "participation_rate": participation_rate,
-                "quorum_reached": total_votes > (info["total_supply"] * 0.04)  # 4% quorum
-            })
-        
+            proposals.append(
+                {
+                    "protocol": protocol,
+                    "id": proposal_id,
+                    "title": title,
+                    "description": description,
+                    "proposer": random.choice(
+                        info.get(
+                            "whale_addresses", [f"0x{random.getrandbits(160):040x}"]
+                        )
+                    ),
+                    "created_at": created_date.isoformat(),
+                    "end_date": end_date.isoformat(),
+                    "state": state,
+                    "for_votes": for_votes,
+                    "against_votes": against_votes,
+                    "abstain_votes": abstain_votes,
+                    "total_votes": total_votes,
+                    "participation_rate": participation_rate,
+                    "quorum_reached": total_votes
+                    > (info["total_supply"] * 0.04),  # 4% quorum
+                }
+            )
+
         return proposals
-    
+
     def _generate_sample_vote_data(
         self, protocol: str, proposal_id: int
     ) -> List[Dict[str, Any]]:
         """
         Generate sample governance vote data for testing.
-        
+
         Args:
             protocol: Protocol name
             proposal_id: Proposal ID
-            
+
         Returns:
             List of sample vote dictionaries
         """
         info = PROTOCOL_INFO[protocol]
-        
+
         # Generate between 50-200 votes for this proposal
         vote_count = random.randint(50, 200)
         votes = []
-        
+
         # Possible vote choices
         choices = ["for", "against", "abstain"]
         weights = [0.7, 0.2, 0.1]  # Most votes are "for" in sample data
-        
+
         # Generate random addresses or use whale addresses for top votes
         for i in range(vote_count):
             # For top voters, use whale addresses
@@ -488,10 +505,10 @@ class APIClient:
                 voter = info["whale_addresses"][i]
             else:
                 voter = f"0x{random.getrandbits(160):040x}"
-            
+
             # Determine vote choice weighted by the probabilities
             vote_choice = random.choices(choices, weights=weights)[0]
-            
+
             # Generate vote power - whales have more voting power
             if i < 5:  # Top 5 voters
                 vote_power = random.uniform(0.01, 0.1) * info["total_supply"]
@@ -499,77 +516,87 @@ class APIClient:
                 vote_power = random.uniform(0.001, 0.01) * info["total_supply"]
             else:  # Remaining voters
                 vote_power = random.uniform(0.0001, 0.001) * info["total_supply"]
-            
+
             # Create vote object
-            votes.append({
-                "protocol": protocol,
-                "proposal_id": proposal_id,
-                "voter": voter,
-                "vote_choice": vote_choice,
-                "vote_power": vote_power,
-                "vote_weight": vote_power / info["total_supply"],
-                "voted_at": (datetime.now() - timedelta(days=random.randint(1, 14))).isoformat(),
-                "tx_hash": f"0x{random.getrandbits(256):064x}"
-            })
-        
+            votes.append(
+                {
+                    "protocol": protocol,
+                    "proposal_id": proposal_id,
+                    "voter": voter,
+                    "vote_choice": vote_choice,
+                    "vote_power": vote_power,
+                    "vote_weight": vote_power / info["total_supply"],
+                    "voted_at": (
+                        datetime.now() - timedelta(days=random.randint(1, 14))
+                    ).isoformat(),
+                    "tx_hash": f"0x{random.getrandbits(256):064x}",
+                }
+            )
+
         return votes
-    
+
     def _fetch_token_holders(
         self, protocol: str, token_address: str, limit: int
     ) -> List[Dict[str, Any]]:
         """
         Placeholder for real API implementation to fetch token holders.
         Currently returns sample data.
-        
+
         Args:
             protocol: Protocol name
             token_address: Token contract address
             limit: Number of holders to retrieve
-            
+
         Returns:
             List of token holder dictionaries
         """
         # In a real implementation, this would call protocol-specific APIs
         # For now, return sample data
-        logger.warning(f"Using sample data for {protocol} token holders (real API not implemented)")
+        logger.warning(
+            f"Using sample data for {protocol} token holders (real API not implemented)"
+        )
         return self._generate_sample_holder_data(protocol, limit)
-    
+
     def _fetch_governance_proposals(
         self, protocol: str, limit: int
     ) -> List[Dict[str, Any]]:
         """
         Placeholder for real API implementation to fetch governance proposals.
         Currently returns sample data.
-        
+
         Args:
             protocol: Protocol name
             limit: Number of proposals to retrieve
-            
+
         Returns:
             List of proposal dictionaries
         """
         # In a real implementation, this would call protocol-specific APIs
         # For now, return sample data
-        logger.warning(f"Using sample data for {protocol} proposals (real API not implemented)")
+        logger.warning(
+            f"Using sample data for {protocol} proposals (real API not implemented)"
+        )
         return self._generate_sample_proposal_data(protocol, limit)
-    
+
     def _fetch_governance_votes(
         self, protocol: str, proposal_id: int
     ) -> List[Dict[str, Any]]:
         """
         Placeholder for real API implementation to fetch governance votes.
         Currently returns sample data.
-        
+
         Args:
             protocol: Protocol name
             proposal_id: Proposal ID
-            
+
         Returns:
             List of vote dictionaries
         """
         # In a real implementation, this would call protocol-specific APIs
         # For now, return sample data
-        logger.warning(f"Using sample data for {protocol} votes (real API not implemented)")
+        logger.warning(
+            f"Using sample data for {protocol} votes (real API not implemented)"
+        )
         return self._generate_sample_vote_data(protocol, proposal_id)
 
     def _make_request(self, params: Dict[str, Any]) -> Dict[str, Any]:

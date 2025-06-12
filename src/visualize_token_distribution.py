@@ -62,11 +62,14 @@ def create_pie_chart(data: dict, output_dir: Path):
         data: Token analysis data
         output_dir: Directory to save the visualization
     """
-    top_holders = data['top_holders']
+    top_holders = data["top_holders"]
 
     # Extract top 5 holders plus "Others"
-    labels = [f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}" for h in top_holders[:5]]
-    sizes = [h['percentage'] for h in top_holders[:5]]
+    labels = [
+        f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}"
+        for h in top_holders[:5]
+    ]
+    sizes = [h["percentage"] for h in top_holders[:5]]
 
     # Add "Others" slice
     others_pct = 100 - sum(sizes)
@@ -80,9 +83,17 @@ def create_pie_chart(data: dict, output_dir: Path):
     explode = [0.1] + [0] * 5  # Explode the first slice
     colors = plt.cm.viridis(np.linspace(0.1, 0.9, len(sizes)))
 
-    plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
-            shadow=True, startangle=90, textprops={'fontsize': 12})
-    plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.pie(
+        sizes,
+        explode=explode,
+        labels=labels,
+        colors=colors,
+        autopct="%1.1f%%",
+        shadow=True,
+        startangle=90,
+        textprops={"fontsize": 12},
+    )
+    plt.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     # Add title
     plt.title(f"{data['name']} ({data['symbol']}) Token Distribution", fontsize=16)
@@ -104,7 +115,7 @@ def create_concentration_bar_chart(data: dict, output_dir: Path):
         data: Token analysis data
         output_dir: Directory to save the visualization
     """
-    top_percentages = data['concentration_metrics']['top_holders_percentage']
+    top_percentages = data["concentration_metrics"]["top_holders_percentage"]
 
     categories = list(map(str, sorted([int(k) for k in top_percentages.keys()])))
     percentages = [top_percentages[k] for k in categories]
@@ -112,16 +123,23 @@ def create_concentration_bar_chart(data: dict, output_dir: Path):
     plt.figure(figsize=(10, 6))
 
     # Create the bar chart
-    bars = plt.bar(categories, percentages, color=plt.cm.viridis(np.linspace(0.1, 0.9, len(categories))))
+    bars = plt.bar(
+        categories,
+        percentages,
+        color=plt.cm.viridis(np.linspace(0.1, 0.9, len(categories))),
+    )
 
     # Add percentage labels on top of each bar
     for bar in bars:
         height = bar.get_height()
-        plt.annotate(f'{height:.1f}%',
-                    xy=(bar.get_x() + bar.get_width() / 2, height),
-                    xytext=(0, 3),  # 3 points vertical offset
-                    textcoords="offset points",
-                    ha='center', va='bottom')
+        plt.annotate(
+            f"{height:.1f}%",
+            xy=(bar.get_x() + bar.get_width() / 2, height),
+            xytext=(0, 3),  # 3 points vertical offset
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+        )
 
     # Add labels and title
     plt.xlabel("Number of Top Holders", fontsize=12)
@@ -129,8 +147,8 @@ def create_concentration_bar_chart(data: dict, output_dir: Path):
     plt.title(f"{data['name']} ({data['symbol']}) Token Concentration", fontsize=16)
 
     # Add a horizontal line at 50% for reference
-    plt.axhline(y=50, color='r', linestyle='--', alpha=0.5)
-    plt.text(0, 51, '50% Threshold', color='r')
+    plt.axhline(y=50, color="r", linestyle="--", alpha=0.5)
+    plt.text(0, 51, "50% Threshold", color="r")
 
     # Save the chart
     output_file = output_dir / f"{data['protocol']}_concentration_bar.png"
@@ -204,7 +222,7 @@ def visualize_concentration_metrics(analysis_results, output_dir="plots"):
     metrics_labels = ["Gini Coefficient", "Herfindahl Index / 10000"]
     metrics_values = [
         metrics["gini_coefficient"],
-        metrics["herfindahl_index"] / 10000  # Scale to 0-1 for comparison
+        metrics["herfindahl_index"] / 10000,  # Scale to 0-1 for comparison
     ]
 
     # Create bar chart
@@ -216,7 +234,7 @@ def visualize_concentration_metrics(analysis_results, output_dir="plots"):
 
     # Add value labels on top of bars
     for i, v in enumerate(metrics_values):
-        plt.text(i, v + 0.02, f"{v:.4f}", ha='center')
+        plt.text(i, v + 0.02, f"{v:.4f}", ha="center")
 
     # Save the plot
     os.makedirs(output_dir, exist_ok=True)
@@ -249,7 +267,7 @@ def visualize_historical_gini(token_name, historical_data, output_dir="plots"):
 
     # Create line chart
     plt.figure(figsize=(12, 6))
-    plt.plot(dates, gini_values, marker='o', linestyle='-', linewidth=2)
+    plt.plot(dates, gini_values, marker="o", linestyle="-", linewidth=2)
 
     # Format the x-axis to show dates nicely
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
@@ -259,7 +277,7 @@ def visualize_historical_gini(token_name, historical_data, output_dir="plots"):
     plt.title(f"{token_name} Token Gini Coefficient Over Time")
     plt.ylabel("Gini Coefficient")
     plt.ylim(0, 1)  # Gini is between 0 and 1
-    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.grid(True, linestyle="--", alpha=0.7)
 
     # Add trend line
     if len(dates) > 1:
@@ -307,7 +325,7 @@ def visualize_historical_herfindahl(token_name, historical_data, output_dir="plo
 
     # Create line chart
     plt.figure(figsize=(12, 6))
-    plt.plot(dates, hhi_values, marker='o', linestyle='-', linewidth=2)
+    plt.plot(dates, hhi_values, marker="o", linestyle="-", linewidth=2)
 
     # Format the x-axis to show dates nicely
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
@@ -316,7 +334,7 @@ def visualize_historical_herfindahl(token_name, historical_data, output_dir="plo
 
     plt.title(f"{token_name} Token Herfindahl-Hirschman Index Over Time")
     plt.ylabel("Herfindahl Index")
-    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.grid(True, linestyle="--", alpha=0.7)
 
     # Add trend line
     if len(dates) > 1:
@@ -356,16 +374,46 @@ def visualize_historical_concentration(token_name, historical_data, output_dir="
         return
 
     # Extract dates and concentration values
-    dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
-    top5_values = [data["metrics"]["concentration"]["top_5_pct"] for data in historical_data]
-    top10_values = [data["metrics"]["concentration"]["top_10_pct"] for data in historical_data]
-    top20_values = [data["metrics"]["concentration"]["top_20_pct"] for data in historical_data]
+    dates = [
+        datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
+        for data in historical_data
+    ]
+    top5_values = [
+        data["metrics"]["concentration"]["top_5_pct"] for data in historical_data
+    ]
+    top10_values = [
+        data["metrics"]["concentration"]["top_10_pct"] for data in historical_data
+    ]
+    top20_values = [
+        data["metrics"]["concentration"]["top_20_pct"] for data in historical_data
+    ]
 
     # Create line chart
     plt.figure(figsize=(12, 6))
-    plt.plot(dates, top5_values, marker='o', linestyle='-', linewidth=2, label="Top 5 Holders")
-    plt.plot(dates, top10_values, marker='s', linestyle='-', linewidth=2, label="Top 10 Holders")
-    plt.plot(dates, top20_values, marker='^', linestyle='-', linewidth=2, label="Top 20 Holders")
+    plt.plot(
+        dates,
+        top5_values,
+        marker="o",
+        linestyle="-",
+        linewidth=2,
+        label="Top 5 Holders",
+    )
+    plt.plot(
+        dates,
+        top10_values,
+        marker="s",
+        linestyle="-",
+        linewidth=2,
+        label="Top 10 Holders",
+    )
+    plt.plot(
+        dates,
+        top20_values,
+        marker="^",
+        linestyle="-",
+        linewidth=2,
+        label="Top 20 Holders",
+    )
 
     # Format the x-axis to show dates nicely
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
@@ -408,9 +456,15 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
         for data in historical_data
     ]
     gini_values = [data["metrics"]["gini_coefficient"] for data in historical_data]
-    hhi_values = [data["metrics"]["herfindahl_index"] / 10000 for data in historical_data]  # Scale to 0-1
-    top5_values = [data["metrics"]["concentration"]["top_5_pct"] / 100 for data in historical_data]  # Scale to 0-1
-    top10_values = [data["metrics"]["concentration"]["top_10_pct"] / 100 for data in historical_data]  # Scale to 0-1
+    hhi_values = [
+        data["metrics"]["herfindahl_index"] / 10000 for data in historical_data
+    ]  # Scale to 0-1
+    top5_values = [
+        data["metrics"]["concentration"]["top_5_pct"] / 100 for data in historical_data
+    ]  # Scale to 0-1
+    top10_values = [
+        data["metrics"]["concentration"]["top_10_pct"] / 100 for data in historical_data
+    ]  # Scale to 0-1
 
     # Create dashboard with 4 subplots
     fig, axs = plt.subplots(2, 2, figsize=(15, 10))
@@ -422,7 +476,7 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
     )
     axs[0, 0].set_title("Gini Coefficient (Equality/Inequality)")
     axs[0, 0].set_ylim(0, 1)
-    axs[0, 0].grid(True, linestyle='--', alpha=0.7)
+    axs[0, 0].grid(True, linestyle="--", alpha=0.7)
 
     # Plot 2: Herfindahl Index
     axs[0, 1].plot(
@@ -430,7 +484,7 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
     )
     axs[0, 1].set_title("Herfindahl Index (Market Concentration)")
     axs[0, 1].set_ylim(0, 1)
-    axs[0, 1].grid(True, linestyle='--', alpha=0.7)
+    axs[0, 1].grid(True, linestyle="--", alpha=0.7)
 
     # Plot 3: Concentration Percentages
     axs[1, 0].plot(
@@ -465,8 +519,12 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
     latest_hhi = hhi_values[-1]
     latest_top5 = top5_values[-1]
 
-    axs[1, 1].bar(index, [latest_gini, latest_hhi, latest_top5], bar_width,
-                 color=['blue', 'red', 'green'])
+    axs[1, 1].bar(
+        index,
+        [latest_gini, latest_hhi, latest_top5],
+        bar_width,
+        color=["blue", "red", "green"],
+    )
     axs[1, 1].set_title("Latest Metrics Comparison")
     axs[1, 1].set_xticks(index)
     axs[1, 1].set_xticklabels(["Gini", "HHI/10000", "Top 5 %"])
@@ -474,7 +532,7 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
 
     # Add value labels on top of bars
     for i, v in enumerate([latest_gini, latest_hhi, latest_top5]):
-        axs[1, 1].text(i, v + 0.02, f"{v:.3f}", ha='center')
+        axs[1, 1].text(i, v + 0.02, f"{v:.3f}", ha="center")
 
     # Format all x-axes to show dates nicely
     for i in range(2):
@@ -483,7 +541,9 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
                 axs[i, j].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
                 axs[i, j].xaxis.set_major_locator(mdates.MonthLocator(interval=6))
 
-    plt.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust layout to make room for the suptitle
+    plt.tight_layout(
+        rect=[0, 0, 1, 0.95]
+    )  # Adjust layout to make room for the suptitle
 
     # Save the plot
     os.makedirs(output_dir, exist_ok=True)
@@ -519,9 +579,16 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
-            gini_values = [data["metrics"]["gini_coefficient"] for data in historical_data]
-            plt.plot(dates, gini_values, marker='o', linestyle='-', linewidth=2, label=token)
+            dates = [
+                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
+                for data in historical_data
+            ]
+            gini_values = [
+                data["metrics"]["gini_coefficient"] for data in historical_data
+            ]
+            plt.plot(
+                dates, gini_values, marker="o", linestyle="-", linewidth=2, label=token
+            )
 
     plt.title("Gini Coefficient Comparison Across Tokens")
     plt.ylabel("Gini Coefficient")
@@ -545,9 +612,17 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
-            top5_values = [data["metrics"]["concentration"]["top_5_pct"] for data in historical_data]
-            plt.plot(dates, top5_values, marker='o', linestyle='-', linewidth=2, label=token)
+            dates = [
+                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
+                for data in historical_data
+            ]
+            top5_values = [
+                data["metrics"]["concentration"]["top_5_pct"]
+                for data in historical_data
+            ]
+            plt.plot(
+                dates, top5_values, marker="o", linestyle="-", linewidth=2, label=token
+            )
 
     plt.title("Top 5 Holders Concentration Comparison")
     plt.ylabel("Percentage of Total Supply")
@@ -571,9 +646,16 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
-            hhi_values = [data["metrics"]["herfindahl_index"] for data in historical_data]
-            plt.plot(dates, hhi_values, marker='o', linestyle='-', linewidth=2, label=token)
+            dates = [
+                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
+                for data in historical_data
+            ]
+            hhi_values = [
+                data["metrics"]["herfindahl_index"] for data in historical_data
+            ]
+            plt.plot(
+                dates, hhi_values, marker="o", linestyle="-", linewidth=2, label=token
+            )
 
     plt.title("Herfindahl Index Comparison Across Tokens")
     plt.ylabel("Herfindahl Index")
@@ -599,9 +681,16 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
-            gini_values = [data["metrics"]["gini_coefficient"] for data in historical_data]
-            axs[0, 0].plot(dates, gini_values, marker='o', linestyle='-', linewidth=2, label=token)
+            dates = [
+                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
+                for data in historical_data
+            ]
+            gini_values = [
+                data["metrics"]["gini_coefficient"] for data in historical_data
+            ]
+            axs[0, 0].plot(
+                dates, gini_values, marker="o", linestyle="-", linewidth=2, label=token
+            )
 
     axs[0, 0].set_title("Gini Coefficient")
     axs[0, 0].set_ylim(0, 1)
@@ -612,9 +701,16 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
-            hhi_values = [data["metrics"]["herfindahl_index"] / 10000 for data in historical_data]  # Scale to 0-1
-            axs[0, 1].plot(dates, hhi_values, marker='s', linestyle='-', linewidth=2, label=token)
+            dates = [
+                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
+                for data in historical_data
+            ]
+            hhi_values = [
+                data["metrics"]["herfindahl_index"] / 10000 for data in historical_data
+            ]  # Scale to 0-1
+            axs[0, 1].plot(
+                dates, hhi_values, marker="s", linestyle="-", linewidth=2, label=token
+            )
 
     axs[0, 1].set_title("Herfindahl Index (scaled)")
     axs[0, 1].set_ylim(0, 1)
@@ -625,9 +721,17 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
-            top5_values = [data["metrics"]["concentration"]["top_5_pct"] / 100 for data in historical_data]  # Scale to 0-1
-            axs[1, 0].plot(dates, top5_values, marker='^', linestyle='-', linewidth=2, label=token)
+            dates = [
+                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
+                for data in historical_data
+            ]
+            top5_values = [
+                data["metrics"]["concentration"]["top_5_pct"] / 100
+                for data in historical_data
+            ]  # Scale to 0-1
+            axs[1, 0].plot(
+                dates, top5_values, marker="^", linestyle="-", linewidth=2, label=token
+            )
 
     axs[1, 0].set_title("Top 5 Holders Concentration (scaled)")
     axs[1, 0].set_ylim(0, 1)
@@ -655,9 +759,12 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     # Plot the bars
     for i, token in enumerate(latest_metrics.keys()):
         metrics = latest_metrics[token]
-        axs[1, 1].bar(x + i*bar_width/len(latest_metrics),
-                      [metrics["gini"], metrics["hhi"], metrics["top5"]],
-                      bar_width/len(latest_metrics), label=token)
+        axs[1, 1].bar(
+            x + i * bar_width / len(latest_metrics),
+            [metrics["gini"], metrics["hhi"], metrics["top5"]],
+            bar_width / len(latest_metrics),
+            label=token,
+        )
 
     axs[1, 1].set_title("Latest Metrics Comparison")
     axs[1, 1].set_xticks(x + bar_width / 2 - bar_width / (2 * len(latest_metrics)))

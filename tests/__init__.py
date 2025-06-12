@@ -1,2 +1,1 @@
-"""Test package for the Governance Token Distribution Analyzer.
-"""
+"""Test package for the Governance Token Distribution Analyzer."""

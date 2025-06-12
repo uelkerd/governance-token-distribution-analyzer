@@ -37,18 +37,18 @@ def create_distribution_comparison(
         if "protocol" in df.columns:
             protocol_name = df["protocol"].iloc[0]
         else:
-            protocol_name = f"Protocol {i+1}"
+            protocol_name = f"Protocol {i + 1}"
 
         # Sort by balance and calculate cumulative percentage
-        sorted_df = df.sort_values(by='balance', ascending=False).reset_index(drop=True)
-        sorted_df['cumulative_percentage'] = sorted_df['percentage'].cumsum()
+        sorted_df = df.sort_values(by="balance", ascending=False).reset_index(drop=True)
+        sorted_df["cumulative_percentage"] = sorted_df["percentage"].cumsum()
 
         # Plot the Lorenz curve
         x = np.linspace(0, 100, len(sorted_df))
-        ax.plot(x, sorted_df['cumulative_percentage'], label=protocol_name)
+        ax.plot(x, sorted_df["cumulative_percentage"], label=protocol_name)
 
     # Add perfect equality line
-    ax.plot([0, 100], [0, 100], 'k--', alpha=0.5, label='Perfect Equality')
+    ax.plot([0, 100], [0, 100], "k--", alpha=0.5, label="Perfect Equality")
 
     # Set labels and title
     ax.set_xlabel("Percentage of Token Holders")
@@ -95,16 +95,19 @@ def create_metrics_comparison(
         # Add value labels on bars
         for bar in bars:
             height = bar.get_height()
-            ax.annotate(f'{height:.2f}',
-                         xy=(bar.get_x() + bar.get_width() / 2, height),
-                         xytext=(0, 3),  # 3 points vertical offset
-                         textcoords="offset points",
-                         ha='center', va='bottom')
+            ax.annotate(
+                f"{height:.2f}",
+                xy=(bar.get_x() + bar.get_width() / 2, height),
+                xytext=(0, 3),  # 3 points vertical offset
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+            )
 
         # Set labels and title
         ax.set_ylabel(metric.replace("_", " ").title())
         ax.set_title(f"{metric.replace('_', ' ').title()} by Protocol")
-        ax.grid(True, alpha=0.3, axis='y')
+        ax.grid(True, alpha=0.3, axis="y")
 
     # Set overall title
     fig.suptitle(title, fontsize=16)
@@ -132,11 +135,11 @@ def create_participation_trend(
     # Plot each protocol's participation trend
     for protocol, data in participation_data.items():
         # Extract dates and participation rates
-        dates = [item.get('date') for item in data]
-        rates = [item.get('participation_rate', 0) for item in data]
+        dates = [item.get("date") for item in data]
+        rates = [item.get("participation_rate", 0) for item in data]
 
         # Plot the trend
-        ax.plot(dates, rates, marker='o', label=protocol)
+        ax.plot(dates, rates, marker="o", label=protocol)
 
     # Set labels and title
     ax.set_xlabel("Date")
@@ -176,23 +179,23 @@ def create_whale_influence_chart(
         whale_data[protocol].get("whale_percentage", 0) for protocol in protocols
     ]
     ax1.bar(protocols, whale_percentages)
-    ax1.set_ylabel('Percentage of Holders (%)')
-    ax1.set_title('Whales as Percentage of Total Holders')
+    ax1.set_ylabel("Percentage of Holders (%)")
+    ax1.set_title("Whales as Percentage of Total Holders")
 
     # Plot whale holdings percentage
     holdings_percentages = [
         whale_data[protocol].get("holdings_percentage", 0) for protocol in protocols
     ]
     ax2.bar(protocols, holdings_percentages)
-    ax2.set_ylabel('Percentage of Total Supply (%)')
-    ax2.set_title('Whale Holdings as Percentage of Total Supply')
+    ax2.set_ylabel("Percentage of Total Supply (%)")
+    ax2.set_title("Whale Holdings as Percentage of Total Supply")
 
     # Set overall title
     fig.suptitle(title, fontsize=16)
 
     # Add grid lines
-    ax1.grid(True, alpha=0.3, axis='y')
-    ax2.grid(True, alpha=0.3, axis='y')
+    ax1.grid(True, alpha=0.3, axis="y")
+    ax2.grid(True, alpha=0.3, axis="y")
 
     fig.tight_layout(rect=[0, 0, 1, 0.95])
 
@@ -238,7 +241,7 @@ def create_delegation_network_visualization(
         # Extract key delegatee addresses if provided
         key_addresses = set()
         if key_delegatees:
-            key_addresses = {d['address'] for d in key_delegatees}
+            key_addresses = {d["address"] for d in key_delegatees}
 
         # Set node colors based on whether they're key delegatees
         node_colors = []
@@ -250,7 +253,7 @@ def create_delegation_network_visualization(
             elif delegation_graph.out_degree(node) > 0:
                 node_colors.append("tab:blue")
             else:
-                node_colors.append('tab:gray')
+                node_colors.append("tab:gray")
 
         # Set node sizes based on balance
         node_sizes = []
@@ -341,7 +344,7 @@ def create_delegation_network_visualization(
             ),
         ]
 
-        ax.legend(handles=legend_elements, loc='upper right')
+        ax.legend(handles=legend_elements, loc="upper right")
 
         # Set title and remove axes
         ax.set_title(title, fontsize=16)
@@ -405,15 +408,15 @@ def create_delegation_metrics_chart(
         # Set labels and title
         ax.set_ylabel("Percentage")
         ax.set_title(title, fontsize=14)
-        ax.grid(axis='y', alpha=0.3)
+        ax.grid(axis="y", alpha=0.3)
 
         # Set y-axis limit
         ax.set_ylim(0, max(display_metrics.values()) * 1.2)
 
         # Add metrics counts as text
-        delegator_count = metrics.get('delegator_count', 0)
-        delegatee_count = metrics.get('delegatee_count', 0)
-        avg_delegation = metrics.get('avg_delegation_amount', 0)
+        delegator_count = metrics.get("delegator_count", 0)
+        delegatee_count = metrics.get("delegatee_count", 0)
+        avg_delegation = metrics.get("avg_delegation_amount", 0)
 
         metrics_text = (
             f"Delegators: {delegator_count}\n"

@@ -26,11 +26,10 @@ logger = logging.getLogger(__name__)
 
 
 class HistoricalDataManager:
-    """Manages the collection, storage, and retrieval of historical token distribution data.
-    """
+    """Manages the collection, storage, and retrieval of historical token distribution data."""
 
     # Supported protocols - can be extended as more protocols are added
-    SUPPORTED_PROTOCOLS = {'compound', 'uniswap', 'aave'}
+    SUPPORTED_PROTOCOLS = {"compound", "uniswap", "aave"}
 
     def __init__(self, data_dir: str = "data/historical"):
         """Initialize the historical data manager.
@@ -69,9 +68,13 @@ class HistoricalDataManager:
         """
         if protocol not in self.SUPPORTED_PROTOCOLS:
             logger.warning(f"Unsupported protocol requested: {protocol}")
-            raise ProtocolNotSupportedError(protocol, supported_protocols=list(self.SUPPORTED_PROTOCOLS))
+            raise ProtocolNotSupportedError(
+                protocol, supported_protocols=list(self.SUPPORTED_PROTOCOLS)
+            )
 
-    def store_snapshot(self, protocol: str, data: Dict[str, Any], timestamp: Optional[datetime] = None) -> None:
+    def store_snapshot(
+        self, protocol: str, data: Dict[str, Any], timestamp: Optional[datetime] = None
+    ) -> None:
         """Store a snapshot of token distribution data.
 
         Args:
@@ -88,7 +91,9 @@ class HistoricalDataManager:
 
         if not isinstance(data, dict):
             logger.error(f"Invalid data format: expected dict, got {type(data)}")
-            raise DataFormatError(f"Invalid data format: expected dict, got {type(data)}")
+            raise DataFormatError(
+                f"Invalid data format: expected dict, got {type(data)}"
+            )
 
         if timestamp is None:
             timestamp = datetime.now()
@@ -107,10 +112,7 @@ class HistoricalDataManager:
         filepath = os.path.join(self.data_dir, protocol, filename)
 
         # Add timestamp to data
-        data_with_timestamp = {
-            "timestamp": timestamp.isoformat(),
-            "data": data
-        }
+        data_with_timestamp = {"timestamp": timestamp.isoformat(), "data": data}
 
         # Save data to file
         try:
@@ -119,10 +121,16 @@ class HistoricalDataManager:
             logger.info(f"Stored snapshot for {protocol} at {timestamp_str}")
         except (OSError, TypeError, ValueError) as e:
             logger.error(f"Failed to store snapshot for {protocol}: {e}")
-            raise DataStorageError(f"Failed to store snapshot for {protocol}: {e}") from e
+            raise DataStorageError(
+                f"Failed to store snapshot for {protocol}: {e}"
+            ) from e
 
-    def get_snapshots(self, protocol: str, start_date: Optional[datetime] = None,
-                      end_date: Optional[datetime] = None) -> List[Dict[str, Any]]:
+    def get_snapshots(
+        self,
+        protocol: str,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ) -> List[Dict[str, Any]]:
         """Retrieve historical snapshots for a specific protocol.
 
         Args:
@@ -182,18 +190,24 @@ class HistoricalDataManager:
                 snapshots.append(snapshot)
 
             # Sort by timestamp
-            snapshots.sort(key=lambda x: x['timestamp'])
+            snapshots.sort(key=lambda x: x["timestamp"])
 
             logger.info(f"Retrieved {len(snapshots)} snapshots for {protocol}")
             return snapshots
 
         except OSError as e:
             logger.error(f"Failed to access snapshots for {protocol}: {e}")
-            raise DataAccessError(f"Failed to access snapshots for {protocol}: {e}") from e
+            raise DataAccessError(
+                f"Failed to access snapshots for {protocol}: {e}"
+            ) from e
 
-    def get_time_series_data(self, protocol: str, metric: str,
-                             start_date: Optional[datetime] = None,
-                             end_date: Optional[datetime] = None) -> pd.DataFrame:
+    def get_time_series_data(
+        self,
+        protocol: str,
+        metric: str,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ) -> pd.DataFrame:
         """Extract a time series for a specific metric from historical snapshots.
 
         Args:
@@ -217,33 +231,35 @@ class HistoricalDataManager:
 
             if not snapshots:
                 logger.info(f"No snapshots found for {protocol}")
-                return pd.DataFrame(columns=['timestamp', metric])
+                return pd.DataFrame(columns=["timestamp", metric])
 
             # Extract timestamps and metric values
             data = []
             available_metrics = set()
 
             for snapshot in snapshots:
-                timestamp = datetime.fromisoformat(snapshot['timestamp'])
+                timestamp = datetime.fromisoformat(snapshot["timestamp"])
 
                 # Track available metrics for error reporting
-                if isinstance(snapshot['data'], dict):
-                    available_metrics.update(snapshot['data'].keys())
-                    if 'metrics' in snapshot['data'] and isinstance(snapshot['data']['metrics'], dict):
-                        available_metrics.update(snapshot['data']['metrics'].keys())
+                if isinstance(snapshot["data"], dict):
+                    available_metrics.update(snapshot["data"].keys())
+                    if "metrics" in snapshot["data"] and isinstance(
+                        snapshot["data"]["metrics"], dict
+                    ):
+                        available_metrics.update(snapshot["data"]["metrics"].keys())
 
                 # Navigate nested dictionaries if necessary
                 value = None
-                if metric in snapshot['data']:
-                    value = snapshot['data'][metric]
-                elif 'metrics' in snapshot['data'] and metric in snapshot['data']['metrics']:
-                    value = snapshot['data']['metrics'][metric]
+                if metric in snapshot["data"]:
+                    value = snapshot["data"][metric]
+                elif (
+                    "metrics" in snapshot["data"]
+                    and metric in snapshot["data"]["metrics"]
+                ):
+                    value = snapshot["data"]["metrics"][metric]
 
                 if value is not None:
-                    data.append({
-                        'timestamp': timestamp,
-                        metric: value
-                    })
+                    data.append({"timestamp": timestamp, metric: value})
 
             # Check if we found any data points
             if not data:
@@ -252,16 +268,20 @@ class HistoricalDataManager:
                 )
                 # Only raise an error if snapshots exist but metric doesn't
                 if snapshots and available_metrics:
-                    raise MetricNotFoundError(metric, available_metrics=list(available_metrics))
-                return pd.DataFrame(columns=['timestamp', metric])
+                    raise MetricNotFoundError(
+                        metric, available_metrics=list(available_metrics)
+                    )
+                return pd.DataFrame(columns=["timestamp", metric])
 
             # Convert to DataFrame
             df = pd.DataFrame(data)
 
             if not df.empty:
-                df.set_index('timestamp', inplace=True)
+                df.set_index("timestamp", inplace=True)
 
-            logger.info(f"Retrieved time series data for {protocol} with {len(df)} data points")
+            logger.info(
+                f"Retrieved time series data for {protocol} with {len(df)} data points"
+            )
             return df
 
         except Exception as e:
@@ -270,7 +290,9 @@ class HistoricalDataManager:
             ):
                 raise
             logger.error(f"Failed to retrieve time series data: {e}")
-            raise HistoricalDataError(f"Failed to retrieve time series data: {e}") from e
+            raise HistoricalDataError(
+                f"Failed to retrieve time series data: {e}"
+            ) from e
 
     def get_available_metrics(self, protocol: str) -> Set[str]:
         """Get a set of all available metrics for a protocol.
@@ -296,10 +318,12 @@ class HistoricalDataManager:
             metrics = set()
 
             for snapshot in snapshots:
-                if isinstance(snapshot['data'], dict):
-                    metrics.update(snapshot['data'].keys())
-                    if 'metrics' in snapshot['data'] and isinstance(snapshot['data']['metrics'], dict):
-                        metrics.update(snapshot['data']['metrics'].keys())
+                if isinstance(snapshot["data"], dict):
+                    metrics.update(snapshot["data"].keys())
+                    if "metrics" in snapshot["data"] and isinstance(
+                        snapshot["data"]["metrics"], dict
+                    ):
+                        metrics.update(snapshot["data"]["metrics"].keys())
 
             # Remove non-metric keys
             for key in ["token_holders", "timestamp", "data"]:
@@ -351,8 +375,12 @@ def calculate_distribution_change(
 
     try:
         # Create dictionaries mapping addresses to balances
-        old_balances = dict(zip(old_distribution[address_col], old_distribution[balance_col]))
-        new_balances = dict(zip(new_distribution[address_col], new_distribution[balance_col]))
+        old_balances = dict(
+            zip(old_distribution[address_col], old_distribution[balance_col])
+        )
+        new_balances = dict(
+            zip(new_distribution[address_col], new_distribution[balance_col])
+        )
 
         # Get all unique addresses
         all_addresses = set(old_balances.keys()) | set(new_balances.keys())
@@ -368,20 +396,22 @@ def calculate_distribution_change(
             if old_balance > 0:
                 percent_change = change / old_balance * 100
             else:
-                percent_change = float('inf') if change > 0 else 0
+                percent_change = float("inf") if change > 0 else 0
 
-            changes.append({
-                'address': address,
-                'old_balance': old_balance,
-                'new_balance': new_balance,
-                'absolute_change': change,
-                'percent_change': percent_change
-            })
+            changes.append(
+                {
+                    "address": address,
+                    "old_balance": old_balance,
+                    "new_balance": new_balance,
+                    "absolute_change": change,
+                    "percent_change": percent_change,
+                }
+            )
 
         # Convert to DataFrame and sort by absolute change
         changes_df = pd.DataFrame(changes)
         if not changes_df.empty:
-            changes_df.sort_values('absolute_change', ascending=False, inplace=True)
+            changes_df.sort_values("absolute_change", ascending=False, inplace=True)
 
         logger.info(f"Calculated distribution changes for {len(changes_df)} addresses")
         return changes_df
@@ -421,7 +451,7 @@ def analyze_concentration_trends(
 
         for snapshot in snapshots:
             # Validate snapshot format
-            if 'timestamp' not in snapshot or 'data' not in snapshot:
+            if "timestamp" not in snapshot or "data" not in snapshot:
                 logger.warning("Invalid snapshot format: missing required fields")
                 continue
 
@@ -435,18 +465,22 @@ def analyze_concentration_trends(
             metrics = {}
 
             # Check if metrics are already calculated
-            if 'metrics' in snapshot['data'] and isinstance(snapshot['data']['metrics'], dict):
-                metrics = snapshot['data']['metrics']
+            if "metrics" in snapshot["data"] and isinstance(
+                snapshot["data"]["metrics"], dict
+            ):
+                metrics = snapshot["data"]["metrics"]
 
             # Get concentration of top N holders if available
-            top_n_concentration = metrics.get(f'top_{top_n_holders}_concentration')
-            gini = metrics.get('gini_coefficient')
+            top_n_concentration = metrics.get(f"top_{top_n_holders}_concentration")
+            gini = metrics.get("gini_coefficient")
 
-            data.append({
-                'timestamp': timestamp,
-                f'top_{top_n_holders}_concentration': top_n_concentration,
-                'gini_coefficient': gini
-            })
+            data.append(
+                {
+                    "timestamp": timestamp,
+                    f"top_{top_n_holders}_concentration": top_n_concentration,
+                    "gini_coefficient": gini,
+                }
+            )
 
         # Convert to DataFrame
         df = pd.DataFrame(data)
@@ -491,7 +525,7 @@ def analyze_governance_participation_trends(
 
         for snapshot in snapshots:
             # Validate snapshot format
-            if 'timestamp' not in snapshot or 'data' not in snapshot:
+            if "timestamp" not in snapshot or "data" not in snapshot:
                 logger.warning("Invalid snapshot format: missing required fields")
                 continue
 
@@ -504,20 +538,24 @@ def analyze_governance_participation_trends(
             # Extract participation metrics if available
             metrics = {}
 
-            if 'metrics' in snapshot['data'] and isinstance(snapshot['data']['metrics'], dict):
-                metrics = snapshot['data']['metrics']
+            if "metrics" in snapshot["data"] and isinstance(
+                snapshot["data"]["metrics"], dict
+            ):
+                metrics = snapshot["data"]["metrics"]
 
             # Get participation metrics
-            participation_rate = metrics.get('governance_participation_rate')
-            voter_count = metrics.get('active_voter_count')
-            proposal_count = metrics.get('active_proposal_count')
+            participation_rate = metrics.get("governance_participation_rate")
+            voter_count = metrics.get("active_voter_count")
+            proposal_count = metrics.get("active_proposal_count")
 
-            data.append({
-                'timestamp': timestamp,
-                'participation_rate': participation_rate,
-                'active_voter_count': voter_count,
-                'active_proposal_count': proposal_count
-            })
+            data.append(
+                {
+                    "timestamp": timestamp,
+                    "participation_rate": participation_rate,
+                    "active_voter_count": voter_count,
+                    "active_proposal_count": proposal_count,
+                }
+            )
 
         # Convert to DataFrame
         df = pd.DataFrame(data)
@@ -574,7 +612,9 @@ def simulate_historical_data(
             data_manager = HistoricalDataManager()
         except DataStorageError as e:
             logger.error(f"Failed to create data manager for simulation: {e}")
-            raise HistoricalDataError(f"Failed to create data manager for simulation: {e}") from e
+            raise HistoricalDataError(
+                f"Failed to create data manager for simulation: {e}"
+            ) from e
 
     # Validate protocol
     try:
@@ -613,17 +653,21 @@ def simulate_historical_data(
             balances = balances * time_factor
 
             # Sort by balance (descending)
-            holder_data = sorted(zip(addresses, balances), key=lambda x: x[1], reverse=True)
+            holder_data = sorted(
+                zip(addresses, balances), key=lambda x: x[1], reverse=True
+            )
 
             # Create token holder list
             token_holders = []
             for address, balance in holder_data:
                 percentage = balance / total_supply * 100
-                token_holders.append({
-                    "address": address,
-                    "balance": float(balance),
-                    "percentage": float(percentage)
-                })
+                token_holders.append(
+                    {
+                        "address": address,
+                        "balance": float(balance),
+                        "percentage": float(percentage),
+                    }
+                )
 
             # Calculate metrics
             # Gini coefficient (higher means more concentration)
@@ -631,7 +675,9 @@ def simulate_historical_data(
             balances_sorted = np.sort(balances_array)
             indices = np.arange(1, len(balances_array) + 1)
             n = len(balances_array)
-            gini = (2 * np.sum(indices * balances_sorted)) / (n * np.sum(balances_array)) - (n + 1) / n
+            gini = (2 * np.sum(indices * balances_sorted)) / (
+                n * np.sum(balances_array)
+            ) - (n + 1) / n
 
             # Top 10 concentration
             top_10_concentration = sum(h["percentage"] for h in token_holders[:10])

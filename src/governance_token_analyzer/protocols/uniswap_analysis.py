@@ -1,5 +1,5 @@
-"""Analysis module for Uniswap (UNI) governance token distribution.
-"""
+"""Analysis module for Uniswap (UNI) governance token distribution."""
+
 import json
 import logging
 import os
@@ -101,9 +101,15 @@ class UniswapAnalyzer:
         # Calculate percentage held by top holders
         total_supply = sum(balances)
         top_5_pct = sum(balances[:5]) / total_supply * 100 if len(balances) >= 5 else 0
-        top_10_pct = sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
-        top_20_pct = sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
-        top_50_pct = sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
+        top_10_pct = (
+            sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
+        )
+        top_20_pct = (
+            sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
+        )
+        top_50_pct = (
+            sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
+        )
 
         results = {
             "token": "UNI",

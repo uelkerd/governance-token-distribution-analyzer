@@ -204,18 +204,20 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
     """Simulate historical data for a protocol."""
     # Import here to avoid circular imports
     from governance_token_analyzer.core import historical_data
-    
+
     # Create data manager
     data_manager = historical_data.HistoricalDataManager(data_dir=data_dir)
-    
+
     # Generate simulated data
     generated_snapshots = historical_data.simulate_historical_data(
         protocol=protocol,
         num_snapshots=snapshots,
         interval_days=interval,
         data_manager=data_manager,
-        seed=42  # Use fixed seed for reproducibility
+        seed=42,  # Use fixed seed for reproducibility
     )
-    
-    click.echo(f"Generated {len(generated_snapshots)} historical snapshots for {protocol}")
-    return data_dir 
+
+    click.echo(
+        f"Generated {len(generated_snapshots)} historical snapshots for {protocol}"
+    )
+    return data_dir

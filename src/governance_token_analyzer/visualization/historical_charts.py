@@ -64,7 +64,9 @@ def plot_metric_over_time(
 
         if metric_name not in time_series_data.columns:
             logger.error(f"Metric '{metric_name}' not found in time series data")
-            raise DataFormatError(f"Metric '{metric_name}' not found in time series data. Available metrics: {list(time_series_data.columns)}")
+            raise DataFormatError(
+                f"Metric '{metric_name}' not found in time series data. Available metrics: {list(time_series_data.columns)}"
+            )
 
         # Create figure and axis
         fig, ax = plt.subplots(figsize=figsize)
@@ -73,11 +75,18 @@ def plot_metric_over_time(
         if not isinstance(time_series_data.index, pd.DatetimeIndex):
             logger.debug("Converting timestamp index to datetime")
             time_series_data = time_series_data.reset_index()
-            time_series_data['timestamp'] = pd.to_datetime(time_series_data['timestamp'])
-            time_series_data.set_index('timestamp', inplace=True)
+            time_series_data["timestamp"] = pd.to_datetime(
+                time_series_data["timestamp"]
+            )
+            time_series_data.set_index("timestamp", inplace=True)
 
         # Plot the metric
-        ax.plot(time_series_data.index, time_series_data[metric_name], marker='o', linestyle='-')
+        ax.plot(
+            time_series_data.index,
+            time_series_data[metric_name],
+            marker="o",
+            linestyle="-",
+        )
 
         # Add a trend line (linear regression) if we have enough data points
         if len(time_series_data) > 1:
@@ -98,13 +107,13 @@ def plot_metric_over_time(
                 logger.warning(f"Could not create trend line: {e}")
 
         # Set labels and title
-        ax.set_xlabel('Date')
-        ax.set_ylabel(metric_name.replace('_', ' ').title())
+        ax.set_xlabel("Date")
+        ax.set_ylabel(metric_name.replace("_", " ").title())
 
         if title:
             ax.set_title(title)
         else:
-            ax.set_title(f'{metric_name.replace("_", " ").title()} Over Time')
+            ax.set_title(f"{metric_name.replace('_', ' ').title()} Over Time")
 
         # Format x-axis dates
         plt.gcf().autofmt_xdate()
@@ -145,7 +154,9 @@ def plot_protocol_comparison_over_time(
         # Validate input data
         if not isinstance(protocol_data, dict):
             logger.error("Invalid input: protocol_data is not a dictionary")
-            raise DataFormatError("Protocol data must be a dictionary mapping protocol names to DataFrames")
+            raise DataFormatError(
+                "Protocol data must be a dictionary mapping protocol names to DataFrames"
+            )
 
         if not protocol_data:
             logger.warning("Empty protocol data provided")
@@ -190,10 +201,16 @@ def plot_protocol_comparison_over_time(
                     f"Converting timestamp index to datetime for protocol '{protocol}'"
                 )
                 data = data.reset_index()
-                data['timestamp'] = pd.to_datetime(data['timestamp'])
-                data.set_index('timestamp', inplace=True)
+                data["timestamp"] = pd.to_datetime(data["timestamp"])
+                data.set_index("timestamp", inplace=True)
 
-            ax.plot(data.index, data[metric_name], marker='o', linestyle='-', label=protocol.capitalize())
+            ax.plot(
+                data.index,
+                data[metric_name],
+                marker="o",
+                linestyle="-",
+                label=protocol.capitalize(),
+            )
             valid_protocols.append(protocol)
 
         if not valid_protocols:
@@ -212,20 +229,22 @@ def plot_protocol_comparison_over_time(
             return fig
 
         # Set labels and title
-        ax.set_xlabel('Date')
-        ax.set_ylabel(metric_name.replace('_', ' ').title())
+        ax.set_xlabel("Date")
+        ax.set_ylabel(metric_name.replace("_", " ").title())
 
         if title:
             ax.set_title(title)
         else:
-            ax.set_title(f'{metric_name.replace("_", " ").title()} Comparison')
+            ax.set_title(f"{metric_name.replace('_', ' ').title()} Comparison")
 
         # Format x-axis dates
         plt.gcf().autofmt_xdate()
         ax.grid(True, alpha=0.3)
         ax.legend()
 
-        logger.info(f"Created protocol comparison plot for metric '{metric_name}' with {len(valid_protocols)} protocols")
+        logger.info(
+            f"Created protocol comparison plot for metric '{metric_name}' with {len(valid_protocols)} protocols"
+        )
         return fig
 
     except Exception as e:
@@ -238,8 +257,7 @@ def plot_protocol_comparison_over_time(
 
 
 def create_concentration_heatmap(
-    snapshots: List[Dict[str, Any]],
-    figsize: Tuple[int, int] = (14, 8)
+    snapshots: List[Dict[str, Any]], figsize: Tuple[int, int] = (14, 8)
 ) -> plt.Figure:
     """Create a heatmap showing token concentration changes over time.
 
@@ -280,7 +298,10 @@ def create_concentration_heatmap(
                 )
                 continue
 
-            if 'token_holders' not in snapshot['data'] or not snapshot['data']['token_holders']:
+            if (
+                "token_holders" not in snapshot["data"]
+                or not snapshot["data"]["token_holders"]
+            ):
                 logger.warning(f"Skipping snapshot {i}: No token holder data")
                 continue
 
@@ -293,9 +314,9 @@ def create_concentration_heatmap(
             # Get top holders
             try:
                 holders = sorted(
-                    snapshot['data']['token_holders'],
-                    key=lambda x: x['balance'],
-                    reverse=True
+                    snapshot["data"]["token_holders"],
+                    key=lambda x: x["balance"],
+                    reverse=True,
                 )[:10]  # Top 10 holders
             except (KeyError, TypeError) as e:
                 logger.warning(
@@ -311,7 +332,7 @@ def create_concentration_heatmap(
                         f"Skipping holder {j} in snapshot {i}: Missing percentage field"
                     )
                     continue
-                row[f'Holder {j+1}'] = holder['percentage']
+                row[f"Holder {j + 1}"] = holder["percentage"]
 
             data.append(row)
 
@@ -331,13 +352,13 @@ def create_concentration_heatmap(
 
         # Convert to DataFrame
         df = pd.DataFrame(data)
-        df.set_index('timestamp', inplace=True)
+        df.set_index("timestamp", inplace=True)
 
         # Create heatmap
         fig, ax = plt.subplots(figsize=figsize)
 
         # Plot heatmap
-        im = ax.imshow(df.values, aspect='auto', cmap='YlOrRd')
+        im = ax.imshow(df.values, aspect="auto", cmap="YlOrRd")
 
         # Set labels
         ax.set_yticks(range(len(df.index)))
@@ -347,10 +368,10 @@ def create_concentration_heatmap(
 
         # Add colorbar
         cbar = fig.colorbar(im, ax=ax)
-        cbar.set_label('Percentage of Total Supply')
+        cbar.set_label("Percentage of Total Supply")
 
         # Set title
-        ax.set_title('Top 10 Holder Concentration Over Time')
+        ax.set_title("Top 10 Holder Concentration Over Time")
 
         # Rotate x-axis labels for better readability
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
@@ -396,25 +417,25 @@ def create_holder_movement_plot(
                 logger.error(f"Invalid {name}: not a dictionary")
                 raise DataFormatError(f"{name} must be a dictionary")
 
-            if 'data' not in snapshot or 'token_holders' not in snapshot['data']:
+            if "data" not in snapshot or "token_holders" not in snapshot["data"]:
                 logger.error(f"Invalid {name}: missing token_holders data")
                 raise DataFormatError(f"{name} missing token_holders data")
 
-            if not snapshot['data']['token_holders']:
+            if not snapshot["data"]["token_holders"]:
                 logger.warning(f"{name} contains no token holders")
 
         # Extract holder data
         try:
             old_holders = {
-                h['address']: h
-                for h in old_snapshot['data']['token_holders']
-                if 'address' in h and 'percentage' in h and 'balance' in h
+                h["address"]: h
+                for h in old_snapshot["data"]["token_holders"]
+                if "address" in h and "percentage" in h and "balance" in h
             }
 
             new_holders = {
-                h['address']: h
-                for h in new_snapshot['data']['token_holders']
-                if 'address' in h and 'percentage' in h and 'balance' in h
+                h["address"]: h
+                for h in new_snapshot["data"]["token_holders"]
+                if "address" in h and "percentage" in h and "balance" in h
             }
         except KeyError as e:
             logger.error(f"Error extracting holder data: {e}")
@@ -443,21 +464,23 @@ def create_holder_movement_plot(
             old_pct = old_holders[addr]["percentage"]
             new_pct = new_holders[addr]["percentage"]
             pct_change = new_pct - old_pct
-            abs_change = new_holders[addr]['balance'] - old_holders[addr]['balance']
+            abs_change = new_holders[addr]["balance"] - old_holders[addr]["balance"]
 
-            changes.append({
-                'address': addr,
-                'old_percentage': old_pct,
-                'new_percentage': new_pct,
-                'percentage_change': pct_change,
-                'absolute_change': abs_change
-            })
+            changes.append(
+                {
+                    "address": addr,
+                    "old_percentage": old_pct,
+                    "new_percentage": new_pct,
+                    "percentage_change": pct_change,
+                    "absolute_change": abs_change,
+                }
+            )
 
         # Sort by absolute change
-        changes.sort(key=lambda x: abs(x['absolute_change']), reverse=True)
+        changes.sort(key=lambda x: abs(x["absolute_change"]), reverse=True)
 
         # Take top N changes
-        top_changes = changes[:min(top_n, len(changes))]
+        top_changes = changes[: min(top_n, len(changes))]
 
         # Create plot
         fig, ax = plt.subplots(figsize=figsize)
@@ -468,8 +491,10 @@ def create_holder_movement_plot(
         # Plot bars
         bars = ax.barh(
             y_pos,
-            [c['percentage_change'] for c in top_changes],
-            color=['green' if c['percentage_change'] >= 0 else 'red' for c in top_changes]
+            [c["percentage_change"] for c in top_changes],
+            color=[
+                "green" if c["percentage_change"] >= 0 else "red" for c in top_changes
+            ],
         )
 
         # Add address labels
@@ -481,9 +506,14 @@ def create_holder_movement_plot(
         for i, bar in enumerate(bars):
             width = bar.get_width()
             label_x_pos = width + 0.1 if width >= 0 else width - 0.1
-            ha = 'left' if width >= 0 else 'right'
-            ax.text(label_x_pos, bar.get_y() + bar.get_height()/2, f'{top_changes[i]["percentage_change"]:.2f}%',
-                    ha=ha, va='center')
+            ha = "left" if width >= 0 else "right"
+            ax.text(
+                label_x_pos,
+                bar.get_y() + bar.get_height() / 2,
+                f"{top_changes[i]['percentage_change']:.2f}%",
+                ha=ha,
+                va="center",
+            )
 
         # Set labels and title
         ax.set_xlabel("Percentage Change")
@@ -491,7 +521,7 @@ def create_holder_movement_plot(
         ax.grid(True, alpha=0.3)
 
         # Add a vertical line at x=0
-        ax.axvline(x=0, color='black', linestyle='-', alpha=0.3)
+        ax.axvline(x=0, color="black", linestyle="-", alpha=0.3)
 
         logger.info(f"Created holder movement plot with {len(top_changes)} holders")
         return fig
@@ -557,13 +587,13 @@ def create_governance_participation_plot(
             # Look in governance_data first
             governance_data = snapshot["data"].get("governance_data", {})
             if isinstance(governance_data, dict):
-                participation_rate = governance_data.get('participation_rate')
+                participation_rate = governance_data.get("participation_rate")
 
             # If not found, look in metrics
             if participation_rate is None and "metrics" in snapshot["data"]:
                 metrics = snapshot["data"].get("metrics", {})
                 if isinstance(metrics, dict):
-                    participation_rate = metrics.get('governance_participation_rate')
+                    participation_rate = metrics.get("governance_participation_rate")
 
             # If still not found, skip this snapshot
             if participation_rate is None:
@@ -572,10 +602,9 @@ def create_governance_participation_plot(
                 )
                 continue
 
-            data.append({
-                'timestamp': timestamp,
-                'participation_rate': participation_rate
-            })
+            data.append(
+                {"timestamp": timestamp, "participation_rate": participation_rate}
+            )
 
         if not data:
             logger.warning("No valid participation data found in snapshots")
@@ -593,18 +622,14 @@ def create_governance_participation_plot(
 
         # Convert to DataFrame
         df = pd.DataFrame(data)
-        df.set_index('timestamp', inplace=True)
+        df.set_index("timestamp", inplace=True)
 
         # Create plot
         fig, ax = plt.subplots(figsize=figsize)
 
         # Plot participation rate
         ax.plot(
-            df.index,
-            df['participation_rate'],
-            marker='o',
-            linestyle='-',
-            color='blue'
+            df.index, df["participation_rate"], marker="o", linestyle="-", color="blue"
         )
 
         # Add trend line if we have enough data points
@@ -617,9 +642,9 @@ def create_governance_participation_plot(
                 logger.warning(f"Could not create trend line: {e}")
 
         # Set labels and title
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Participation Rate (%)')
-        ax.set_title('Governance Participation Rate Over Time')
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Participation Rate (%)")
+        ax.set_title("Governance Participation Rate Over Time")
 
         # Format x-axis dates
         plt.gcf().autofmt_xdate()
@@ -662,7 +687,9 @@ def create_multi_metric_dashboard(
         # Validate input data
         if not isinstance(time_series_data, dict):
             logger.error("Invalid input: time_series_data is not a dictionary")
-            raise DataFormatError("time_series_data must be a dictionary mapping metric names to DataFrames")
+            raise DataFormatError(
+                "time_series_data must be a dictionary mapping metric names to DataFrames"
+            )
 
         if not isinstance(metrics, list) or not metrics:
             logger.error("Invalid input: metrics must be a non-empty list")
@@ -732,8 +759,8 @@ def create_multi_metric_dashboard(
                     f"Converting timestamp index to datetime for metric '{metric}'"
                 )
                 data = data.reset_index()
-                data['timestamp'] = pd.to_datetime(data['timestamp'])
-                data.set_index('timestamp', inplace=True)
+                data["timestamp"] = pd.to_datetime(data["timestamp"])
+                data.set_index("timestamp", inplace=True)
 
             # Plot the metric
             ax.plot(data.index, data[metric], marker="o", linestyle="-")
@@ -748,12 +775,14 @@ def create_multi_metric_dashboard(
                         data.index, p(mdates.date2num(data.index)), "r--", alpha=0.8
                     )
                 except (TypeError, ValueError, np.linalg.LinAlgError) as e:
-                    logger.warning(f"Could not create trend line for metric '{metric}': {e}")
+                    logger.warning(
+                        f"Could not create trend line for metric '{metric}': {e}"
+                    )
 
             # Set labels and title
-            ax.set_xlabel('Date')
-            ax.set_ylabel(metric.replace('_', ' ').title())
-            ax.set_title(f'{metric.replace("_", " ").title()}')
+            ax.set_xlabel("Date")
+            ax.set_ylabel(metric.replace("_", " ").title())
+            ax.set_title(f"{metric.replace('_', ' ').title()}")
 
             # Format x-axis dates
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
@@ -763,7 +792,7 @@ def create_multi_metric_dashboard(
         for i in range(n_metrics, n_rows * n_cols):
             row = i // n_cols
             col = i % n_cols
-            axes[row, col].axis('off')
+            axes[row, col].axis("off")
 
         # Set overall title
         fig.suptitle(title, fontsize=16)
@@ -771,7 +800,9 @@ def create_multi_metric_dashboard(
         # Adjust layout
         fig.tight_layout(rect=[0, 0, 1, 0.95])
 
-        logger.info(f"Created multi-metric dashboard with {metrics_plotted} metrics plotted")
+        logger.info(
+            f"Created multi-metric dashboard with {metrics_plotted} metrics plotted"
+        )
         return fig
 
     except Exception as e:

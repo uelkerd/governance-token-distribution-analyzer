@@ -30,10 +30,7 @@ class TestHistoricalAnalysisIntegration:
         """Fixture to generate sample historical data for testing."""
         # Generate sample historical data for compound
         snapshots = historical_data.simulate_historical_data(
-            'compound',
-            num_snapshots=6,
-            interval_days=30,
-            data_manager=data_manager
+            "compound", num_snapshots=6, interval_days=30, data_manager=data_manager
         )
 
         return {
@@ -44,8 +41,8 @@ class TestHistoricalAnalysisIntegration:
 
     def test_historical_data_storage_and_retrieval(self, sample_historical_data):
         """Test storing and retrieving historical data."""
-        protocol = sample_historical_data['protocol']
-        data_manager = sample_historical_data['data_manager']
+        protocol = sample_historical_data["protocol"]
+        data_manager = sample_historical_data["data_manager"]
 
         # Get snapshots from the data manager
         retrieved_snapshots = data_manager.get_snapshots(protocol)
@@ -54,86 +51,103 @@ class TestHistoricalAnalysisIntegration:
         assert len(retrieved_snapshots) == 6, "Should retrieve 6 snapshots"
 
         # Verify snapshots are ordered by timestamp
-        timestamps = [datetime.fromisoformat(s['timestamp']) for s in retrieved_snapshots]
-        assert timestamps == sorted(timestamps), "Snapshots should be ordered by timestamp"
+        timestamps = [
+            datetime.fromisoformat(s["timestamp"]) for s in retrieved_snapshots
+        ]
+        assert timestamps == sorted(timestamps), (
+            "Snapshots should be ordered by timestamp"
+        )
 
     def test_time_series_extraction(self, sample_historical_data):
         """Test extracting time series data from historical snapshots."""
-        protocol = sample_historical_data['protocol']
-        data_manager = sample_historical_data['data_manager']
+        protocol = sample_historical_data["protocol"]
+        data_manager = sample_historical_data["data_manager"]
 
         # Extract gini coefficient time series
-        gini_series = data_manager.get_time_series_data(protocol, 'gini_coefficient')
+        gini_series = data_manager.get_time_series_data(protocol, "gini_coefficient")
 
         # Verify the time series
         assert not gini_series.empty, "Time series should not be empty"
-        assert 'gini_coefficient' in gini_series.columns, "Time series should contain gini_coefficient"
+        assert "gini_coefficient" in gini_series.columns, (
+            "Time series should contain gini_coefficient"
+        )
 
         # Verify the index is a DatetimeIndex
-        assert isinstance(gini_series.index, pd.DatetimeIndex), "Index should be a DatetimeIndex"
+        assert isinstance(gini_series.index, pd.DatetimeIndex), (
+            "Index should be a DatetimeIndex"
+        )
 
     def test_distribution_change_calculation(self, sample_historical_data):
         """Test calculating changes in token distribution."""
-        snapshots = sample_historical_data['snapshots']
+        snapshots = sample_historical_data["snapshots"]
 
         # Get the first and last snapshots
         first_snapshot = snapshots[0]
         last_snapshot = snapshots[-1]
 
         # Convert to DataFrames
-        first_df = pd.DataFrame(first_snapshot['data']['token_holders'])
-        last_df = pd.DataFrame(last_snapshot['data']['token_holders'])
+        first_df = pd.DataFrame(first_snapshot["data"]["token_holders"])
+        last_df = pd.DataFrame(last_snapshot["data"]["token_holders"])
 
         # Calculate distribution changes
         changes = historical_data.calculate_distribution_change(
-            first_df,
-            last_df,
-            address_col='address',
-            balance_col='balance'
+            first_df, last_df, address_col="address", balance_col="balance"
         )
 
         # Verify changes DataFrame
         assert not changes.empty, "Changes DataFrame should not be empty"
-        assert 'absolute_change' in changes.columns, "Changes should include absolute_change column"
-        assert 'percent_change' in changes.columns, "Changes should include percent_change column"
+        assert "absolute_change" in changes.columns, (
+            "Changes should include absolute_change column"
+        )
+        assert "percent_change" in changes.columns, (
+            "Changes should include percent_change column"
+        )
 
     def test_concentration_trends_analysis(self, sample_historical_data):
         """Test analyzing token concentration trends."""
-        snapshots = sample_historical_data['snapshots']
+        snapshots = sample_historical_data["snapshots"]
 
         # Analyze concentration trends
-        trends = historical_data.analyze_concentration_trends(snapshots, top_n_holders=10)
+        trends = historical_data.analyze_concentration_trends(
+            snapshots, top_n_holders=10
+        )
 
         # Verify trends DataFrame
         assert not trends.empty, "Trends DataFrame should not be empty"
-        assert 'top_10_concentration' in trends.columns, "Trends should include top_10_concentration"
-        assert 'gini_coefficient' in trends.columns, "Trends should include gini_coefficient"
+        assert "top_10_concentration" in trends.columns, (
+            "Trends should include top_10_concentration"
+        )
+        assert "gini_coefficient" in trends.columns, (
+            "Trends should include gini_coefficient"
+        )
 
     def test_governance_participation_trends(self, sample_historical_data):
         """Test analyzing governance participation trends."""
-        snapshots = sample_historical_data['snapshots']
+        snapshots = sample_historical_data["snapshots"]
 
         # Analyze participation trends
         trends = historical_data.analyze_governance_participation_trends(snapshots)
 
         # Verify trends DataFrame
         assert not trends.empty, "Trends DataFrame should not be empty"
-        assert 'participation_rate' in trends.columns, "Trends should include participation_rate"
+        assert "participation_rate" in trends.columns, (
+            "Trends should include participation_rate"
+        )
 
     def test_visualization_integration(self, sample_historical_data):
         """Test that visualization components work with historical data."""
-        snapshots = sample_historical_data['snapshots']
-        protocol = sample_historical_data['protocol']
-        data_manager = sample_historical_data['data_manager']
+        snapshots = sample_historical_data["snapshots"]
+        protocol = sample_historical_data["protocol"]
+        data_manager = sample_historical_data["data_manager"]
 
         # Get time series data
-        gini_series = data_manager.get_time_series_data(protocol, 'gini_coefficient')
+        gini_series = data_manager.get_time_series_data(protocol, "gini_coefficient")
 
         # Create visualization
         fig = historical_charts.plot_metric_over_time(
             gini_series,
-            'gini_coefficient',
-            title=f"{protocol.capitalize()} Gini Coefficient Over Time"
+            "gini_coefficient",
+            title=f"{protocol.capitalize()} Gini Coefficient Over Time",
         )
 
         # Verify that a figure was created
@@ -151,10 +165,7 @@ class TestHistoricalAnalysisIntegration:
         # Generate sample historical data for multiple protocols
         for protocol in ["compound", "uniswap", "aave"]:
             historical_data.simulate_historical_data(
-                protocol,
-                num_snapshots=6,
-                interval_days=30,
-                data_manager=data_manager
+                protocol, num_snapshots=6, interval_days=30, data_manager=data_manager
             )
 
         # Get time series data for all protocols
@@ -168,8 +179,8 @@ class TestHistoricalAnalysisIntegration:
         # Create comparison visualization
         fig = historical_charts.plot_protocol_comparison_over_time(
             protocol_data,
-            'gini_coefficient',
-            title="Protocol Comparison: Gini Coefficient"
+            "gini_coefficient",
+            title="Protocol Comparison: Gini Coefficient",
         )
 
         # Verify that a figure was created
@@ -177,15 +188,17 @@ class TestHistoricalAnalysisIntegration:
 
         # Verify that the figure has content
         assert len(fig.axes) > 0, "Figure should have at least one axis"
-        assert len(fig.axes[0].lines) >= 3, "Axis should have at least three lines (one per protocol)"
+        assert len(fig.axes[0].lines) >= 3, (
+            "Axis should have at least three lines (one per protocol)"
+        )
 
         # Close the figure to avoid warnings
         plt.close(fig)
 
     def test_multi_metric_dashboard(self, sample_historical_data):
         """Test creating a multi-metric dashboard."""
-        protocol = sample_historical_data['protocol']
-        data_manager = sample_historical_data['data_manager']
+        protocol = sample_historical_data["protocol"]
+        data_manager = sample_historical_data["data_manager"]
 
         # Get time series data for multiple metrics
         metrics_data = {
@@ -208,7 +221,9 @@ class TestHistoricalAnalysisIntegration:
         assert isinstance(fig, plt.Figure), "Should return a matplotlib Figure"
 
         # Verify that the figure has content
-        assert len(fig.axes) >= 2, "Figure should have at least two axes (one per metric)"
+        assert len(fig.axes) >= 2, (
+            "Figure should have at least two axes (one per metric)"
+        )
 
         # Close the figure to avoid warnings
         plt.close(fig)

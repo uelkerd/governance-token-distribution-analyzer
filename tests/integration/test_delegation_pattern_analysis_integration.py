@@ -1,5 +1,4 @@
-"""Integration tests for delegation pattern analysis functionality.
-"""
+"""Integration tests for delegation pattern analysis functionality."""
 
 import json
 from datetime import datetime, timedelta
@@ -102,7 +101,9 @@ class TestDelegationPatternAnalysisIntegration:
                 )
             elif i == 2:
                 # Change a delegation in snapshot 2
-                snapshot_data['data']['governance_data']['delegations'][0]['delegatee'] = '0xholder1'
+                snapshot_data["data"]["governance_data"]["delegations"][0][
+                    "delegatee"
+                ] = "0xholder1"
 
             snapshots.append(snapshot_data)
 
@@ -114,21 +115,21 @@ class TestDelegationPatternAnalysisIntegration:
         results = dpa.analyze_delegation_patterns(sample_delegation_data)
 
         # Verify results structure
-        assert 'delegation_network' in results
-        assert 'influential_delegators' in results
+        assert "delegation_network" in results
+        assert "influential_delegators" in results
 
         # Verify delegation network analysis
-        network = results['delegation_network']
-        assert 'metrics' in network
-        assert 'key_delegatees' in network
-        assert 'patterns' in network
-        assert 'graph' in network
+        network = results["delegation_network"]
+        assert "metrics" in network
+        assert "key_delegatees" in network
+        assert "patterns" in network
+        assert "graph" in network
 
         # Verify metrics
-        metrics = network['metrics']
-        assert 'delegation_rate' in metrics
-        assert 'delegator_count' in metrics
-        assert 'delegatee_count' in metrics
+        metrics = network["metrics"]
+        assert "delegation_rate" in metrics
+        assert "delegator_count" in metrics
+        assert "delegatee_count" in metrics
 
         # Verify key delegatees
         delegatees = network["key_delegatees"]
@@ -146,18 +147,18 @@ class TestDelegationPatternAnalysisIntegration:
         )
 
         # Verify results structure
-        assert 'comparison' in results
-        assert 'shifts' in results
+        assert "comparison" in results
+        assert "shifts" in results
 
         # Verify comparison results
-        comparison = results['comparison']
-        assert 'snapshots' in comparison
-        assert len(comparison['snapshots']) == 3
+        comparison = results["comparison"]
+        assert "snapshots" in comparison
+        assert len(comparison["snapshots"]) == 3
 
         # Verify shifts
-        shifts = results['shifts']
-        assert 'significant_shifts' in shifts
-        assert 'shift_metrics' in shifts
+        shifts = results["shifts"]
+        assert "significant_shifts" in shifts
+        assert "shift_metrics" in shifts
 
     def test_delegation_network_creation(self, sample_delegation_data):
         """Test that a delegation network can be created and analyzed."""
@@ -173,15 +174,15 @@ class TestDelegationPatternAnalysisIntegration:
         # Verify graph properties
         assert isinstance(graph, nx.DiGraph)
         assert len(graph.nodes()) == 10  # All holders should be nodes
-        assert len(graph.edges()) == 6   # All delegations should be edges
+        assert len(graph.edges()) == 6  # All delegations should be edges
 
         # Verify node data
         for node in graph.nodes():
-            assert 'balance' in graph.nodes[node]
+            assert "balance" in graph.nodes[node]
 
         # Verify edge data
         for _, _, data in graph.edges(data=True):
-            assert 'amount' in data
+            assert "amount" in data
 
     def test_key_delegatee_identification(self, sample_delegation_data):
         """Test that key delegatees can be identified."""
@@ -204,12 +205,12 @@ class TestDelegationPatternAnalysisIntegration:
 
         # Verify delegatee data structure
         for delegatee in key_delegatees:
-            assert 'address' in delegatee
-            assert 'own_balance' in delegatee
-            assert 'delegated_amount' in delegatee
-            assert 'total_voting_power' in delegatee
-            assert 'percentage_of_supply' in delegatee
-            assert 'delegator_count' in delegatee
+            assert "address" in delegatee
+            assert "own_balance" in delegatee
+            assert "delegated_amount" in delegatee
+            assert "total_voting_power" in delegatee
+            assert "percentage_of_supply" in delegatee
+            assert "delegator_count" in delegatee
 
     def test_error_handling(self):
         """Test that appropriate errors are raised for invalid input."""
@@ -218,15 +219,11 @@ class TestDelegationPatternAnalysisIntegration:
 
         # Test missing delegations
         with pytest.raises(DataFormatError):
-            analyzer.analyze_delegation_network({
-                'token_holders': []
-            })
+            analyzer.analyze_delegation_network({"token_holders": []})
 
         # Test missing token holders
         with pytest.raises(DataFormatError):
-            analyzer.analyze_delegation_network({
-                'delegations': []
-            })
+            analyzer.analyze_delegation_network({"delegations": []})
 
         # Test invalid historical data
         with pytest.raises(DataFormatError):
@@ -236,8 +233,7 @@ class TestDelegationPatternAnalysisIntegration:
         """Test that circular delegations can be detected."""
         # Create token holders
         token_holders = [
-            {'address': f'0xcircle{i}', 'balance': 10000}
-            for i in range(5)
+            {"address": f"0xcircle{i}", "balance": 10000} for i in range(5)
         ]
 
         # Create circular delegations
@@ -261,10 +257,12 @@ class TestDelegationPatternAnalysisIntegration:
         results = dpa.analyze_delegation_patterns(protocol_data)
 
         # Verify circular delegations
-        patterns = results['delegation_network']['patterns']
-        circles = patterns['circular_delegations']
+        patterns = results["delegation_network"]["patterns"]
+        circles = patterns["circular_delegations"]
 
-        assert len(circles) >= 2  # Should detect at least 2 circular delegation patterns
+        assert (
+            len(circles) >= 2
+        )  # Should detect at least 2 circular delegation patterns
 
     def test_with_data_manager_integration(self, sample_historical_data, tmp_path):
         """Test integration with the HistoricalDataManager."""
@@ -295,6 +293,6 @@ class TestDelegationPatternAnalysisIntegration:
         )
 
         # Verify results
-        assert 'comparison' in results
-        assert 'shifts' in results
-        assert len(results['comparison']['snapshots']) == 3
+        assert "comparison" in results
+        assert "shifts" in results
+        assert len(results["comparison"]["snapshots"]) == 3

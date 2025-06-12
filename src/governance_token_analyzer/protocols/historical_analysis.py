@@ -48,7 +48,9 @@ class HistoricalTokenAnalyzer:
         self.config = config or Config()
 
         if self.token_symbol not in self.TOKEN_ANALYZERS:
-            raise ValueError(f"Unsupported token: {token_symbol}. Supported tokens: {list(self.TOKEN_ANALYZERS.keys())}")
+            raise ValueError(
+                f"Unsupported token: {token_symbol}. Supported tokens: {list(self.TOKEN_ANALYZERS.keys())}"
+            )
 
         # Initialize the appropriate token analyzer
         self.analyzer = self.TOKEN_ANALYZERS[self.token_symbol](config=self.config)
@@ -66,7 +68,9 @@ class HistoricalTokenAnalyzer:
         Returns:
             Analysis results dictionary
         """
-        logger.info(f"Analyzing {self.token_symbol} distribution for date: {target_date.strftime('%Y-%m-%d')}")
+        logger.info(
+            f"Analyzing {self.token_symbol} distribution for date: {target_date.strftime('%Y-%m-%d')}"
+        )
 
         # Use the token-specific analyzer to get distribution data
         results = self.analyzer.analyze_distribution()
@@ -111,8 +115,10 @@ class HistoricalTokenAnalyzer:
         if end_date is None:
             end_date = datetime.now()
 
-        logger.info(f"Running historical analysis for {self.token_symbol} from {start_date.strftime('%Y-%m-%d')} "
-                   f"to {end_date.strftime('%Y-%m-%d')} at {interval_days}-day intervals")
+        logger.info(
+            f"Running historical analysis for {self.token_symbol} from {start_date.strftime('%Y-%m-%d')} "
+            f"to {end_date.strftime('%Y-%m-%d')} at {interval_days}-day intervals"
+        )
 
         current_date = start_date
         result_files = []
@@ -189,12 +195,24 @@ class HistoricalTokenAnalyzer:
                 time_series["dates"].append(date)
 
                 # Extract metrics
-                time_series["gini_coefficient"].append(data["metrics"]["gini_coefficient"])
-                time_series["herfindahl_index"].append(data["metrics"]["herfindahl_index"])
-                time_series["top_5_pct"].append(data["metrics"]["concentration"]["top_5_pct"])
-                time_series["top_10_pct"].append(data["metrics"]["concentration"]["top_10_pct"])
-                time_series["top_20_pct"].append(data["metrics"]["concentration"]["top_20_pct"])
-                time_series["top_50_pct"].append(data["metrics"]["concentration"]["top_50_pct"])
+                time_series["gini_coefficient"].append(
+                    data["metrics"]["gini_coefficient"]
+                )
+                time_series["herfindahl_index"].append(
+                    data["metrics"]["herfindahl_index"]
+                )
+                time_series["top_5_pct"].append(
+                    data["metrics"]["concentration"]["top_5_pct"]
+                )
+                time_series["top_10_pct"].append(
+                    data["metrics"]["concentration"]["top_10_pct"]
+                )
+                time_series["top_20_pct"].append(
+                    data["metrics"]["concentration"]["top_20_pct"]
+                )
+                time_series["top_50_pct"].append(
+                    data["metrics"]["concentration"]["top_50_pct"]
+                )
 
             except Exception as e:
                 logger.error(f"Error processing {filepath}: {str(e)}")
@@ -237,7 +255,11 @@ def main():
 
     # Parse dates
     start_date = datetime.strptime(args.start_date, "%Y-%m-%d")
-    end_date = datetime.strptime(args.end_date, "%Y-%m-%d") if args.end_date else datetime.now()
+    end_date = (
+        datetime.strptime(args.end_date, "%Y-%m-%d")
+        if args.end_date
+        else datetime.now()
+    )
 
     # Initialize analyzer
     config = Config()
@@ -265,8 +287,12 @@ def main():
             last_top10 = time_series["top_10_pct"][-1]
             top10_change = last_top10 - first_top10
 
-            print(f"Gini coefficient change: {gini_change:.2f}% ({first_gini:.4f} → {last_gini:.4f})")
-            print(f"Top 10 holders concentration change: {top10_change:.2f} percentage points ({first_top10:.2f}% → {last_top10:.2f}%)")
+            print(
+                f"Gini coefficient change: {gini_change:.2f}% ({first_gini:.4f} → {last_gini:.4f})"
+            )
+            print(
+                f"Top 10 holders concentration change: {top10_change:.2f} percentage points ({first_top10:.2f}% → {last_top10:.2f}%)"
+            )
 
             print(
                 f"Gini coefficient change: {gini_change:.2f}% ({first_gini:.4f} → {last_gini:.4f})"

@@ -15,12 +15,14 @@ api_client = APIClient()
 DEFAULT_USE_REAL_DATA = bool(config.etherscan_api_key)
 
 
-def get_token_holders(limit: int = 100, use_real_data: bool = None) -> List[Dict[str, Any]]:
+def get_token_holders(
+    limit: int = 100, use_real_data: bool = None
+) -> List[Dict[str, Any]]:
     """Get list of top AAVE token holders.
 
     Args:
         limit: Number of holders to retrieve
-        use_real_data: Whether to use real data from APIs. If None, automatically 
+        use_real_data: Whether to use real data from APIs. If None, automatically
                       determined based on API key availability.
 
     Returns:
@@ -28,11 +30,13 @@ def get_token_holders(limit: int = 100, use_real_data: bool = None) -> List[Dict
     """
     if use_real_data is None:
         use_real_data = DEFAULT_USE_REAL_DATA
-    
-    return api_client.get_token_holders('aave', limit, use_real_data)
+
+    return api_client.get_token_holders("aave", limit, use_real_data)
 
 
-def get_governance_proposals(limit: int = 10, use_real_data: bool = False) -> List[Dict[str, Any]]:
+def get_governance_proposals(
+    limit: int = 10, use_real_data: bool = False
+) -> List[Dict[str, Any]]:
     """Get list of Aave governance proposals.
 
     Args:
@@ -45,7 +49,9 @@ def get_governance_proposals(limit: int = 10, use_real_data: bool = False) -> Li
     return api_client.get_governance_proposals("aave", limit, use_real_data)
 
 
-def get_governance_votes(proposal_id: int, use_real_data: bool = False) -> List[Dict[str, Any]]:
+def get_governance_votes(
+    proposal_id: int, use_real_data: bool = False
+) -> List[Dict[str, Any]]:
     """Get list of votes for a specific proposal.
 
     Args:
@@ -98,12 +104,18 @@ def calculate_voting_power_distribution() -> Dict[str, float]:
     holders = get_token_holders()
 
     # Calculate voting power distribution
-    total_supply = sum(holder['balance'] for holder in holders)
+    total_supply = sum(holder["balance"] for holder in holders)
 
     # Calculate percentage held by top holders
-    top_10_percentage = sum(holder['balance'] for holder in holders[:10]) / total_supply * 100
-    top_20_percentage = sum(holder['balance'] for holder in holders[:20]) / total_supply * 100
-    top_50_percentage = sum(holder['balance'] for holder in holders[:50]) / total_supply * 100
+    top_10_percentage = (
+        sum(holder["balance"] for holder in holders[:10]) / total_supply * 100
+    )
+    top_20_percentage = (
+        sum(holder["balance"] for holder in holders[:20]) / total_supply * 100
+    )
+    top_50_percentage = (
+        sum(holder["balance"] for holder in holders[:50]) / total_supply * 100
+    )
 
     # Calculate delegated voting power
     total_delegated = sum(holder.get("delegated_power", 0) for holder in holders)
@@ -173,7 +185,7 @@ def _generate_sample_holder_data(count: int) -> List[Dict[str, Any]]:
     warnings.warn(
         "_generate_sample_holder_data is deprecated, use api_client.get_token_holders instead",
         DeprecationWarning,
-        stacklevel=2
+        stacklevel=2,
     )
     return api_client._generate_sample_holder_data("aave", count)
 
@@ -183,7 +195,7 @@ def _generate_sample_proposal_data(count: int) -> List[Dict[str, Any]]:
     warnings.warn(
         "_generate_sample_proposal_data is deprecated, use api_client.get_governance_proposals instead",
         DeprecationWarning,
-        stacklevel=2
+        stacklevel=2,
     )
     return api_client._generate_sample_proposal_data("aave", count)
 
@@ -227,6 +239,6 @@ def _generate_sample_vote_data(proposal_id: int) -> List[Dict[str, Any]]:
     warnings.warn(
         "_generate_sample_vote_data is deprecated, use api_client.get_governance_votes instead",
         DeprecationWarning,
-        stacklevel=2
+        stacklevel=2,
     )
-    return api_client._generate_sample_vote_data('aave', proposal_id)
+    return api_client._generate_sample_vote_data("aave", proposal_id)

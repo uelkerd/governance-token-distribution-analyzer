@@ -3,6 +3,7 @@
 These tests validate the integration with external APIs.
 They are skipped by default to avoid rate limiting during regular test runs.
 """
+
 import os
 
 import pytest
@@ -29,13 +30,13 @@ def test_get_token_holders_real_api(api_client):
     # Test Compound token holders
     comp_holders = api_client.get_token_holders("compound", limit=5, use_real_data=True)
     assert len(comp_holders) > 0
-    assert 'address' in comp_holders[0]
-    assert 'balance' in comp_holders[0]
+    assert "address" in comp_holders[0]
+    assert "balance" in comp_holders[0]
 
     # Test Uniswap token holders
     uni_holders = api_client.get_token_holders("uniswap", limit=5, use_real_data=True)
     assert len(uni_holders) > 0
-    assert 'address' in uni_holders[0]
+    assert "address" in uni_holders[0]
 
     # Test Aave token holders
     aave_holders = api_client.get_token_holders("aave", limit=5, use_real_data=True)
@@ -51,15 +52,15 @@ def test_get_governance_proposals_real_api(api_client):
         "compound", limit=3, use_real_data=True
     )
     assert len(comp_proposals) > 0
-    assert 'id' in comp_proposals[0]
-    assert 'title' in comp_proposals[0]
+    assert "id" in comp_proposals[0]
+    assert "title" in comp_proposals[0]
 
     # Test Uniswap proposals
     uni_proposals = api_client.get_governance_proposals(
         "uniswap", limit=3, use_real_data=True
     )
     assert len(uni_proposals) > 0
-    assert 'id' in uni_proposals[0]
+    assert "id" in uni_proposals[0]
 
     # Test Aave proposals
     aave_proposals = api_client.get_governance_proposals(
@@ -77,7 +78,7 @@ def test_get_governance_votes_real_api(api_client):
         "compound", limit=1, use_real_data=True
     )
     if comp_proposals:
-        proposal_id = comp_proposals[0]['id']
+        proposal_id = comp_proposals[0]["id"]
 
         # Test Compound votes
         comp_votes = api_client.get_governance_votes(
@@ -93,8 +94,8 @@ def test_get_governance_votes_real_api(api_client):
 def test_error_handling_invalid_api_keys(monkeypatch):
     """Test error handling with invalid API keys."""
     # Temporarily set invalid API keys
-    monkeypatch.setenv('ETHERSCAN_API_KEY', 'invalid_key')
-    monkeypatch.setenv('ETHPLORER_API_KEY', 'invalid_key')
+    monkeypatch.setenv("ETHERSCAN_API_KEY", "invalid_key")
+    monkeypatch.setenv("ETHPLORER_API_KEY", "invalid_key")
 
     # Create a new client with the invalid keys
     client = APIClient()
@@ -102,7 +103,7 @@ def test_error_handling_invalid_api_keys(monkeypatch):
     # Should fall back to sample data when API call fails
     holders = client.get_token_holders("compound", limit=5, use_real_data=True)
     assert len(holders) == 5
-    assert 'address' in holders[0]
+    assert "address" in holders[0]
 
     # Reset environment after test
     monkeypatch.undo()
@@ -112,9 +113,9 @@ def test_error_handling_invalid_api_keys(monkeypatch):
 def test_get_protocol_data_real_api(api_client):
     """Test fetching complete protocol data using real API."""
     # Test Compound data
-    comp_data = api_client.get_protocol_data('compound', use_real_data=True)
-    assert comp_data['protocol'] == 'compound'
-    assert 'token_holders' in comp_data
-    assert 'proposals' in comp_data
-    assert len(comp_data['token_holders']) > 0
-    assert 'participation_rate' in comp_data
+    comp_data = api_client.get_protocol_data("compound", use_real_data=True)
+    assert comp_data["protocol"] == "compound"
+    assert "token_holders" in comp_data
+    assert "proposals" in comp_data
+    assert len(comp_data["token_holders"]) > 0
+    assert "participation_rate" in comp_data
