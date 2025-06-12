@@ -234,6 +234,167 @@ class TokenDistributionAnalyzer:
             }
 
 
+class ConcentrationAnalyzer:
+    """Analyzes token concentration metrics for governance tokens."""
+
+    def __init__(self, token_analyzer: Optional[TokenDistributionAnalyzer] = None):
+        """
+        Initialize the concentration analyzer.
+
+        Args:
+            token_analyzer: Optional TokenDistributionAnalyzer instance. If None, a new instance will be created.
+        """
+        self.token_analyzer = token_analyzer or TokenDistributionAnalyzer()
+
+    def analyze_protocol_concentration(
+        self, protocol_key: str, limit: int = 100
+    ) -> Dict[str, Any]:
+        """
+        Analyze the concentration metrics for a specific protocol.
+
+        Args:
+            protocol_key: Key of the protocol in the PROTOCOLS dictionary.
+            limit: Maximum number of holders to retrieve.
+
+        Returns:
+            Dictionary of concentration metrics and analysis.
+        """
+        # Get protocol info
+        protocol = self.token_analyzer.config.get_protocol_info(
+            protocol_key
+        ) or PROTOCOLS.get(protocol_key)
+        if not protocol:
+            logger.error(f"Protocol '{protocol_key}' not found in configuration")
+            return {}
+
+        # Get token holders
+        holders = self.token_analyzer.get_token_holders(protocol_key, limit)
+        if not holders:
+            logger.warning(f"No holders found for {protocol_key}")
+            return {}
+
+        # Get total supply (ideally this should come from a proper API call)
+        # For now, we'll use a placeholder or sum of known holder balances
+        total_supply = sum(
+            float(holder.get("TokenHolderQuantity", 0)) for holder in holders
+        )
+        total_supply_str = str(total_supply)
+
+        # Calculate concentration metrics
+        metrics = self.token_analyzer.calculate_concentration_metrics(
+            holders, total_supply_str
+        )
+
+        # Calculate Lorenz curve
+        lorenz_curve = self.calculate_lorenz_curve(holders, total_supply_str)
+
+        # Calculate Nakamoto coefficient
+        nakamoto_coefficient = self.calculate_nakamoto_coefficient(
+            holders, total_supply_str
+        )
+
+        return {
+            "protocol": protocol_key,
+            "token_symbol": protocol.get("symbol"),
+            "total_holders_analyzed": len(holders),
+            "concentration_metrics": metrics,
+            "lorenz_curve": lorenz_curve,
+            "nakamoto_coefficient": nakamoto_coefficient,
+        }
+
+    def calculate_lorenz_curve(
+        self, holders: List[Dict[str, Any]], total_supply: str
+    ) -> Dict[str, List[float]]:
+        """
+        Calculate the Lorenz curve data points for token distribution.
+
+        The Lorenz curve shows the cumulative share of tokens held by
+        the cumulative share of token holders.
+
+        Args:
+            holders: List of token holders with their addresses and balances.
+            total_supply: Total token supply as a string (in smallest token units).
+
+        Returns:
+            Dictionary with x and y coordinates for the Lorenz curve.
+        """
+        if not holders:
+            return {"x": [], "y": []}
+
+        try:
+            # Convert total supply to float
+            total_supply_float = float(total_supply)
+
+            # Extract balances and sort in ascending order
+            balances = [
+                float(holder.get("TokenHolderQuantity", 0)) for holder in holders
+            ]
+            balances.sort()
+
+            # Calculate cumulative sums
+            cum_balances = np.cumsum(balances)
+
+            # Calculate percentages
+            x = [
+                i / len(balances) for i in range(1, len(balances) + 1)
+            ]  # Cumulative % of holders
+            y = [
+                bal / total_supply_float for bal in cum_balances
+            ]  # Cumulative % of tokens
+
+            return {"x": x, "y": y}
+        except Exception as e:
+            logger.error(f"Error calculating Lorenz curve: {str(e)}")
+            return {"x": [], "y": []}
+
+    def calculate_nakamoto_coefficient(
+        self, holders: List[Dict[str, Any]], total_supply: str, threshold: float = 51.0
+    ) -> int:
+        """
+        Calculate the Nakamoto coefficient.
+
+        The Nakamoto coefficient is the minimum number of entities required to
+        reach a specified threshold (usually 51%) of the token supply.
+
+        Args:
+            holders: List of token holders with their addresses and balances.
+            total_supply: Total token supply as a string (in smallest token units).
+            threshold: Percentage threshold for control (default: 51%).
+
+        Returns:
+            Nakamoto coefficient as an integer.
+        """
+        if not holders:
+            return 0
+
+        try:
+            # Convert total supply to float
+            total_supply_float = float(total_supply)
+
+            # Extract balances and sort in descending order
+            balances = [
+                (
+                    float(holder.get("TokenHolderQuantity", 0)),
+                    holder.get("TokenHolderAddress", ""),
+                )
+                for holder in holders
+            ]
+            balances.sort(reverse=True)
+
+            # Calculate cumulative percentage
+            cumulative_pct = 0
+            for i, (balance, _) in enumerate(balances, 1):
+                cumulative_pct += balance / total_supply_float * 100
+                if cumulative_pct >= threshold:
+                    return i
+
+            # If the threshold is not reached with the available holders
+            return len(holders) + 1
+        except Exception as e:
+            logger.error(f"Error calculating Nakamoto coefficient: {str(e)}")
+            return 0
+
+
 def analyze_compound_token() -> Dict[str, Any]:
     """
     Analyze the Compound (COMP) token distribution as a proof of concept.

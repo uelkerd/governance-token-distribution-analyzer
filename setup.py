@@ -8,5 +8,11 @@ Modern installation should use the pyproject.toml file directly.
 
 from setuptools import setup, find_packages
 
-if __name__ == "__main__":
-    setup()
+setup(
+    name="governance_token_analyzer",
+    version="0.1.0",
+    packages=find_packages(),
+    install_requires=[
+        # Dependencies are specified in requirements.txt
+    ],
+)
