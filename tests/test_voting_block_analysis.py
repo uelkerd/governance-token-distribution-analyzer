@@ -111,7 +111,9 @@ def test_load_voting_data(voting_block_analyzer, sample_proposals):
             all_voters.add(vote["voter"])
 
     # Extract voters from voting history
-    history_voters = set(record["address"] for record in voting_block_analyzer.voting_history)
+    history_voters = set(
+        record["address"] for record in voting_block_analyzer.voting_history
+    )
     assert all(voter in history_voters for voter in all_voters)
 
 
