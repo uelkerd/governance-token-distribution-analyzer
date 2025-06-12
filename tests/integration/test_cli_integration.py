@@ -77,9 +77,7 @@ class TestCliIntegration:
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
         # Check that output files were created
-        expected_output = os.path.join(
-            temp_output_dir, "compound_gini_coefficient_historical.png"
-        )
+        expected_output = os.path.join(temp_output_dir, "compound_gini_coefficient.png")
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
 
