@@ -18,7 +18,7 @@ from datetime import datetime
 import sys
 
 # Add src directory to Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from governance_token_analyzer.core import (
     concentration_analysis,
