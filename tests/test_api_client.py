@@ -1,6 +1,4 @@
-"""Tests for the API Client module.
-"""
-
+"""Tests for the API Client module."""
 
 import pytest
 

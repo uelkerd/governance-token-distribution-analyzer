@@ -93,17 +93,13 @@ class TestReportGenerator(unittest.TestCase):
     def test_generate_comparative_concentration_chart(self, mock_savefig):
         """Test that the comparative concentration chart can be generated."""
         # Call the method we're testing
-        chart_path = self.generator.generate_comparative_concentration_chart(
-            self.sample_data
-        )
+        chart_path = self.generator.generate_comparative_concentration_chart(self.sample_data)
 
         # Verify savefig was called
         mock_savefig.assert_called_once()
 
         # Verify the returned path
-        expected_path = os.path.join(
-            self.test_output_dir, "comparative_concentration.png"
-        )
+        expected_path = os.path.join(self.test_output_dir, "comparative_concentration.png")
         self.assertEqual(chart_path, expected_path)
 
     @patch("matplotlib.pyplot.savefig")
@@ -116,9 +112,7 @@ class TestReportGenerator(unittest.TestCase):
         mock_savefig.assert_called_once()
 
         # Verify the returned path
-        expected_path = os.path.join(
-            self.test_output_dir, "distribution_comparison.png"
-        )
+        expected_path = os.path.join(self.test_output_dir, "distribution_comparison.png")
         self.assertEqual(chart_path, expected_path)
 
     @patch("matplotlib.pyplot.savefig")
@@ -135,25 +129,15 @@ class TestReportGenerator(unittest.TestCase):
         self.assertEqual(chart_path, expected_path)
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch(
-        "src.generate_report.ReportGenerator.generate_comparative_concentration_chart"
-    )
+    @patch("src.generate_report.ReportGenerator.generate_comparative_concentration_chart")
     @patch("src.generate_report.ReportGenerator.generate_distribution_comparison")
     @patch("src.generate_report.ReportGenerator.generate_top_holders_bar_chart")
-    def test_generate_html_report(
-        self, mock_top_holders, mock_distribution, mock_concentration, mock_file
-    ):
+    def test_generate_html_report(self, mock_top_holders, mock_distribution, mock_concentration, mock_file):
         """Test that the HTML report can be generated."""
         # Configure mocks to return valid paths
-        mock_concentration.return_value = os.path.join(
-            self.test_output_dir, "comparative_concentration.png"
-        )
-        mock_distribution.return_value = os.path.join(
-            self.test_output_dir, "distribution_comparison.png"
-        )
-        mock_top_holders.return_value = os.path.join(
-            self.test_output_dir, "top_holders_comparison.png"
-        )
+        mock_concentration.return_value = os.path.join(self.test_output_dir, "comparative_concentration.png")
+        mock_distribution.return_value = os.path.join(self.test_output_dir, "distribution_comparison.png")
+        mock_top_holders.return_value = os.path.join(self.test_output_dir, "top_holders_comparison.png")
 
         # Call the method we're testing
         report_path = self.generator.generate_html_report(self.sample_data)
@@ -164,13 +148,9 @@ class TestReportGenerator(unittest.TestCase):
         mock_top_holders.assert_called_once_with(self.sample_data)
 
         # Verify file was opened for writing
-        expected_path = os.path.join(
-            self.test_output_dir, "governance_token_analysis_report.html"
-        )
+        expected_path = os.path.join(self.test_output_dir, "governance_token_analysis_report.html")
         mock_file.assert_called_once()
-        self.assertEqual(
-            mock_file.call_args[0][1], "w"
-        )  # Second argument should be mode 'w'
+        self.assertEqual(mock_file.call_args[0][1], "w")  # Second argument should be mode 'w'
         # Path should be equivalent (different object type but same string value)
         self.assertEqual(str(mock_file.call_args[0][0]), expected_path)
 
@@ -180,9 +160,7 @@ class TestReportGenerator(unittest.TestCase):
         """Test that the full report generation process works."""
         # Configure mocks
         mock_load_data.return_value = self.sample_data
-        mock_html_report.return_value = os.path.join(
-            self.test_output_dir, "governance_token_analysis_report.html"
-        )
+        mock_html_report.return_value = os.path.join(self.test_output_dir, "governance_token_analysis_report.html")
 
         # Call the method we're testing
         report_path = self.generator.generate_full_report(["compound", "uniswap"])
@@ -194,9 +172,7 @@ class TestReportGenerator(unittest.TestCase):
         mock_html_report.assert_called_once_with(self.sample_data)
 
         # Verify the returned path
-        expected_path = os.path.join(
-            self.test_output_dir, "governance_token_analysis_report.html"
-        )
+        expected_path = os.path.join(self.test_output_dir, "governance_token_analysis_report.html")
         self.assertEqual(report_path, expected_path)
 
 

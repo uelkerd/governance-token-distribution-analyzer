@@ -76,9 +76,7 @@ def plot_metric_over_time(
         if not isinstance(time_series_data.index, pd.DatetimeIndex):
             logger.debug("Converting timestamp index to datetime")
             time_series_data = time_series_data.reset_index()
-            time_series_data["timestamp"] = pd.to_datetime(
-                time_series_data["timestamp"]
-            )
+            time_series_data["timestamp"] = pd.to_datetime(time_series_data["timestamp"])
             time_series_data.set_index("timestamp", inplace=True)
 
         # Plot the metric
@@ -156,9 +154,7 @@ def plot_protocol_comparison_over_time(
         # Validate input data
         if not isinstance(protocol_data, dict):
             logger.error("Invalid input: protocol_data is not a dictionary")
-            raise DataFormatError(
-                "Protocol data must be a dictionary mapping protocol names to DataFrames"
-            )
+            raise DataFormatError("Protocol data must be a dictionary mapping protocol names to DataFrames")
 
         if not protocol_data:
             logger.warning("Empty protocol data provided")
@@ -182,9 +178,7 @@ def plot_protocol_comparison_over_time(
 
         for protocol, data in protocol_data.items():
             if not isinstance(data, pd.DataFrame):
-                logger.warning(
-                    f"Skipping protocol '{protocol}': data is not a DataFrame"
-                )
+                logger.warning(f"Skipping protocol '{protocol}': data is not a DataFrame")
                 continue
 
             if data.empty:
@@ -192,16 +186,12 @@ def plot_protocol_comparison_over_time(
                 continue
 
             if metric_name not in data.columns:
-                logger.warning(
-                    f"Skipping protocol '{protocol}': metric '{metric_name}' not found"
-                )
+                logger.warning(f"Skipping protocol '{protocol}': metric '{metric_name}' not found")
                 continue
 
             # Check if the index is a datetime type
             if not isinstance(data.index, pd.DatetimeIndex):
-                logger.debug(
-                    f"Converting timestamp index to datetime for protocol '{protocol}'"
-                )
+                logger.debug(f"Converting timestamp index to datetime for protocol '{protocol}'")
                 data = data.reset_index()
                 data["timestamp"] = pd.to_datetime(data["timestamp"])
                 data.set_index("timestamp", inplace=True)
@@ -216,9 +206,7 @@ def plot_protocol_comparison_over_time(
             valid_protocols.append(protocol)
 
         if not valid_protocols:
-            logger.warning(
-                f"No valid data found for metric '{metric_name}' in any protocol"
-            )
+            logger.warning(f"No valid data found for metric '{metric_name}' in any protocol")
             ax.set_title(title or f"No valid data for {metric_name}")
             ax.text(
                 0.5,
@@ -253,14 +241,10 @@ def plot_protocol_comparison_over_time(
         if isinstance(e, DataFormatError):
             raise
         logger.error(f"Failed to create protocol comparison plot: {e}")
-        raise VisualizationError(
-            f"Failed to create protocol comparison visualization: {e}"
-        ) from e
+        raise VisualizationError(f"Failed to create protocol comparison visualization: {e}") from e
 
 
-def create_concentration_heatmap(
-    snapshots: List[Dict[str, Any]], figsize: Tuple[int, int] = (14, 8)
-) -> plt.Figure:
+def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple[int, int] = (14, 8)) -> plt.Figure:
     """Create a heatmap showing token concentration changes over time.
 
     Args:
@@ -296,15 +280,10 @@ def create_concentration_heatmap(
         for i, snapshot in enumerate(snapshots):
             # Validate snapshot format
             if "timestamp" not in snapshot or "data" not in snapshot:
-                logger.warning(
-                    f"Skipping snapshot {i}: Invalid format (missing required fields)"
-                )
+                logger.warning(f"Skipping snapshot {i}: Invalid format (missing required fields)")
                 continue
 
-            if (
-                "token_holders" not in snapshot["data"]
-                or not snapshot["data"]["token_holders"]
-            ):
+            if "token_holders" not in snapshot["data"] or not snapshot["data"]["token_holders"]:
                 logger.warning(f"Skipping snapshot {i}: No token holder data")
                 continue
 
@@ -322,18 +301,14 @@ def create_concentration_heatmap(
                     reverse=True,
                 )[:10]  # Top 10 holders
             except (KeyError, TypeError) as e:
-                logger.warning(
-                    f"Skipping snapshot {i}: Error sorting token holders: {e}"
-                )
+                logger.warning(f"Skipping snapshot {i}: Error sorting token holders: {e}")
                 continue
 
             # Create a row for each timestamp
             row = {"timestamp": timestamp}
             for j, holder in enumerate(holders):
                 if "percentage" not in holder:
-                    logger.warning(
-                        f"Skipping holder {j} in snapshot {i}: Missing percentage field"
-                    )
+                    logger.warning(f"Skipping holder {j} in snapshot {i}: Missing percentage field")
                     continue
                 row[f"Holder {j + 1}"] = holder["percentage"]
 
@@ -496,9 +471,7 @@ def create_holder_movement_plot(
         bars = ax.barh(
             y_pos,
             [c["percentage_change"] for c in top_changes],
-            color=[
-                "green" if c["percentage_change"] >= 0 else "red" for c in top_changes
-            ],
+            color=["green" if c["percentage_change"] >= 0 else "red" for c in top_changes],
         )
 
         # Add address labels
@@ -575,9 +548,7 @@ def create_governance_participation_plot(
         for i, snapshot in enumerate(snapshots):
             # Validate snapshot format
             if "timestamp" not in snapshot or "data" not in snapshot:
-                logger.warning(
-                    f"Skipping snapshot {i}: Invalid format (missing required fields)"
-                )
+                logger.warning(f"Skipping snapshot {i}: Invalid format (missing required fields)")
                 continue
 
             try:
@@ -602,14 +573,10 @@ def create_governance_participation_plot(
 
             # If still not found, skip this snapshot
             if participation_rate is None:
-                logger.warning(
-                    f"Skipping snapshot {i}: No participation rate data found"
-                )
+                logger.warning(f"Skipping snapshot {i}: No participation rate data found")
                 continue
 
-            data.append(
-                {"timestamp": timestamp, "participation_rate": participation_rate}
-            )
+            data.append({"timestamp": timestamp, "participation_rate": participation_rate})
 
         if not data:
             logger.warning("No valid participation data found in snapshots")
@@ -633,9 +600,7 @@ def create_governance_participation_plot(
         fig, ax = plt.subplots(figsize=figsize)
 
         # Plot participation rate
-        ax.plot(
-            df.index, df["participation_rate"], marker="o", linestyle="-", color="blue"
-        )
+        ax.plot(df.index, df["participation_rate"], marker="o", linestyle="-", color="blue")
 
         # Add trend line if we have enough data points
         if len(df) > 1:
@@ -662,9 +627,7 @@ def create_governance_participation_plot(
         if isinstance(e, DataFormatError):
             raise
         logger.error(f"Failed to create governance participation plot: {e}")
-        raise VisualizationError(
-            f"Failed to create governance participation plot: {e}"
-        ) from e
+        raise VisualizationError(f"Failed to create governance participation plot: {e}") from e
 
 
 def create_multi_metric_dashboard(
@@ -693,9 +656,7 @@ def create_multi_metric_dashboard(
         # Validate input data
         if not isinstance(time_series_data, dict):
             logger.error("Invalid input: time_series_data is not a dictionary")
-            raise DataFormatError(
-                "time_series_data must be a dictionary mapping metric names to DataFrames"
-            )
+            raise DataFormatError("time_series_data must be a dictionary mapping metric names to DataFrames")
 
         if not isinstance(metrics, list) or not metrics:
             logger.error("Invalid input: metrics must be a non-empty list")
@@ -746,9 +707,7 @@ def create_multi_metric_dashboard(
                 continue
 
             if metric not in data.columns:
-                logger.warning(
-                    f"Metric '{metric}' not found in the corresponding DataFrame"
-                )
+                logger.warning(f"Metric '{metric}' not found in the corresponding DataFrame")
                 ax.text(
                     0.5,
                     0.5,
@@ -761,9 +720,7 @@ def create_multi_metric_dashboard(
 
             # Ensure index is datetime
             if not isinstance(data.index, pd.DatetimeIndex):
-                logger.debug(
-                    f"Converting timestamp index to datetime for metric '{metric}'"
-                )
+                logger.debug(f"Converting timestamp index to datetime for metric '{metric}'")
                 data = data.reset_index()
                 data["timestamp"] = pd.to_datetime(data["timestamp"])
                 data.set_index("timestamp", inplace=True)
@@ -777,13 +734,9 @@ def create_multi_metric_dashboard(
                 try:
                     z = np.polyfit(mdates.date2num(data.index), data[metric], 1)
                     p = np.poly1d(z)
-                    ax.plot(
-                        data.index, p(mdates.date2num(data.index)), "r--", alpha=0.8
-                    )
+                    ax.plot(data.index, p(mdates.date2num(data.index)), "r--", alpha=0.8)
                 except (TypeError, ValueError, np.linalg.LinAlgError) as e:
-                    logger.warning(
-                        f"Could not create trend line for metric '{metric}': {e}"
-                    )
+                    logger.warning(f"Could not create trend line for metric '{metric}': {e}")
 
             # Set labels and title
             ax.set_xlabel("Date")
@@ -806,9 +759,7 @@ def create_multi_metric_dashboard(
         # Adjust layout
         fig.tight_layout(rect=[0, 0, 1, 0.95])
 
-        logger.info(
-            f"Created multi-metric dashboard with {metrics_plotted} metrics plotted"
-        )
+        logger.info(f"Created multi-metric dashboard with {metrics_plotted} metrics plotted")
         return fig
 
     except Exception as e:

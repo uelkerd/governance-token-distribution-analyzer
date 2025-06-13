@@ -101,9 +101,7 @@ class TestTheGraphAPI:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.api = TheGraphAPI(
-            subgraph_url="https://api.thegraph.com/subgraphs/name/test"
-        )
+        self.api = TheGraphAPI(subgraph_url="https://api.thegraph.com/subgraphs/name/test")
 
     @patch("src.analyzer.api.requests.post")
     def test_execute_query(self, mock_post):
@@ -111,9 +109,7 @@ class TestTheGraphAPI:
         # Mock response
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "data": {
-                "tokens": [{"id": "0x1234", "name": "Test Token", "symbol": "TEST"}]
-            }
+            "data": {"tokens": [{"id": "0x1234", "name": "Test Token", "symbol": "TEST"}]}
         }
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response

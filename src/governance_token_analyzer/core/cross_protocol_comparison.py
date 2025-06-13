@@ -52,9 +52,7 @@ def identify_governance_patterns(
 
 
 @measure_api_call(protocol="cross_protocol", method="generate_comparative_rankings")
-def generate_comparative_rankings(
-    comparisons: Dict[str, pd.DataFrame], metrics: List[str] = None
-) -> Dict[str, Any]:
+def generate_comparative_rankings(comparisons: Dict[str, pd.DataFrame], metrics: List[str] = None) -> Dict[str, Any]:
     """Generate comparative rankings across protocols."""
     try:
         logger.info("Generating comparative rankings")

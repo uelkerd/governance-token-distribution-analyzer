@@ -62,21 +62,15 @@ class VotingBlockAnalyzer:
         """
         try:
             if not self.voting_history:
-                logger.warning(
-                    "No voting history data available, cannot calculate similarity."
-                )
+                logger.warning("No voting history data available, cannot calculate similarity.")
                 return pd.DataFrame()
 
             # Create a matrix of address vs proposal votes with actual vote values
             vote_df = pd.DataFrame(self.voting_history)
-            vote_matrix = vote_df.pivot_table(
-                index="address", columns="proposal_id", values="vote"
-            )
+            vote_matrix = vote_df.pivot_table(index="address", columns="proposal_id", values="vote")
 
             # Calculate Jaccard similarity based on voting agreement
-            similarity_matrix = pd.DataFrame(
-                index=vote_matrix.index, columns=vote_matrix.index, dtype=float
-            )
+            similarity_matrix = pd.DataFrame(index=vote_matrix.index, columns=vote_matrix.index, dtype=float)
 
             for i, addr1 in enumerate(vote_matrix.index):
                 for j, addr2 in enumerate(vote_matrix.index):
@@ -100,9 +94,7 @@ class VotingBlockAnalyzer:
                         unique_votes = either_voted.sum() - both_voted.sum()
 
                         total_positions = agreements + disagreements + unique_votes
-                        similarity = (
-                            agreements / total_positions if total_positions > 0 else 0.0
-                        )
+                        similarity = agreements / total_positions if total_positions > 0 else 0.0
                     else:
                         similarity = 0.0
 
@@ -115,9 +107,7 @@ class VotingBlockAnalyzer:
 
         except Exception as e:
             logger.error(f"Failed to calculate voting similarity: {e}")
-            raise HistoricalDataError(
-                f"Failed to calculate voting similarity: {e}"
-            ) from e
+            raise HistoricalDataError(f"Failed to calculate voting similarity: {e}") from e
 
     def get_voting_similarity(self) -> Optional[pd.DataFrame]:
         """Return the address similarity matrix.
@@ -128,9 +118,7 @@ class VotingBlockAnalyzer:
         """
         return self.address_similarity
 
-    def identify_voting_blocks(
-        self, similarity_threshold: float = 0.7
-    ) -> List[List[str]]:
+    def identify_voting_blocks(self, similarity_threshold: float = 0.7) -> List[List[str]]:
         """Identify voting blocks based on voting pattern similarity.
 
         Args:
@@ -162,11 +150,7 @@ class VotingBlockAnalyzer:
             # Add edges between addresses with high similarity
             for i, addr1 in enumerate(addresses):
                 for j, addr2 in enumerate(addresses):
-                    if (
-                        i < j
-                        and self.address_similarity.loc[addr1, addr2]
-                        >= similarity_threshold
-                    ):
+                    if i < j and self.address_similarity.loc[addr1, addr2] >= similarity_threshold:
                         G.add_edge(
                             addr1,
                             addr2,
@@ -174,11 +158,7 @@ class VotingBlockAnalyzer:
                         )
 
             # Find connected components (voting blocks)
-            voting_blocks = [
-                list(component)
-                for component in nx.connected_components(G)
-                if len(component) > 1
-            ]
+            voting_blocks = [list(component) for component in nx.connected_components(G) if len(component) > 1]
             self.voting_blocks = voting_blocks
 
             logger.info(
@@ -190,9 +170,7 @@ class VotingBlockAnalyzer:
             logger.error(f"Failed to identify voting blocks: {e}")
             raise HistoricalDataError(f"Failed to identify voting blocks: {e}") from e
 
-    def calculate_voting_power(
-        self, token_balances: Dict[str, float]
-    ) -> Dict[str, Any]:
+    def calculate_voting_power(self, token_balances: Dict[str, float]) -> Dict[str, Any]:
         """Calculate the voting power of each block.
 
         Args:
@@ -203,9 +181,7 @@ class VotingBlockAnalyzer:
 
         """
         if not self.voting_blocks:
-            logger.warning(
-                "No voting blocks identified, cannot calculate voting power."
-            )
+            logger.warning("No voting blocks identified, cannot calculate voting power.")
             return {}
 
         voting_power = {}
@@ -227,9 +203,7 @@ class VotingBlockAnalyzer:
     def get_block_voting_patterns(self, block_id: int) -> Dict[str, Any]:
         """Analyze the voting patterns for a single block."""
         if not self.voting_blocks or block_id >= len(self.voting_blocks):
-            logger.warning(
-                f"Block ID {block_id} is out of bounds or no blocks identified."
-            )
+            logger.warning(f"Block ID {block_id} is out of bounds or no blocks identified.")
             return {}
 
         block = self.voting_blocks[block_id]
@@ -268,11 +242,7 @@ class VotingBlockAnalyzer:
                 "block_size": len(block),
             }
 
-        avg_participation = (
-            total_votes / (len(block) * len(block_proposals))
-            if block and block_proposals
-            else 0
-        )
+        avg_participation = total_votes / (len(block) * len(block_proposals)) if block and block_proposals else 0
 
         total_consensus = 0
         for p in block_proposals.values():
@@ -289,9 +259,7 @@ class VotingBlockAnalyzer:
             "block_size": len(block),
         }
 
-    def visualize_voting_blocks(
-        self, token_balances: Optional[Dict[str, float]] = None
-    ) -> plt.Figure:
+    def visualize_voting_blocks(self, token_balances: Optional[Dict[str, float]] = None) -> plt.Figure:
         """Create a network visualization of voting blocks.
 
         Args:
@@ -435,9 +403,7 @@ class VotingBlockAnalyzer:
                 return {}
 
             if self.address_similarity is None:
-                logger.warning(
-                    "Address similarity not calculated. Cannot analyze cohesion."
-                )
+                logger.warning("Address similarity not calculated. Cannot analyze cohesion.")
                 return {}
 
             cohesion_scores = {}
@@ -449,9 +415,7 @@ class VotingBlockAnalyzer:
                 # Calculate average cohesion within the block, ignoring self-similarity
                 upper_tri_indices = np.triu_indices_from(block_similarity, k=1)
                 if upper_tri_indices[0].size > 0:
-                    cohesion_scores[block_id] = np.mean(
-                        block_similarity[upper_tri_indices]
-                    )
+                    cohesion_scores[block_id] = np.mean(block_similarity[upper_tri_indices])
                 else:
                     cohesion_scores[block_id] = 0.0
 
@@ -462,9 +426,7 @@ class VotingBlockAnalyzer:
             logger.error(f"Failed to analyze block cohesion: {e}")
             raise HistoricalDataError(f"Failed to analyze block cohesion: {e}") from e
 
-    def track_block_evolution(
-        self, historical_snapshots: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def track_block_evolution(self, historical_snapshots: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Track the evolution of voting blocks over time.
 
         Args:
@@ -534,20 +496,14 @@ def analyze_proposal_influence(
             return {}
 
         # Sort addresses by token balance (descending)
-        sorted_holders = sorted(
-            token_balances.items(), key=lambda x: x[1], reverse=True
-        )
+        sorted_holders = sorted(token_balances.items(), key=lambda x: x[1], reverse=True)
         total_tokens = sum(token_balances.values())
 
         # Analyze each proposal
         results = {}
 
         for proposal in proposals:
-            if (
-                "id" not in proposal
-                or "votes" not in proposal
-                or "outcome" not in proposal
-            ):
+            if "id" not in proposal or "votes" not in proposal or "outcome" not in proposal:
                 logger.warning("Skipping proposal: missing required fields")
                 continue
 
@@ -593,8 +549,7 @@ def analyze_proposal_influence(
                             "balance": balance,
                             "vote": "for" if vote == 1 else "against",
                             "cumulative_tokens": cumulative_tokens,
-                            "cumulative_percentage": (cumulative_tokens / total_tokens)
-                            * 100,
+                            "cumulative_percentage": (cumulative_tokens / total_tokens) * 100,
                             "for_percentage": for_percentage,
                             "current_outcome": current_outcome,
                         }
@@ -621,28 +576,16 @@ def analyze_proposal_influence(
             top_10_percentage = (top_10_balance / total_tokens) * 100
 
             top_10_votes = {
-                "for": sum(
-                    balance
-                    for addr, balance in sorted_holders[:10]
-                    if vote_map.get(addr) == 1
-                ),
-                "against": sum(
-                    balance
-                    for addr, balance in sorted_holders[:10]
-                    if vote_map.get(addr) == 0
-                ),
+                "for": sum(balance for addr, balance in sorted_holders[:10] if vote_map.get(addr) == 1),
+                "against": sum(balance for addr, balance in sorted_holders[:10] if vote_map.get(addr) == 0),
             }
 
             top_10_votes_percentage = 0
             if votes_for + votes_against > 0:
                 if outcome == "passed":
-                    top_10_votes_percentage = (
-                        top_10_votes["for"] / (votes_for + votes_against)
-                    ) * 100
+                    top_10_votes_percentage = (top_10_votes["for"] / (votes_for + votes_against)) * 100
                 else:
-                    top_10_votes_percentage = (
-                        top_10_votes["against"] / (votes_for + votes_against)
-                    ) * 100
+                    top_10_votes_percentage = (top_10_votes["against"] / (votes_for + votes_against)) * 100
 
             results[proposal_id] = {
                 "outcome": outcome,
@@ -656,8 +599,7 @@ def analyze_proposal_influence(
                 },
                 "votes_for": votes_for,
                 "votes_against": votes_against,
-                "participation_percentage": ((votes_for + votes_against) / total_tokens)
-                * 100,
+                "participation_percentage": ((votes_for + votes_against) / total_tokens) * 100,
             }
 
         logger.info(f"Analyzed influence patterns for {len(results)} proposals")
@@ -698,11 +640,7 @@ def detect_voting_anomalies(
             return {}
 
         # Map addresses to token balances
-        balance_map = {
-            h["address"]: h["balance"]
-            for h in token_holders
-            if "address" in h and "balance" in h
-        }
+        balance_map = {h["address"]: h["balance"] for h in token_holders if "address" in h and "balance" in h}
 
         # Prepare voting data
         voting_data = defaultdict(dict)
@@ -718,9 +656,7 @@ def detect_voting_anomalies(
             # Track participation for this proposal
             participation_count = len(votes)
             total_holders = len(token_holders)
-            participation_rate = (
-                (participation_count / total_holders) if total_holders > 0 else 0
-            )
+            participation_rate = (participation_count / total_holders) if total_holders > 0 else 0
             proposal_participation[proposal_id] = participation_rate
 
             # Map votes by address
@@ -743,9 +679,7 @@ def detect_voting_anomalies(
 
         # 1. Detect sudden participation increases
         avg_participation = (
-            sum(proposal_participation.values()) / len(proposal_participation)
-            if proposal_participation
-            else 0
+            sum(proposal_participation.values()) / len(proposal_participation) if proposal_participation else 0
         )
 
         for proposal_id, rate in proposal_participation.items():
@@ -755,17 +689,12 @@ def detect_voting_anomalies(
                         "proposal_id": proposal_id,
                         "participation_rate": rate,
                         "average_rate": avg_participation,
-                        "increase_percentage": (
-                            (rate - avg_participation) / avg_participation
-                        )
-                        * 100,
+                        "increase_percentage": ((rate - avg_participation) / avg_participation) * 100,
                     }
                 )
 
         # 2. Detect coordinated voting (addresses that always vote together)
-        if (
-            len(proposals) >= 3
-        ):  # Need at least 3 proposals for meaningful pattern detection
+        if len(proposals) >= 3:  # Need at least 3 proposals for meaningful pattern detection
             # Find address pairs that voted on at least 3 common proposals
             for addr1, votes1 in voting_data.items():
                 for addr2, votes2 in voting_data.items():
@@ -793,11 +722,7 @@ def detect_voting_anomalies(
 
         # 3. Detect votes that go against token holding size
         for proposal in proposals:
-            if (
-                "id" not in proposal
-                or "votes" not in proposal
-                or "outcome" not in proposal
-            ):
+            if "id" not in proposal or "votes" not in proposal or "outcome" not in proposal:
                 continue
 
             proposal_id = proposal["id"]
@@ -858,9 +783,7 @@ def detect_voting_anomalies(
                 support = vote["support"]
                 balance = balance_map.get(voter, 0)
 
-                sorted_voters.append(
-                    {"address": voter, "support": support, "balance": balance}
-                )
+                sorted_voters.append({"address": voter, "support": support, "balance": balance})
 
             sorted_voters.sort(key=lambda x: x["balance"], reverse=True)
 
@@ -886,28 +809,16 @@ def detect_voting_anomalies(
                             "proposal_id": proposal_id,
                             "top_sentiment": top_sentiment,
                             "bottom_sentiment": bottom_sentiment,
-                            "top_for_percentage": (top_for / top_count) * 100
-                            if top_count > 0
-                            else 0,
-                            "top_against_percentage": (top_against / top_count) * 100
-                            if top_count > 0
-                            else 0,
-                            "bottom_for_percentage": (bottom_for / len(bottom_votes))
-                            * 100
-                            if bottom_votes
-                            else 0,
-                            "bottom_against_percentage": (
-                                bottom_against / len(bottom_votes)
-                            )
-                            * 100
+                            "top_for_percentage": (top_for / top_count) * 100 if top_count > 0 else 0,
+                            "top_against_percentage": (top_against / top_count) * 100 if top_count > 0 else 0,
+                            "bottom_for_percentage": (bottom_for / len(bottom_votes)) * 100 if bottom_votes else 0,
+                            "bottom_against_percentage": (bottom_against / len(bottom_votes)) * 100
                             if bottom_votes
                             else 0,
                         }
                     )
 
-        logger.info(
-            f"Detected {sum(len(v) for v in anomalies.values())} anomalies across {len(proposals)} proposals"
-        )
+        logger.info(f"Detected {sum(len(v) for v in anomalies.values())} anomalies across {len(proposals)} proposals")
         return anomalies
 
     except Exception as e:

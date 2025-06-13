@@ -1,5 +1,4 @@
-"""Integration tests for voting block analysis functionality.
-"""
+"""Integration tests for voting block analysis functionality."""
 
 import json
 from datetime import datetime, timedelta
@@ -42,8 +41,7 @@ class TestVotingBlockAnalysisIntegration:
             voters.append(
                 {
                     "address": f"0x{i:040x}",
-                    "balance": 100 * (num_voters - i)
-                    + np.random.normal(0, 10),  # Larger balance for lower index
+                    "balance": 100 * (num_voters - i) + np.random.normal(0, 10),  # Larger balance for lower index
                     "block": block_id,
                 }
             )
@@ -69,9 +67,7 @@ class TestVotingBlockAnalysisIntegration:
 
                 # Decide vote based on block and some randomness
                 block_id = voter["block"]
-                block_support_adjustment = 0.2 * (
-                    block_id - num_blocks // 2
-                )  # Different blocks vote differently
+                block_support_adjustment = 0.2 * (block_id - num_blocks // 2)  # Different blocks vote differently
 
                 support_probability = base_support + block_support_adjustment
                 support = 1 if np.random.random() < support_probability else 0
@@ -96,9 +92,7 @@ class TestVotingBlockAnalysisIntegration:
                     "description": f"This is a sample proposal {i + 1}",
                     "votes": votes,
                     "outcome": actual_outcome,
-                    "created_at": (
-                        datetime.now() - timedelta(days=num_proposals - i)
-                    ).isoformat(),
+                    "created_at": (datetime.now() - timedelta(days=num_proposals - i)).isoformat(),
                 }
             )
 
@@ -132,9 +126,7 @@ class TestVotingBlockAnalysisIntegration:
         """Create a dictionary mapping addresses to token balances."""
         return {holder["address"]: holder["balance"] for holder in token_holders}
 
-    def test_end_to_end_voting_block_analysis(
-        self, sample_proposals, token_balances, temp_data_dir
-    ):
+    def test_end_to_end_voting_block_analysis(self, sample_proposals, token_balances, temp_data_dir):
         """Test the entire voting block analysis workflow."""
         # Initialize analyzer
         analyzer = VotingBlockAnalyzer()
@@ -179,19 +171,13 @@ class TestVotingBlockAnalysisIntegration:
         # Verify results
         assert not similarity_df.empty, "Similarity matrix should not be empty"
         assert len(voting_blocks) > 0, "Should identify at least one voting block"
-        assert len(block_power) == len(
-            voting_blocks
-        ), "Should calculate power for all blocks"
+        assert len(block_power) == len(voting_blocks), "Should calculate power for all blocks"
 
         # Verify block power calculations are reasonable
         total_percentage = sum(data["percentage"] for data in block_power.values())
-        assert (
-            total_percentage <= 100.1
-        ), "Total block percentage should not exceed 100%"
+        assert total_percentage <= 100.1, "Total block percentage should not exceed 100%"
 
-    def test_proposal_influence_analysis(
-        self, sample_proposals, token_balances, temp_data_dir
-    ):
+    def test_proposal_influence_analysis(self, sample_proposals, token_balances, temp_data_dir):
         """Test the proposal influence analysis functionality."""
         # Analyze proposal influence
         influence = analyze_proposal_influence(sample_proposals, token_balances)
@@ -220,12 +206,8 @@ class TestVotingBlockAnalysisIntegration:
         # Check that each proposal has the expected fields
         for prop_id, data in influence.items():
             assert "outcome" in data, "Each proposal should have an outcome"
-            assert (
-                "participation_percentage" in data
-            ), "Each proposal should have participation data"
-            assert (
-                "top_10_influence" in data
-            ), "Each proposal should have top 10 influence data"
+            assert "participation_percentage" in data, "Each proposal should have participation data"
+            assert "top_10_influence" in data, "Each proposal should have top 10 influence data"
 
     def test_anomaly_detection(self, sample_proposals, token_holders, temp_data_dir):
         """Test the voting anomaly detection functionality."""
@@ -238,10 +220,7 @@ class TestVotingBlockAnalysisIntegration:
             serializable_anomalies = {}
             for category, items in anomalies.items():
                 serializable_anomalies[category] = [
-                    {
-                        k: (float(v) if isinstance(v, (np.float64, np.float32)) else v)
-                        for k, v in item.items()
-                    }
+                    {k: (float(v) if isinstance(v, (np.float64, np.float32)) else v) for k, v in item.items()}
                     for item in items
                 ]
             json.dump(serializable_anomalies, f, indent=2)
@@ -254,9 +233,7 @@ class TestVotingBlockAnalysisIntegration:
         """Test error handling in the voting block analysis module."""
         # Test with empty proposals
         empty_result = analyze_proposal_influence([], token_balances)
-        assert (
-            isinstance(empty_result, dict) and len(empty_result) == 0
-        ), "Should return empty dict for empty proposals"
+        assert isinstance(empty_result, dict) and len(empty_result) == 0, "Should return empty dict for empty proposals"
 
         # Test with invalid proposals (it should skip them and not raise an error)
         invalid_proposals = [{"id": "PROP-X"}]  # Missing votes
@@ -282,13 +259,9 @@ class TestVotingBlockAnalysisIntegration:
         analyzer.calculate_voting_similarity()
         blocks = analyzer.identify_voting_blocks()
         empty_power = analyzer.calculate_voting_power({})
-        assert isinstance(
-            empty_power, dict
-        ), "Should handle empty token balances gracefully"
+        assert isinstance(empty_power, dict), "Should handle empty token balances gracefully"
 
-    def test_cross_integration_with_historical_data(
-        self, sample_proposals, token_balances, temp_data_dir
-    ):
+    def test_cross_integration_with_historical_data(self, sample_proposals, token_balances, temp_data_dir):
         """Test integration between voting block analysis and historical data tracking."""
         # Create snapshots of voting blocks over time
         snapshots = []
@@ -296,9 +269,7 @@ class TestVotingBlockAnalysisIntegration:
         # Simulate 3 snapshots with evolving voting patterns
         for i in range(3):
             # Modify some votes to simulate evolving patterns
-            modified_proposals = self._modify_proposals_for_snapshot(
-                sample_proposals, i
-            )
+            modified_proposals = self._modify_proposals_for_snapshot(sample_proposals, i)
 
             # Analyze voting blocks
             analyzer = VotingBlockAnalyzer()
@@ -309,9 +280,7 @@ class TestVotingBlockAnalysisIntegration:
 
             # Save snapshot
             snapshot = {
-                "timestamp": (
-                    datetime.now() - timedelta(days=30 * (2 - i))
-                ).isoformat(),
+                "timestamp": (datetime.now() - timedelta(days=30 * (2 - i))).isoformat(),
                 "num_blocks": len(blocks),
                 "total_addresses": sum(len(block) for block in blocks),
                 "block_power": {
@@ -380,9 +349,7 @@ class TestVotingBlockAnalysisIntegration:
             elif snapshot_index == 2:
                 for i, vote in enumerate(votes):
                     addr = vote["voter"]
-                    addr_num = (
-                        int(addr.replace("0x", ""), 16) % 100
-                    )  # Extract number from address
+                    addr_num = int(addr.replace("0x", ""), 16) % 100  # Extract number from address
 
                     # Make votes more coordinated by block
                     if addr_num < 33:

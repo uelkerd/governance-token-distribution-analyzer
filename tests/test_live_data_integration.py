@@ -75,24 +75,22 @@ class TestLiveDataIntegration:
 
     # ENHANCED API RESILIENCE & FALLBACK TESTING
 
-    @pytest.mark.parametrize(
-        "api_provider", ["etherscan", "alchemy", "graph", "infura"]
-    )
+    @pytest.mark.parametrize("api_provider", ["etherscan", "alchemy", "graph", "infura"])
     def test_api_key_validation(self, api_provider):
         """Test API key validation for each provider."""
         # Test with empty API key
         original_key = os.environ.get(f"{api_provider.upper()}_API_KEY")
         os.environ[f"{api_provider.upper()}_API_KEY"] = ""
         empty_client = APIClient()
-        
+
         # Test with invalid API key format
         os.environ[f"{api_provider.upper()}_API_KEY"] = "invalid_key_123"
         invalid_client = APIClient()
-        
+
         # Restore original key
         if original_key:
             os.environ[f"{api_provider.upper()}_API_KEY"] = original_key
-        
+
         # Basic validation that client was created
         assert empty_client is not None
         assert invalid_client is not None
@@ -102,32 +100,18 @@ class TestLiveDataIntegration:
         """Test complete API failure scenario with fallback to simulation."""
         with patch.multiple(
             mock_api_client,
-            _fetch_token_holders_alchemy=Mock(
-                side_effect=ConnectionError("All APIs failed")
-            ),
-            _fetch_token_holders_etherscan=Mock(
-                side_effect=ConnectionError("All APIs failed")
-            ),
-            _fetch_compound_token_holders=Mock(
-                side_effect=ConnectionError("All APIs failed")
-            ),
-            _fetch_uniswap_token_holders=Mock(
-                side_effect=ConnectionError("All APIs failed")
-            ),
-            _fetch_aave_token_holders=Mock(
-                side_effect=ConnectionError("All APIs failed")
-            ),
+            _fetch_token_holders_alchemy=Mock(side_effect=ConnectionError("All APIs failed")),
+            _fetch_token_holders_etherscan=Mock(side_effect=ConnectionError("All APIs failed")),
+            _fetch_compound_token_holders=Mock(side_effect=ConnectionError("All APIs failed")),
+            _fetch_uniswap_token_holders=Mock(side_effect=ConnectionError("All APIs failed")),
+            _fetch_aave_token_holders=Mock(side_effect=ConnectionError("All APIs failed")),
         ):
             # Should fallback to simulation data
-            holders = mock_api_client.get_token_holders(
-                protocol, limit=10, use_real_data=True
-            )
+            holders = mock_api_client.get_token_holders(protocol, limit=10, use_real_data=True)
 
             assert isinstance(holders, list)
             assert len(holders) > 0
-            assert all(
-                "address" in holder and "balance" in holder for holder in holders
-            )
+            assert all("address" in holder and "balance" in holder for holder in holders)
 
     def test_partial_api_response_handling(self, mock_api_client):
         """Test handling of partial API responses with missing fields."""
@@ -144,9 +128,7 @@ class TestLiveDataIntegration:
             "_fetch_token_holders_alchemy",
             return_value=partial_response,
         ):
-            holders = mock_api_client.get_token_holders(
-                "compound", limit=10, use_real_data=True
-            )
+            holders = mock_api_client.get_token_holders("compound", limit=10, use_real_data=True)
 
             # Should filter out invalid entries and convert to proper format
             valid_holders = [h for h in holders if "address" in h and "balance" in h]
@@ -165,12 +147,8 @@ class TestLiveDataIntegration:
     )
     def test_http_error_handling(self, error_type, mock_api_client):
         """Test handling of various HTTP errors and exceptions."""
-        with patch.object(
-            mock_api_client, "_fetch_token_holders_alchemy", side_effect=error_type
-        ):
-            holders = mock_api_client.get_token_holders(
-                "compound", limit=5, use_real_data=True
-            )
+        with patch.object(mock_api_client, "_fetch_token_holders_alchemy", side_effect=error_type):
+            holders = mock_api_client.get_token_holders("compound", limit=5, use_real_data=True)
 
             # Should fallback gracefully
             assert isinstance(holders, list)
@@ -193,9 +171,7 @@ class TestLiveDataIntegration:
             side_effect=mock_rate_limited_call,
         ):
             start_time = time.time()
-            holders = mock_api_client.get_token_holders(
-                "compound", limit=5, use_real_data=True
-            )
+            holders = mock_api_client.get_token_holders("compound", limit=5, use_real_data=True)
             elapsed_time = time.time() - start_time
 
             # Should eventually succeed after retries
@@ -219,9 +195,7 @@ class TestLiveDataIntegration:
             "_fetch_token_holders_alchemy",
             side_effect=mock_timeout_then_success,
         ):
-            holders = mock_api_client.get_token_holders(
-                "compound", limit=5, use_real_data=True
-            )
+            holders = mock_api_client.get_token_holders("compound", limit=5, use_real_data=True)
 
             assert isinstance(holders, list)
             assert len(holders) > 0
@@ -233,13 +207,9 @@ class TestLiveDataIntegration:
             mock_api_client,
             _fetch_token_holders_alchemy=Mock(side_effect=HTTPError("Alchemy failed")),
             _fetch_compound_token_holders=Mock(side_effect=HTTPError("Graph failed")),
-            _fetch_token_holders_etherscan=Mock(
-                side_effect=HTTPError("Etherscan failed")
-            ),
+            _fetch_token_holders_etherscan=Mock(side_effect=HTTPError("Etherscan failed")),
         ):
-            holders = mock_api_client.get_token_holders(
-                "compound", limit=5, use_real_data=True
-            )
+            holders = mock_api_client.get_token_holders("compound", limit=5, use_real_data=True)
 
             # Should eventually fallback to simulation
             assert isinstance(holders, list)
@@ -249,9 +219,7 @@ class TestLiveDataIntegration:
         """Test concurrent API requests don't interfere with each other."""
 
         def make_request(protocol):
-            return mock_api_client.get_token_holders(
-                protocol, limit=5, use_real_data=True
-            )
+            return mock_api_client.get_token_holders(protocol, limit=5, use_real_data=True)
 
         # Mock successful responses
         with patch.object(
@@ -261,15 +229,9 @@ class TestLiveDataIntegration:
         ):
             # Run concurrent requests
             with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-                futures = [
-                    executor.submit(make_request, protocol)
-                    for protocol in ["compound", "uniswap", "aave"]
-                ]
+                futures = [executor.submit(make_request, protocol) for protocol in ["compound", "uniswap", "aave"]]
 
-                results = [
-                    future.result()
-                    for future in concurrent.futures.as_completed(futures)
-                ]
+                results = [future.result() for future in concurrent.futures.as_completed(futures)]
 
                 # All requests should succeed
                 assert len(results) == 3
@@ -283,9 +245,7 @@ class TestLiveDataIntegration:
             "_fetch_token_holders_alchemy",
             side_effect=HTTPError("401 Unauthorized"),
         ):
-            holders = mock_api_client.get_token_holders(
-                "compound", limit=5, use_real_data=True
-            )
+            holders = mock_api_client.get_token_holders("compound", limit=5, use_real_data=True)
 
             # Should fallback to next provider or simulation
             assert isinstance(holders, list)
@@ -297,9 +257,7 @@ class TestLiveDataIntegration:
             "_fetch_token_holders_alchemy",
             side_effect=HTTPError("403 Quota Exceeded"),
         ):
-            holders = mock_api_client.get_token_holders(
-                "compound", limit=5, use_real_data=True
-            )
+            holders = mock_api_client.get_token_holders("compound", limit=5, use_real_data=True)
 
             # Should fallback gracefully
             assert isinstance(holders, list)
@@ -315,12 +273,8 @@ class TestLiveDataIntegration:
         ]
 
         for response in malformed_responses:
-            with patch.object(
-                mock_api_client, "_fetch_token_holders_alchemy", return_value=response
-            ):
-                holders = mock_api_client.get_token_holders(
-                    "compound", limit=5, use_real_data=True
-                )
+            with patch.object(mock_api_client, "_fetch_token_holders_alchemy", return_value=response):
+                holders = mock_api_client.get_token_holders("compound", limit=5, use_real_data=True)
 
                 # Should handle gracefully
                 assert isinstance(holders, list)
@@ -386,9 +340,7 @@ class TestLiveDataIntegration:
         if not api_client.graph_api_key:
             pytest.skip("No Graph API key available for live data testing")
 
-        proposals = api_client.get_governance_proposals(
-            "compound", limit=5, use_real_data=True
-        )
+        proposals = api_client.get_governance_proposals("compound", limit=5, use_real_data=True)
 
         assert isinstance(proposals, list)
 
@@ -406,9 +358,7 @@ class TestLiveDataIntegration:
         if not api_client.graph_api_key:
             pytest.skip("No Graph API key available for live data testing")
 
-        proposals = api_client.get_governance_proposals(
-            "uniswap", limit=5, use_real_data=True
-        )
+        proposals = api_client.get_governance_proposals("uniswap", limit=5, use_real_data=True)
 
         assert isinstance(proposals, list)
 
@@ -425,9 +375,7 @@ class TestLiveDataIntegration:
         if not api_client.graph_api_key:
             pytest.skip("No Graph API key available for live data testing")
 
-        proposals = api_client.get_governance_proposals(
-            "aave", limit=5, use_real_data=True
-        )
+        proposals = api_client.get_governance_proposals("aave", limit=5, use_real_data=True)
 
         assert isinstance(proposals, list)
 
@@ -445,15 +393,11 @@ class TestLiveDataIntegration:
             pytest.skip("No Graph API key available for live data testing")
 
         # First, get a proposal to test votes for
-        proposals = api_client.get_governance_proposals(
-            "compound", limit=1, use_real_data=True
-        )
+        proposals = api_client.get_governance_proposals("compound", limit=1, use_real_data=True)
 
         if len(proposals) > 0:
             proposal_id = proposals[0]["id"]
-            votes = api_client.get_governance_votes(
-                "compound", proposal_id, use_real_data=True
-            )
+            votes = api_client.get_governance_votes("compound", proposal_id, use_real_data=True)
 
             assert isinstance(votes, list)
 
@@ -489,9 +433,7 @@ class TestLiveDataIntegration:
         assert isinstance(holders, list)
         assert len(holders) > 0
 
-        proposals = empty_client.get_governance_proposals(
-            "compound", use_real_data=True
-        )
+        proposals = empty_client.get_governance_proposals("compound", use_real_data=True)
         assert isinstance(proposals, list)
         assert len(proposals) > 0
 
@@ -619,9 +561,7 @@ class TestLiveDataIntegration:
         assert elapsed_time < 30
 
         start_time = time.time()
-        proposals = api_client.get_governance_proposals(
-            "compound", limit=5, use_real_data=True
-        )
+        proposals = api_client.get_governance_proposals("compound", limit=5, use_real_data=True)
         elapsed_time = time.time() - start_time
 
         # Should complete within 30 seconds
@@ -672,9 +612,7 @@ if __name__ == "__main__":
     # Test governance proposals
     print("\n2. Testing governance proposals...")
     for protocol in ["compound", "uniswap", "aave"]:
-        proposals = client.get_governance_proposals(
-            protocol, limit=3, use_real_data=True
-        )
+        proposals = client.get_governance_proposals(protocol, limit=3, use_real_data=True)
         print(f"   {protocol}: {len(proposals)} proposals fetched")
 
     # Test comprehensive data

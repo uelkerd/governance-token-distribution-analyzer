@@ -33,13 +33,9 @@ class DelegationPatternAnalyzer:
 
         """
         self.min_delegation_threshold = min_delegation_threshold
-        logger.info(
-            f"Initialized DelegationPatternAnalyzer with min_delegation_threshold={min_delegation_threshold}"
-        )
+        logger.info(f"Initialized DelegationPatternAnalyzer with min_delegation_threshold={min_delegation_threshold}")
 
-    def analyze_delegation_network(
-        self, governance_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def analyze_delegation_network(self, governance_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze the delegation network from governance data.
 
         Args:
@@ -57,15 +53,11 @@ class DelegationPatternAnalyzer:
         try:
             if "delegations" not in governance_data:
                 logger.error("No delegation data found in governance_data")
-                raise DataFormatError(
-                    "No delegation data found. Expected 'delegations' key"
-                )
+                raise DataFormatError("No delegation data found. Expected 'delegations' key")
 
             if "token_holders" not in governance_data:
                 logger.error("No token holder data found in governance_data")
-                raise DataFormatError(
-                    "No token holder data found. Expected 'token_holders' key"
-                )
+                raise DataFormatError("No token holder data found. Expected 'token_holders' key")
 
             delegations = governance_data["delegations"]
             token_holders = governance_data["token_holders"]
@@ -74,19 +66,13 @@ class DelegationPatternAnalyzer:
             delegation_graph = self._create_delegation_graph(delegations, token_holders)
 
             # Calculate delegation metrics
-            delegation_metrics = self._calculate_delegation_metrics(
-                delegation_graph, token_holders
-            )
+            delegation_metrics = self._calculate_delegation_metrics(delegation_graph, token_holders)
 
             # Identify key delegatees
-            key_delegatees = self._identify_key_delegatees(
-                delegation_graph, token_holders
-            )
+            key_delegatees = self._identify_key_delegatees(delegation_graph, token_holders)
 
             # Analyze delegation patterns
-            delegation_patterns = self._analyze_delegation_patterns(
-                delegation_graph, token_holders
-            )
+            delegation_patterns = self._analyze_delegation_patterns(delegation_graph, token_holders)
 
             return {
                 "metrics": delegation_metrics,
@@ -101,9 +87,7 @@ class DelegationPatternAnalyzer:
             logger.error(f"Error analyzing delegation network: {e}")
             raise AnalysisError(f"Error analyzing delegation network: {e}")
 
-    def compare_delegation_patterns(
-        self, historical_data: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def compare_delegation_patterns(self, historical_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Compare delegation patterns across multiple historical snapshots.
 
         Args:
@@ -129,26 +113,17 @@ class DelegationPatternAnalyzer:
             for snapshot in historical_data:
                 if "timestamp" not in snapshot or "data" not in snapshot:
                     logger.error("Invalid snapshot format in historical data")
-                    raise DataFormatError(
-                        "Each snapshot must have 'timestamp' and 'data' keys"
-                    )
+                    raise DataFormatError("Each snapshot must have 'timestamp' and 'data' keys")
 
                 timestamps.append(snapshot["timestamp"])
 
                 # Only analyze if delegation data exists
-                if (
-                    "delegations" in snapshot["data"]
-                    and "token_holders" in snapshot["data"]
-                ):
+                if "delegations" in snapshot["data"] and "token_holders" in snapshot["data"]:
                     analysis = self.analyze_delegation_network(snapshot["data"])
-                    snapshots_analysis.append(
-                        {"timestamp": snapshot["timestamp"], "analysis": analysis}
-                    )
+                    snapshots_analysis.append({"timestamp": snapshot["timestamp"], "analysis": analysis})
 
             # Compare patterns across time
-            comparison_results = self._compare_delegation_across_time(
-                snapshots_analysis
-            )
+            comparison_results = self._compare_delegation_across_time(snapshots_analysis)
 
             return {"snapshots": snapshots_analysis, "comparison": comparison_results}
 
@@ -180,9 +155,7 @@ class DelegationPatternAnalyzer:
 
             # If we don't have enough snapshots with delegation data, return empty results
             if len(comparison_data["snapshots"]) < 2:
-                logger.warning(
-                    "Not enough snapshots with delegation data to detect shifts"
-                )
+                logger.warning("Not enough snapshots with delegation data to detect shifts")
                 return {"significant_shifts": [], "shift_metrics": {}}
 
             # Analyze the changes between consecutive snapshots
@@ -205,9 +178,7 @@ class DelegationPatternAnalyzer:
 
                 # Check if changes exceed threshold
                 significant_changes = {
-                    key: value
-                    for key, value in metrics_change.items()
-                    if abs(value) >= shift_threshold
+                    key: value for key, value in metrics_change.items() if abs(value) >= shift_threshold
                 }
 
                 if significant_changes or delegatee_changes["significant"]:
@@ -252,15 +223,11 @@ class DelegationPatternAnalyzer:
         try:
             if "delegations" not in governance_data:
                 logger.error("No delegation data found in governance_data")
-                raise DataFormatError(
-                    "No delegation data found. Expected 'delegations' key"
-                )
+                raise DataFormatError("No delegation data found. Expected 'delegations' key")
 
             if "token_holders" not in governance_data:
                 logger.error("No token holder data found in governance_data")
-                raise DataFormatError(
-                    "No token holder data found. Expected 'token_holders' key"
-                )
+                raise DataFormatError("No token holder data found. Expected 'token_holders' key")
 
             delegations = governance_data["delegations"]
             token_holders = governance_data["token_holders"]
@@ -278,9 +245,7 @@ class DelegationPatternAnalyzer:
                 address = holder["address"]
 
                 # Skip if not a delegator
-                if address not in delegation_graph or not delegation_graph.out_edges(
-                    address
-                ):
+                if address not in delegation_graph or not delegation_graph.out_edges(address):
                     continue
 
                 # Calculate delegated influence
@@ -290,9 +255,7 @@ class DelegationPatternAnalyzer:
                 for _, delegate in delegation_graph.out_edges(address):
                     edge_data = delegation_graph.get_edge_data(address, delegate)
                     delegated_tokens += edge_data.get("amount", 0)
-                    delegates.append(
-                        {"address": delegate, "amount": edge_data.get("amount", 0)}
-                    )
+                    delegates.append({"address": delegate, "amount": edge_data.get("amount", 0)})
 
                 influence_ratio = delegated_tokens / total_supply
 
@@ -308,9 +271,7 @@ class DelegationPatternAnalyzer:
                     )
 
             # Sort by influence ratio
-            influential_delegators.sort(
-                key=lambda x: x["influence_ratio"], reverse=True
-            )
+            influential_delegators.sort(key=lambda x: x["influence_ratio"], reverse=True)
 
             return influential_delegators
 
@@ -337,9 +298,7 @@ class DelegationPatternAnalyzer:
         graph = nx.DiGraph()
 
         # Create a mapping of addresses to balances for quick lookup
-        address_to_balance = {
-            holder["address"]: holder["balance"] for holder in token_holders
-        }
+        address_to_balance = {holder["address"]: holder["balance"] for holder in token_holders}
 
         # Add all token holders as nodes
         for holder in token_holders:
@@ -357,9 +316,7 @@ class DelegationPatternAnalyzer:
 
         return graph
 
-    def _calculate_delegation_metrics(
-        self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]
-    ) -> Dict[str, float]:
+    def _calculate_delegation_metrics(self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]) -> Dict[str, float]:
         """Calculate key metrics for the delegation network.
 
         Args:
@@ -378,9 +335,7 @@ class DelegationPatternAnalyzer:
 
         # Percentage of tokens delegated
         delegated_tokens = sum(data["amount"] for _, _, data in graph.edges(data=True))
-        metrics["delegation_rate"] = (
-            (delegated_tokens / total_tokens) * 100 if total_tokens > 0 else 0
-        )
+        metrics["delegation_rate"] = (delegated_tokens / total_tokens) * 100 if total_tokens > 0 else 0
 
         # Number of delegators (nodes with outgoing edges)
         delegators = [node for node in graph.nodes() if graph.out_degree(node) > 0]
@@ -391,20 +346,15 @@ class DelegationPatternAnalyzer:
         metrics["delegatee_count"] = len(delegatees)
 
         # Percentage of holders that delegate
-        metrics["delegator_percentage"] = (
-            (len(delegators) / len(token_holders)) * 100 if token_holders else 0
-        )
+        metrics["delegator_percentage"] = (len(delegators) / len(token_holders)) * 100 if token_holders else 0
 
         # Average delegated amount per delegator
-        metrics["avg_delegation_amount"] = (
-            delegated_tokens / len(delegators) if delegators else 0
-        )
+        metrics["avg_delegation_amount"] = delegated_tokens / len(delegators) if delegators else 0
 
         # Delegation concentration (Gini-like measure for delegatees)
         if delegatees:
             delegated_amounts = [
-                sum(data["amount"] for _, _, data in graph.in_edges(node, data=True))
-                for node in delegatees
+                sum(data["amount"] for _, _, data in graph.in_edges(node, data=True)) for node in delegatees
             ]
 
             # Sort delegated amounts
@@ -413,17 +363,15 @@ class DelegationPatternAnalyzer:
             # Calculate Gini coefficient for delegation
             n = len(delegated_amounts)
             indices = np.arange(1, n + 1)
-            metrics["delegation_concentration"] = (
-                2 * np.sum(indices * delegated_amounts)
-            ) / (n * np.sum(delegated_amounts)) - (n + 1) / n
+            metrics["delegation_concentration"] = (2 * np.sum(indices * delegated_amounts)) / (
+                n * np.sum(delegated_amounts)
+            ) - (n + 1) / n
         else:
             metrics["delegation_concentration"] = 0
 
         return metrics
 
-    def _identify_key_delegatees(
-        self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    def _identify_key_delegatees(self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Identify key delegatees in the network.
 
         Args:
@@ -438,9 +386,7 @@ class DelegationPatternAnalyzer:
         total_tokens = sum(holder["balance"] for holder in token_holders)
 
         # Create a mapping of addresses to balances for quick lookup
-        address_to_balance = {
-            holder["address"]: holder["balance"] for holder in token_holders
-        }
+        address_to_balance = {holder["address"]: holder["balance"] for holder in token_holders}
 
         # Get all delegatees (nodes with incoming edges)
         delegatees = [node for node in graph.nodes() if graph.in_degree(node) > 0]
@@ -449,14 +395,10 @@ class DelegationPatternAnalyzer:
 
         for delegatee in delegatees:
             # Calculate total delegated to this delegatee
-            delegated_to_node = sum(
-                data["amount"] for _, _, data in graph.in_edges(delegatee, data=True)
-            )
+            delegated_to_node = sum(data["amount"] for _, _, data in graph.in_edges(delegatee, data=True))
 
             # Calculate percentage of total supply
-            percentage_of_supply = (
-                (delegated_to_node / total_tokens) * 100 if total_tokens > 0 else 0
-            )
+            percentage_of_supply = (delegated_to_node / total_tokens) * 100 if total_tokens > 0 else 0
 
             # Only include if above threshold
             if percentage_of_supply >= self.min_delegation_threshold * 100:
@@ -488,9 +430,7 @@ class DelegationPatternAnalyzer:
 
         return key_delegatees
 
-    def _analyze_delegation_patterns(
-        self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _analyze_delegation_patterns(self, graph: nx.DiGraph, token_holders: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Analyze delegation patterns in the network.
 
         Args:
@@ -511,24 +451,14 @@ class DelegationPatternAnalyzer:
             addresses = [holder["address"] for holder in holders]
 
             # Calculate category metrics
-            delegators_in_category = [
-                addr for addr in addresses if graph.out_degree(addr) > 0
-            ]
-            delegatees_in_category = [
-                addr for addr in addresses if graph.in_degree(addr) > 0
-            ]
+            delegators_in_category = [addr for addr in addresses if graph.out_degree(addr) > 0]
+            delegatees_in_category = [addr for addr in addresses if graph.in_degree(addr) > 0]
 
             # Delegation rate for this category
             total_balance = sum(holder["balance"] for holder in holders)
-            delegated_amount = sum(
-                data["amount"]
-                for u, v, data in graph.edges(data=True)
-                if u in addresses
-            )
+            delegated_amount = sum(data["amount"] for u, v, data in graph.edges(data=True) if u in addresses)
 
-            delegation_rate = (
-                (delegated_amount / total_balance) * 100 if total_balance > 0 else 0
-            )
+            delegation_rate = (delegated_amount / total_balance) * 100 if total_balance > 0 else 0
 
             category_patterns[category] = {
                 "holder_count": len(holders),
@@ -551,9 +481,7 @@ class DelegationPatternAnalyzer:
             "whale_delegations": whale_delegations,
         }
 
-    def _categorize_holders_by_balance(
-        self, token_holders: List[Dict[str, Any]]
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    def _categorize_holders_by_balance(self, token_holders: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         """Categorize token holders by their balance.
 
         Args:
@@ -634,11 +562,7 @@ class DelegationPatternAnalyzer:
 
         # Identify whale addresses (>1% of supply)
         whale_threshold = 0.01 * total_supply
-        whale_addresses = {
-            holder["address"]
-            for holder in token_holders
-            if holder["balance"] >= whale_threshold
-        }
+        whale_addresses = {holder["address"] for holder in token_holders if holder["balance"] >= whale_threshold}
 
         # Find whale-to-whale delegations
         whale_delegations = []
@@ -650,9 +574,7 @@ class DelegationPatternAnalyzer:
                         "delegator": u,
                         "delegatee": v,
                         "amount": data["amount"],
-                        "percentage": (data["amount"] / total_supply) * 100
-                        if total_supply > 0
-                        else 0,
+                        "percentage": (data["amount"] / total_supply) * 100 if total_supply > 0 else 0,
                     }
                 )
 
@@ -661,9 +583,7 @@ class DelegationPatternAnalyzer:
 
         return whale_delegations
 
-    def _compare_delegation_across_time(
-        self, snapshots_analysis: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _compare_delegation_across_time(self, snapshots_analysis: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Compare delegation patterns across time.
 
         Args:
@@ -679,8 +599,7 @@ class DelegationPatternAnalyzer:
         # Extract timestamps and metrics
         timestamps = [snapshot["timestamp"] for snapshot in snapshots_analysis]
         metrics_by_timestamp = {
-            snapshot["timestamp"]: snapshot["analysis"]["metrics"]
-            for snapshot in snapshots_analysis
+            snapshot["timestamp"]: snapshot["analysis"]["metrics"] for snapshot in snapshots_analysis
         }
 
         # Create metrics trends
@@ -694,8 +613,7 @@ class DelegationPatternAnalyzer:
         # Create time series for each metric
         for metric in all_metrics:
             metrics_trends[metric] = {
-                timestamp: metrics.get(metric, None)
-                for timestamp, metrics in metrics_by_timestamp.items()
+                timestamp: metrics.get(metric, None) for timestamp, metrics in metrics_by_timestamp.items()
             }
 
         # Track changes in key delegatees
@@ -847,9 +765,7 @@ class DelegationPatternAnalyzer:
 
         for metric in all_metrics:
             changes = [
-                abs(shift["metrics_change"].get(metric, 0))
-                for shift in shifts
-                if metric in shift["metrics_change"]
+                abs(shift["metrics_change"].get(metric, 0)) for shift in shifts if metric in shift["metrics_change"]
             ]
 
             if changes:
@@ -866,9 +782,7 @@ class DelegationPatternAnalyzer:
         }
 
 
-def analyze_delegation_patterns(
-    protocol_data: Dict[str, Any], min_threshold: float = 0.01
-) -> Dict[str, Any]:
+def analyze_delegation_patterns(protocol_data: Dict[str, Any], min_threshold: float = 0.01) -> Dict[str, Any]:
     """Analyze delegation patterns in a protocol.
 
     Args:
@@ -945,9 +859,7 @@ def analyze_historical_delegation_patterns(
         for snapshot in historical_data:
             if "timestamp" not in snapshot or "data" not in snapshot:
                 logger.error("Invalid snapshot format in historical data")
-                raise DataFormatError(
-                    "Each snapshot must have 'timestamp' and 'data' keys"
-                )
+                raise DataFormatError("Each snapshot must have 'timestamp' and 'data' keys")
 
             # Only include snapshots with governance data
             if "governance_data" in snapshot["data"]:
@@ -960,14 +872,10 @@ def analyze_historical_delegation_patterns(
                 )
 
         # Compare delegation patterns
-        comparison_results = analyzer.compare_delegation_patterns(
-            historical_governance_data
-        )
+        comparison_results = analyzer.compare_delegation_patterns(historical_governance_data)
 
         # Detect delegation shifts
-        shift_results = analyzer.detect_delegation_shifts(
-            historical_governance_data, shift_threshold=shift_threshold
-        )
+        shift_results = analyzer.detect_delegation_shifts(historical_governance_data, shift_threshold=shift_threshold)
 
         return {"comparison": comparison_results, "shifts": shift_results}
 
