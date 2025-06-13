@@ -408,13 +408,6 @@ class TestLiveDataIntegration:
             pytest.skip("No Graph API key available for live data testing")
 
         # First, get a proposal to test votes for
-<<<<<<< HEAD
-        proposals = api_client.get_governance_proposals("compound", limit=1, use_real_data=True)
-
-        if len(proposals) > 0:
-            proposal_id = proposals[0]["id"]
-            votes = api_client.get_governance_votes("compound", proposal_id, use_real_data=True)
-=======
         proposals = api_client.get_governance_proposals(
             "compound", limit=1, use_real_data=True
         )
