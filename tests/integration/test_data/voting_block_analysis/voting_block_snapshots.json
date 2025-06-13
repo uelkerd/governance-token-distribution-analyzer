@@ -1,153 +1,153 @@
 [
   {
-    "timestamp": "2025-04-14T19:21:10.613662",
+    "timestamp": "2025-04-14T20:00:34.443553",
     "num_blocks": 12,
     "total_addresses": 38,
     "block_power": {
       "Block 1": {
-        "percentage": 0.5352935082398529,
+        "percentage": 0.5882619994684586,
         "address_count": 2
       },
       "Block 2": {
-        "percentage": 2.860227578606079,
+        "percentage": 8.302170953263134,
         "address_count": 9
       },
       "Block 3": {
-        "percentage": 5.270140435608097,
+        "percentage": 1.6284118790018385,
         "address_count": 4
       },
       "Block 4": {
-        "percentage": 0.7403997294278242,
+        "percentage": 2.2490490863628674,
         "address_count": 2
       },
       "Block 5": {
-        "percentage": 2.891321438336566,
+        "percentage": 3.699206340847215,
         "address_count": 7
       },
       "Block 6": {
-        "percentage": 1.5119657723447848,
+        "percentage": 1.1266108595880782,
         "address_count": 2
       },
       "Block 7": {
-        "percentage": 3.5984785381805877,
+        "percentage": 0.4544338813281937,
         "address_count": 2
       },
       "Block 8": {
-        "percentage": 5.2210068076280844,
+        "percentage": 1.6816272765373204,
         "address_count": 2
       },
       "Block 9": {
-        "percentage": 4.102660970727868,
+        "percentage": 0.8045088146767014,
         "address_count": 2
       },
       "Block 10": {
-        "percentage": 1.1597464731053746,
+        "percentage": 0.5975172427247178,
         "address_count": 2
       },
       "Block 11": {
-        "percentage": 0.39358359011350175,
+        "percentage": 1.2497008493818975,
         "address_count": 2
       },
       "Block 12": {
-        "percentage": 1.045476332663011,
+        "percentage": 0.6892477006829503,
         "address_count": 2
       }
     }
   },
   {
-    "timestamp": "2025-05-14T19:21:17.004692",
+    "timestamp": "2025-05-14T20:00:40.970326",
     "num_blocks": 10,
     "total_addresses": 28,
     "block_power": {
       "Block 1": {
-        "percentage": 2.8137453937613364,
+        "percentage": 1.0688339262903028,
         "address_count": 3
       },
       "Block 2": {
-        "percentage": 2.950647489397348,
+        "percentage": 1.1729734464024024,
         "address_count": 2
       },
       "Block 3": {
-        "percentage": 2.303293312935627,
+        "percentage": 1.0432354028193027,
         "address_count": 2
       },
       "Block 4": {
-        "percentage": 4.870121329868464,
+        "percentage": 0.4843015364541889,
         "address_count": 2
       },
       "Block 5": {
-        "percentage": 1.5203655821911446,
+        "percentage": 5.405713110145378,
         "address_count": 3
       },
       "Block 6": {
-        "percentage": 4.085112290421875,
+        "percentage": 22.15852582615603,
         "address_count": 6
       },
       "Block 7": {
-        "percentage": 5.2210068076280844,
+        "percentage": 1.6816272765373204,
         "address_count": 2
       },
       "Block 8": {
-        "percentage": 0.6236271867687633,
+        "percentage": 0.6649395462545201,
         "address_count": 2
       },
       "Block 9": {
-        "percentage": 1.2961578498905109,
+        "percentage": 6.8866405787547835,
         "address_count": 3
       },
       "Block 10": {
-        "percentage": 0.732830550565583,
+        "percentage": 1.2568277297869308,
         "address_count": 3
       }
     }
   },
   {
-    "timestamp": "2025-06-13T19:21:23.412563",
+    "timestamp": "2025-06-13T20:00:48.202194",
     "num_blocks": 11,
     "total_addresses": 70,
     "block_power": {
       "Block 1": {
-        "percentage": 9.28177145888319,
+        "percentage": 9.844583179106758,
         "address_count": 14
       },
       "Block 2": {
-        "percentage": 1.518237410348836,
+        "percentage": 2.060853663158431,
         "address_count": 4
       },
       "Block 3": {
-        "percentage": 5.253940802332974,
+        "percentage": 2.2162088492217054,
         "address_count": 4
       },
       "Block 4": {
-        "percentage": 0.6904659811027671,
+        "percentage": 3.0522809029210345,
         "address_count": 2
       },
       "Block 5": {
-        "percentage": 31.440006964023336,
+        "percentage": 12.727448201719692,
         "address_count": 15
       },
       "Block 6": {
-        "percentage": 1.7070472237407912,
+        "percentage": 1.3463695210879751,
         "address_count": 2
       },
       "Block 7": {
-        "percentage": 1.880837841454426,
+        "percentage": 1.612740022974992,
         "address_count": 4
       },
       "Block 8": {
-        "percentage": 0.7495273637068941,
+        "percentage": 4.039108563263925,
         "address_count": 2
       },
       "Block 9": {
-        "percentage": 6.732823586734056,
+        "percentage": 31.534172094003655,
         "address_count": 18
       },
       "Block 10": {
-        "percentage": 0.8715043299350149,
+        "percentage": 12.301748541881837,
         "address_count": 3
       },
       "Block 11": {
-        "percentage": 1.045476332663011,
+        "percentage": 0.6892477006829503,
         "address_count": 2
       }
     }
