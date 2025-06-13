@@ -38,7 +38,7 @@ The `gova` command provides easy access to all functionality:
 
 ```bash
 # Analyze a single protocol
-gova analyze compound
+gova analyze --protocol compound
 
 # Compare multiple protocols
 gova compare compound uniswap aave
