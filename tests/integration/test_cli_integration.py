@@ -103,10 +103,13 @@ class TestCliIntegration:
         # Check that the command executed successfully
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
-        # Check that output files were created
-        expected_output = os.path.join(temp_output_dir, "protocol_comparison_gini_coefficient.png")
-        assert os.path.exists(expected_output)
-        assert os.path.getsize(expected_output) > 0
+        # Check that output files were created (with timestamp pattern)
+        import glob
+
+        pattern = os.path.join(temp_output_dir, "protocol_comparison_*.png")
+        output_files = glob.glob(pattern)
+        assert len(output_files) > 0, f"No PNG files found matching pattern: {pattern}"
+        assert os.path.getsize(output_files[0]) > 0
 
     def test_generate_report_command(self, sample_data, temp_output_dir):
         """Test that the generate-report command works correctly with historical data."""

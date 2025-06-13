@@ -198,6 +198,31 @@ cython_debug/
 # Cursor
 #  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
 #  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
+
+# Governance Token Analyzer - Generated Output Directories
+# These directories contain generated analysis results and should not be tracked
+outputs/
+exports/
+reports/
+data/
+
+# Generated validation reports
+validation_report_*.md
+
+# Generated chart files
+*.png
+*.jpg
+*.jpeg
+*.svg
+
+# Temporary analysis files
+temp_analysis_*
+*_analysis_*.json
+*_analysis_*.csv
+*_comparison_*.json
+*_export_*.json
+*_historical_*.json
+*_report_*.html
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore.cursor/

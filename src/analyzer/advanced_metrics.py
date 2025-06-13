@@ -222,8 +222,27 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
         Dictionary of concentration metrics
 
     """
-    # Ensure positive balances for calculations
-    positive_balances = [b for b in balances if b > 0]
+    # Convert to float and ensure positive balances for calculations
+    try:
+        numeric_balances = []
+        for b in balances:
+            try:
+                # Handle various string formats
+                if isinstance(b, str):
+                    # Remove common formatting characters
+                    clean_balance = b.replace(",", "").replace("$", "").replace(" ", "")
+                    if clean_balance:
+                        numeric_balances.append(float(clean_balance))
+                elif isinstance(b, (int, float)):
+                    numeric_balances.append(float(b))
+            except (ValueError, TypeError):
+                # Skip invalid values
+                continue
+
+        positive_balances = [b for b in numeric_balances if b > 0]
+    except Exception as e:
+        logger.error(f"Error processing balances: {str(e)}")
+        positive_balances = []
 
     if not positive_balances:
         logger.warning("No positive balances provided for concentration metrics calculation")

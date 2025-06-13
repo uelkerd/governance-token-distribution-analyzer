@@ -1389,7 +1389,7 @@ class TheGraphAPI:
         self.session = requests.Session()
 
         # Set up request headers
-        self.session.headers.update({"Content-Type": "application/json", "User-Agent": "gta/1.0.0"})
+        self.session.headers.update({"Content-Type": "application/json", "User-Agent": "gova/1.0.0"})
 
     def execute_query(self, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Execute a GraphQL query against the subgraph.
