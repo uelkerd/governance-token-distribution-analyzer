@@ -68,7 +68,7 @@ Concentration:
 To compare distributions across multiple tokens:
 
 ```bash
-gova compare compound uniswap aave --limit 100 --format report
+gova compare-protocols --protocols compound,uniswap,aave --limit 100 --format html
 ```
 
 Parameters:
