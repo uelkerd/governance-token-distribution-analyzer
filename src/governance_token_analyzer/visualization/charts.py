@@ -28,6 +28,7 @@ def create_distribution_comparison(
 
     Returns:
         Matplotlib Figure object
+
     """
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -72,6 +73,7 @@ def create_metrics_comparison(
 
     Returns:
         Matplotlib Figure object
+
     """
     # Extract protocol names and metrics
     protocols = list(metrics_dict.keys())
@@ -128,6 +130,7 @@ def create_participation_trend(
 
     Returns:
         Matplotlib Figure object
+
     """
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -167,6 +170,7 @@ def create_whale_influence_chart(
 
     Returns:
         Matplotlib Figure object
+
     """
     # Extract protocol names
     protocols = list(whale_data.keys())
@@ -212,6 +216,7 @@ def save_chart(fig: plt.Figure, filename: str, dpi: int = 300) -> None:
 
     Returns:
         None
+
     """
     fig.savefig(filename, dpi=dpi, bbox_inches="tight")
     plt.close(fig)
@@ -233,6 +238,7 @@ def create_delegation_network_visualization(
 
     Returns:
         Matplotlib Figure object
+
     """
     try:
         # Create figure
@@ -373,6 +379,7 @@ def create_delegation_metrics_chart(
 
     Returns:
         Matplotlib Figure object
+
     """
     try:
         # Create figure

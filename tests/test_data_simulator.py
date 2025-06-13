@@ -1,8 +1,6 @@
-import unittest
 import sys
-import os
+import unittest
 from pathlib import Path
-import numpy as np
 
 # Add the src directory to the Python path
 src_dir = Path(__file__).parent.parent

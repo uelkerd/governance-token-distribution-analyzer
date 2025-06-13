@@ -5,7 +5,6 @@ of addresses that consistently vote together on governance proposals. This can h
 coordination, voting power concentration, and potential governance attacks.
 """
 
-import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
@@ -14,7 +13,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from .exceptions import HistoricalDataError, DataFormatError
+from .exceptions import DataFormatError, HistoricalDataError
 from .logging_config import get_logger
 
 # Configure logging
@@ -59,6 +58,7 @@ class VotingBlockAnalyzer:
 
         Raises:
             HistoricalDataError: If there's an issue calculating voting similarity
+
         """
         try:
             if not self.voting_history:
@@ -124,6 +124,7 @@ class VotingBlockAnalyzer:
 
         Returns:
             DataFrame with address similarity scores
+
         """
         return self.address_similarity
 
@@ -140,6 +141,7 @@ class VotingBlockAnalyzer:
 
         Raises:
             HistoricalDataError: If there's an issue identifying voting blocks
+
         """
         try:
             if self.address_similarity is None:
@@ -198,6 +200,7 @@ class VotingBlockAnalyzer:
 
         Returns:
             Dictionary with voting power information for each block
+
         """
         if not self.voting_blocks:
             logger.warning(
@@ -299,6 +302,7 @@ class VotingBlockAnalyzer:
 
         Raises:
             HistoricalDataError: If there's an issue creating the visualization
+
         """
         try:
             if self.address_similarity is None or self.address_similarity.empty:
@@ -423,6 +427,7 @@ class VotingBlockAnalyzer:
 
         Raises:
             HistoricalDataError: If there's an issue analyzing block cohesion
+
         """
         try:
             if not self.voting_blocks:
@@ -470,6 +475,7 @@ class VotingBlockAnalyzer:
 
         Raises:
             HistoricalDataError: If there's an issue tracking block evolution
+
         """
         try:
             block_evolution = {}
@@ -516,6 +522,7 @@ def analyze_proposal_influence(
     Raises:
         DataFormatError: If the input data doesn't have the expected format
         HistoricalDataError: If there's an issue with the analysis
+
     """
     try:
         if not proposals:
@@ -679,6 +686,7 @@ def detect_voting_anomalies(
     Raises:
         DataFormatError: If the input data doesn't have the expected format
         HistoricalDataError: If there's an issue with the analysis
+
     """
     try:
         if not proposals:

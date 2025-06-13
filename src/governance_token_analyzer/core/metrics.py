@@ -23,6 +23,7 @@ def calculate_gini_coefficient(
 
     Returns:
         Gini coefficient as a float between 0 and 1
+
     """
     # Convert to numpy array and ensure no negative values
     balances_array = np.array(balances)
@@ -55,6 +56,7 @@ def calculate_concentration_ratio(df: pd.DataFrame, n: int = 10) -> float:
 
     Returns:
         Concentration ratio as a percentage (0-100)
+
     """
     # Sort by balance in descending order
     sorted_df = df.sort_values(by="balance", ascending=False).reset_index(drop=True)
@@ -83,6 +85,7 @@ def calculate_participation_rate(
 
     Returns:
         Participation rate as a percentage (0-100)
+
     """
     if not votes or total_holders <= 0:
         return 0.0
@@ -104,6 +107,7 @@ def calculate_vote_distribution(votes: List[Dict[str, Any]]) -> Dict[str, float]
 
     Returns:
         Dictionary with percentages for each vote type
+
     """
     if not votes:
         return {"for": 0.0, "against": 0.0, "abstain": 0.0}
@@ -139,6 +143,7 @@ def calculate_whale_influence(
 
     Returns:
         Dictionary with whale metrics
+
     """
     # Identify whales
     whales = df[df["percentage"] >= threshold_percentage]

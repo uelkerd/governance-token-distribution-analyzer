@@ -1,10 +1,11 @@
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Any, Optional, Union, Tuple
 from datetime import datetime, timedelta
+from typing import Any, Dict
+
+import pandas as pd
+
+from .logging_config import get_logger
 from .metrics import calculate_participation_rate, calculate_vote_distribution
 from .metrics_collector import measure_api_call
-from .logging_config import get_logger
 
 # Configure logger
 logger = get_logger(__name__)
@@ -16,8 +17,7 @@ def analyze_governance_participation(
     token_holders: pd.DataFrame,
     protocol_name: str = "unknown",
 ) -> Dict[str, Any]:
-    """
-    Analyze governance participation metrics for a protocol.
+    """Analyze governance participation metrics for a protocol.
 
     Args:
         governance_data: Dictionary containing governance-related data
@@ -26,6 +26,7 @@ def analyze_governance_participation(
 
     Returns:
         Dictionary containing participation metrics
+
     """
     logger.info(f"Analyzing governance participation for {protocol_name} protocol")
 
@@ -188,8 +189,7 @@ def analyze_participation_by_holder_size(
     token_holders: pd.DataFrame,
     protocol_name: str = "unknown",
 ) -> Dict[str, Any]:
-    """
-    Analyze governance participation broken down by holder size categories.
+    """Analyze governance participation broken down by holder size categories.
 
     Args:
         governance_data: Dictionary containing governance-related data
@@ -198,6 +198,7 @@ def analyze_participation_by_holder_size(
 
     Returns:
         Dictionary containing participation metrics by holder size
+
     """
     logger.info(f"Analyzing participation by holder size for {protocol_name}")
 
@@ -294,14 +295,14 @@ def analyze_participation_by_holder_size(
 def compare_participation_metrics(
     protocol_results: Dict[str, Dict[str, Any]],
 ) -> pd.DataFrame:
-    """
-    Create a comparison table of participation metrics across protocols.
+    """Create a comparison table of participation metrics across protocols.
 
     Args:
         protocol_results: Dictionary mapping protocol names to their participation analysis results
 
     Returns:
         DataFrame with comparative metrics for each protocol
+
     """
     comparison_data = []
 

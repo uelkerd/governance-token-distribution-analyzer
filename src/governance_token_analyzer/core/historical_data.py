@@ -39,6 +39,7 @@ class HistoricalDataManager:
 
         Raises:
             DataStorageError: If there's an issue creating the data directory
+
         """
         self.data_dir = data_dir
         try:
@@ -52,6 +53,7 @@ class HistoricalDataManager:
 
         Raises:
             OSError: If there's an issue creating the directory
+
         """
         os.makedirs(self.data_dir, exist_ok=True)
         for protocol in self.SUPPORTED_PROTOCOLS:
@@ -65,6 +67,7 @@ class HistoricalDataManager:
 
         Raises:
             ProtocolNotSupportedError: If the protocol is not supported
+
         """
         if protocol not in self.SUPPORTED_PROTOCOLS:
             logger.warning(f"Unsupported protocol requested: {protocol}")
@@ -86,6 +89,7 @@ class HistoricalDataManager:
             ProtocolNotSupportedError: If the protocol is not supported
             DataStorageError: If there's an issue storing the data
             DataFormatError: If the data is not in the expected format
+
         """
         self._validate_protocol(protocol)
 
@@ -144,6 +148,7 @@ class HistoricalDataManager:
         Raises:
             ProtocolNotSupportedError: If the protocol is not supported
             DataAccessError: If there's an issue accessing the data
+
         """
         self._validate_protocol(protocol)
 
@@ -223,6 +228,7 @@ class HistoricalDataManager:
             ProtocolNotSupportedError: If the protocol is not supported
             DataAccessError: If there's an issue accessing the data
             MetricNotFoundError: If the metric is not found in any snapshot
+
         """
         self._validate_protocol(protocol)
 
@@ -306,6 +312,7 @@ class HistoricalDataManager:
         Raises:
             ProtocolNotSupportedError: If the protocol is not supported
             DataAccessError: If there's an issue accessing the data
+
         """
         self._validate_protocol(protocol)
 
@@ -358,6 +365,7 @@ def calculate_distribution_change(
     Raises:
         DataFormatError: If the input DataFrames don't have the expected columns
         HistoricalDataError: If there's an issue calculating the changes
+
     """
     # Validate input DataFrames
     for name, df in [
@@ -440,6 +448,7 @@ def analyze_concentration_trends(
     Raises:
         DataFormatError: If the snapshots don't have the expected format
         HistoricalDataError: If there's an issue analyzing the trends
+
     """
     if not snapshots:
         logger.info("No snapshots provided for concentration trend analysis")
@@ -514,6 +523,7 @@ def analyze_governance_participation_trends(
     Raises:
         DataFormatError: If the snapshots don't have the expected format
         HistoricalDataError: If there's an issue analyzing the trends
+
     """
     if not snapshots:
         logger.info("No snapshots provided for governance participation analysis")
@@ -601,6 +611,7 @@ def simulate_historical_data(
     Raises:
         ProtocolNotSupportedError: If the protocol is not supported
         HistoricalDataError: If there's an issue generating the data
+
     """
     # Set random seed if provided
     if seed is not None:

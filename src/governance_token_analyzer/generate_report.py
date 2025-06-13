@@ -42,6 +42,7 @@ class ReportGenerator:
 
         Args:
             output_dir: Directory to save generated reports
+
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
@@ -79,6 +80,7 @@ class ReportGenerator:
 
         Returns:
             Dictionary mapping protocol names to their analysis data
+
         """
         data = {}
         for protocol in protocols:
@@ -110,6 +112,7 @@ class ReportGenerator:
 
         Returns:
             Path to the saved chart
+
         """
         # Extract Gini coefficients and Herfindahl indices
         protocols = []
@@ -189,6 +192,7 @@ class ReportGenerator:
 
         Returns:
             Path to the saved chart
+
         """
         # Set up the figure with subplots for each protocol
         fig = plt.figure(figsize=(15, 10))
@@ -272,6 +276,7 @@ class ReportGenerator:
 
         Returns:
             Path to the saved chart
+
         """
         # Extract top holders data
         protocols = []
@@ -361,6 +366,7 @@ class ReportGenerator:
 
         Returns:
             Path to the saved HTML report
+
         """
         # Generate charts
         concentration_chart = self.generate_comparative_concentration_chart(
@@ -581,6 +587,7 @@ class ReportGenerator:
 
         Returns:
             Path to the generated report
+
         """
         if protocols is None:
             protocols = ["compound", "uniswap", "aave"]

@@ -1,19 +1,16 @@
-"""
-Integration tests for the interaction between historical data, visualization, and report generation.
+"""Integration tests for the interaction between historical data, visualization, and report generation.
 These tests verify that historical data can be properly visualized and included in reports.
 """
 
-import pytest
 import os
-import tempfile
 import shutil
-from datetime import datetime, timedelta
-import pandas as pd
+import tempfile
+
 import matplotlib.pyplot as plt
+import pytest
 
 from governance_token_analyzer.core import historical_data
-from governance_token_analyzer.visualization import historical_charts
-from governance_token_analyzer.visualization import report_generator
+from governance_token_analyzer.visualization import historical_charts, report_generator
 
 
 @pytest.fixture
@@ -127,13 +124,13 @@ class TestVisualizationAndReportingIntegration:
         )
 
         # Verify that the report was created (path returned by function may be different)
-        assert os.path.exists(generated_path), (
-            f"Report not found at path: {generated_path}"
-        )
+        assert os.path.exists(
+            generated_path
+        ), f"Report not found at path: {generated_path}"
         assert os.path.getsize(generated_path) > 0, "Report file is empty"
 
         # Check that the HTML contains expected elements
-        with open(generated_path, "r") as f:
+        with open(generated_path) as f:
             content = f.read()
             assert "compound" in content.lower()
 
@@ -188,7 +185,7 @@ class TestVisualizationAndReportingIntegration:
         assert os.path.exists(report_path)
 
         # 7. Verify report content
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             content = f.read()
             assert "Gini Coefficient" in content
             assert "Concentration" in content

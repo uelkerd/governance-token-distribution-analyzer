@@ -1,11 +1,10 @@
-"""
-Main CLI entrypoint for the governance token analyzer.
+"""Main CLI entrypoint for the governance token analyzer.
 """
 
-import click
-import os
 import json
-import pandas as pd
+import os
+
+import click
 
 
 @click.group()

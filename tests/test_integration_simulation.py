@@ -1,16 +1,15 @@
-"""
-Integration tests for the Token Distribution Simulation functionality.
+"""Integration tests for the Token Distribution Simulation functionality.
 
 These tests verify that the simulator produces realistic and varied distributions
 and that the metrics calculations work correctly on the simulated data.
 """
 
 import pytest
-import numpy as np
-from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
+
 from governance_token_analyzer.core.advanced_metrics import (
     calculate_all_concentration_metrics,
 )
+from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
 
 
 @pytest.fixture

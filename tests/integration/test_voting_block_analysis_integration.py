@@ -1,26 +1,17 @@
-"""
-Integration tests for voting block analysis functionality.
+"""Integration tests for voting block analysis functionality.
 """
 
-import pytest
-import os
-import tempfile
-import shutil
-import pandas as pd
-import numpy as np
 import json
-import networkx as nx
 from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
+
+import numpy as np
+import pandas as pd
+import pytest
 
 from governance_token_analyzer.core.voting_block_analysis import (
     VotingBlockAnalyzer,
     analyze_proposal_influence,
     detect_voting_anomalies,
-)
-from governance_token_analyzer.core.exceptions import (
-    DataFormatError,
-    HistoricalDataError,
 )
 
 
@@ -188,15 +179,15 @@ class TestVotingBlockAnalysisIntegration:
         # Verify results
         assert not similarity_df.empty, "Similarity matrix should not be empty"
         assert len(voting_blocks) > 0, "Should identify at least one voting block"
-        assert len(block_power) == len(voting_blocks), (
-            "Should calculate power for all blocks"
-        )
+        assert len(block_power) == len(
+            voting_blocks
+        ), "Should calculate power for all blocks"
 
         # Verify block power calculations are reasonable
         total_percentage = sum(data["percentage"] for data in block_power.values())
-        assert total_percentage <= 100.1, (
-            "Total block percentage should not exceed 100%"
-        )
+        assert (
+            total_percentage <= 100.1
+        ), "Total block percentage should not exceed 100%"
 
     def test_proposal_influence_analysis(
         self, sample_proposals, token_balances, temp_data_dir
@@ -229,12 +220,12 @@ class TestVotingBlockAnalysisIntegration:
         # Check that each proposal has the expected fields
         for prop_id, data in influence.items():
             assert "outcome" in data, "Each proposal should have an outcome"
-            assert "participation_percentage" in data, (
-                "Each proposal should have participation data"
-            )
-            assert "top_10_influence" in data, (
-                "Each proposal should have top 10 influence data"
-            )
+            assert (
+                "participation_percentage" in data
+            ), "Each proposal should have participation data"
+            assert (
+                "top_10_influence" in data
+            ), "Each proposal should have top 10 influence data"
 
     def test_anomaly_detection(self, sample_proposals, token_holders, temp_data_dir):
         """Test the voting anomaly detection functionality."""
@@ -263,9 +254,9 @@ class TestVotingBlockAnalysisIntegration:
         """Test error handling in the voting block analysis module."""
         # Test with empty proposals
         empty_result = analyze_proposal_influence([], token_balances)
-        assert isinstance(empty_result, dict) and len(empty_result) == 0, (
-            "Should return empty dict for empty proposals"
-        )
+        assert (
+            isinstance(empty_result, dict) and len(empty_result) == 0
+        ), "Should return empty dict for empty proposals"
 
         # Test with invalid proposals (it should skip them and not raise an error)
         invalid_proposals = [{"id": "PROP-X"}]  # Missing votes
@@ -291,9 +282,9 @@ class TestVotingBlockAnalysisIntegration:
         analyzer.calculate_voting_similarity()
         blocks = analyzer.identify_voting_blocks()
         empty_power = analyzer.calculate_voting_power({})
-        assert isinstance(empty_power, dict), (
-            "Should handle empty token balances gracefully"
-        )
+        assert isinstance(
+            empty_power, dict
+        ), "Should handle empty token balances gracefully"
 
     def test_cross_integration_with_historical_data(
         self, sample_proposals, token_balances, temp_data_dir

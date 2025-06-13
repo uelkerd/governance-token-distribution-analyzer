@@ -41,6 +41,7 @@ def plot_metric_over_time(
     Raises:
         DataFormatError: If input data is not in the expected format
         VisualizationError: If there's an issue creating the visualization
+
     """
     try:
         # Validate input data
@@ -149,6 +150,7 @@ def plot_protocol_comparison_over_time(
     Raises:
         DataFormatError: If input data is not in the expected format
         VisualizationError: If there's an issue creating the visualization
+
     """
     try:
         # Validate input data
@@ -271,6 +273,7 @@ def create_concentration_heatmap(
     Raises:
         DataFormatError: If input data is not in the expected format
         VisualizationError: If there's an issue creating the visualization
+
     """
     try:
         if not snapshots:
@@ -406,6 +409,7 @@ def create_holder_movement_plot(
     Raises:
         DataFormatError: If input data is not in the expected format
         VisualizationError: If there's an issue creating the visualization
+
     """
     try:
         # Validate input data
@@ -548,6 +552,7 @@ def create_governance_participation_plot(
     Raises:
         DataFormatError: If input data is not in the expected format
         VisualizationError: If there's an issue creating the visualization
+
     """
     try:
         if not snapshots:
@@ -682,6 +687,7 @@ def create_multi_metric_dashboard(
     Raises:
         DataFormatError: If input data is not in the expected format
         VisualizationError: If there's an issue creating the visualization
+
     """
     try:
         # Validate input data

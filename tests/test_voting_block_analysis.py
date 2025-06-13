@@ -1,20 +1,13 @@
-"""
-Tests for the voting block analysis module.
+"""Tests for the voting block analysis module.
 """
 
+
 import pytest
-import pandas as pd
-import numpy as np
-from datetime import datetime
 
 from governance_token_analyzer.core.voting_block_analysis import (
     VotingBlockAnalyzer,
     analyze_proposal_influence,
     detect_voting_anomalies,
-)
-from governance_token_analyzer.core.exceptions import (
-    DataFormatError,
-    HistoricalDataError,
 )
 
 

@@ -19,6 +19,7 @@ def standardize_holder_data(
 
     Returns:
         DataFrame with standardized columns: address, balance, percentage, protocol
+
     """
     # Handle different protocol data structures
     if protocol_name.lower() == "compound":
@@ -92,6 +93,7 @@ def combine_protocol_data(protocol_dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame
 
     Returns:
         Combined DataFrame with data from all protocols
+
     """
     return pd.concat(protocol_dfs.values(), ignore_index=True)
 
@@ -105,6 +107,7 @@ def filter_top_holders(df: pd.DataFrame, top_n: int = 100) -> pd.DataFrame:
 
     Returns:
         DataFrame with only the top N holders
+
     """
     return df.sort_values(by="balance", ascending=False).head(top_n)
 
@@ -121,6 +124,7 @@ def calculate_overlap(
 
     Returns:
         Dictionary containing overlap count and percentage
+
     """
     set1 = set(df1[column].unique())
     set2 = set(df2[column].unique())

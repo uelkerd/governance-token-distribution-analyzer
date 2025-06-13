@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -26,6 +27,7 @@ class ReportGenerator:
         Args:
             output_dir: Directory where reports will be saved
             template_dir: Directory containing Jinja2 templates
+
         """
         self.output_dir = output_dir
 
@@ -172,6 +174,7 @@ class ReportGenerator:
 
         Returns:
             Path to the generated report
+
         """
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -239,6 +242,7 @@ class ReportGenerator:
 
         Returns:
             Path to the generated report
+
         """
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -305,6 +309,7 @@ class ReportGenerator:
 
         Returns:
             Path to the generated report
+
         """
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -662,14 +667,14 @@ class ReportGenerator:
 
         if all(
             any(m in metrics_data[p] for m in common_metrics)
-            for p in protocol_data.keys()
+            for p in protocol_data
         ):
             # Create radar chart data
             metric_labels = [m.replace("_", " ").title() for m in common_metrics]
 
             # Normalize values for radar chart
             normalized_values = {}
-            for protocol in protocol_data.keys():
+            for protocol in protocol_data:
                 values = []
                 for metric in common_metrics:
                     if metric in metrics_data[protocol]:
@@ -809,6 +814,7 @@ def generate_historical_analysis_report(
 
     Returns:
         Path to the generated report
+
     """
     # Create a report generator instance
     report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))
@@ -837,6 +843,7 @@ def generate_comprehensive_report(
 
     Returns:
         Path to the generated report
+
     """
     # Create a report generator instance
     report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))

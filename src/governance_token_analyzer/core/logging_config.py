@@ -4,8 +4,7 @@ from logging import handlers
 
 
 def setup_logging(log_level=logging.INFO, log_file=None):
-    """
-    Set up logging for the application.
+    """Set up logging for the application.
     """
     logger = logging.getLogger()
     logger.setLevel(log_level)
@@ -29,7 +28,6 @@ def setup_logging(log_level=logging.INFO, log_file=None):
 
 
 def get_logger(name):
-    """
-    Get a logger instance with the specified name.
+    """Get a logger instance with the specified name.
     """
     return logging.getLogger(name)

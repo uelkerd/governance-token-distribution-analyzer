@@ -1,20 +1,18 @@
-import unittest
 import sys
-import os
+import unittest
 from pathlib import Path
-import numpy as np
 
 # Add the src directory to the Python path
 src_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(src_dir))
 
 from src.analyzer.advanced_metrics import (
-    calculate_palma_ratio,
-    calculate_hoover_index,
-    calculate_theil_index,
-    calculate_nakamoto_coefficient,
-    calculate_lorenz_curve,
     calculate_all_concentration_metrics,
+    calculate_hoover_index,
+    calculate_lorenz_curve,
+    calculate_nakamoto_coefficient,
+    calculate_palma_ratio,
+    calculate_theil_index,
 )
 
 

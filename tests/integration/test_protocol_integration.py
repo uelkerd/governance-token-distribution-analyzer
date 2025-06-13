@@ -43,13 +43,13 @@ class TestProtocolIntegration:
             (uniswap_df, "uniswap"),
             (aave_df, "aave"),
         ]:
-            assert isinstance(df, pd.DataFrame), (
-                f"{protocol} data should be converted to DataFrame"
-            )
+            assert isinstance(
+                df, pd.DataFrame
+            ), f"{protocol} data should be converted to DataFrame"
             for col in expected_columns:
-                assert col in df.columns, (
-                    f"{protocol} data missing expected column: {col}"
-                )
+                assert (
+                    col in df.columns
+                ), f"{protocol} data missing expected column: {col}"
 
     def test_cross_protocol_metrics_calculation(self, sample_protocol_data):
         """Test that metrics can be calculated across different protocols."""
@@ -68,9 +68,9 @@ class TestProtocolIntegration:
 
         # Verify results are within expected range (0-1 for Gini coefficient)
         for protocol, gini in gini_results.items():
-            assert 0 <= gini <= 1, (
-                f"Gini coefficient for {protocol} outside valid range: {gini}"
-            )
+            assert (
+                0 <= gini <= 1
+            ), f"Gini coefficient for {protocol} outside valid range: {gini}"
 
     def test_protocol_data_to_visualization(self, sample_protocol_data):
         """Test that protocol data can be visualized through the visualization module."""
@@ -124,18 +124,18 @@ class TestProtocolIntegration:
         # Verify results structure
         for protocol, results in analysis_results.items():
             assert "gini" in results, f"{protocol} results missing Gini coefficient"
-            assert "concentration_ratio" in results, (
-                f"{protocol} results missing concentration ratio"
-            )
-            assert "participation_rate" in results, (
-                f"{protocol} results missing participation rate"
-            )
+            assert (
+                "concentration_ratio" in results
+            ), f"{protocol} results missing concentration ratio"
+            assert (
+                "participation_rate" in results
+            ), f"{protocol} results missing participation rate"
 
         # Create comparative visualization
         comparison_chart = charts.create_metrics_comparison(
             analysis_results, "Protocol Governance Comparison"
         )
 
-        assert comparison_chart is not None, (
-            "Comparison chart should be created successfully"
-        )
+        assert (
+            comparison_chart is not None
+        ), "Comparison chart should be created successfully"

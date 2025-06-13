@@ -28,6 +28,7 @@ class DataCollectionManager:
 
         Args:
             data_dir: Directory to store collected data
+
         """
         self.api_client = APIClient()
 
@@ -64,6 +65,7 @@ class DataCollectionManager:
 
         Returns:
             Dictionary containing protocol data
+
         """
         if protocol not in SUPPORTED_PROTOCOLS:
             raise ValueError(f"Unsupported protocol: {protocol}")
@@ -125,6 +127,7 @@ class DataCollectionManager:
 
         Returns:
             Dictionary mapping protocol names to their data
+
         """
         all_data = {}
 
@@ -157,6 +160,7 @@ class DataCollectionManager:
 
         Returns:
             List of token holder dictionaries
+
         """
         # Get data from cache or API
         data = self.collect_protocol_data(protocol, use_cache, use_real_data)
@@ -182,6 +186,7 @@ class DataCollectionManager:
 
         Returns:
             List of proposal dictionaries
+
         """
         # Get data from cache or API
         data = self.collect_protocol_data(protocol, use_cache, use_real_data)
@@ -207,6 +212,7 @@ class DataCollectionManager:
 
         Returns:
             List of vote dictionaries
+
         """
         # Get data from cache or API
         data = self.collect_protocol_data(protocol, use_cache, use_real_data)

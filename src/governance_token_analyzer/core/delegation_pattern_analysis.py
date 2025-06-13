@@ -30,6 +30,7 @@ class DelegationPatternAnalyzer:
         Args:
             min_delegation_threshold: Minimum percentage of total supply for a
                 delegation to be considered significant
+
         """
         self.min_delegation_threshold = min_delegation_threshold
         logger.info(
@@ -51,6 +52,7 @@ class DelegationPatternAnalyzer:
         Raises:
             DataFormatError: If the input data doesn't have the expected format
             AnalysisError: If there's an error during analysis
+
         """
         try:
             if "delegations" not in governance_data:
@@ -113,6 +115,7 @@ class DelegationPatternAnalyzer:
         Raises:
             DataFormatError: If the input data doesn't have the expected format
             AnalysisError: If there's an error during analysis
+
         """
         try:
             if not historical_data or not isinstance(historical_data, list):
@@ -170,6 +173,7 @@ class DelegationPatternAnalyzer:
         Raises:
             DataFormatError: If the input data doesn't have the expected format
             AnalysisError: If there's an error during analysis
+
         """
         try:
             comparison_data = self.compare_delegation_patterns(historical_data)
@@ -243,6 +247,7 @@ class DelegationPatternAnalyzer:
         Raises:
             DataFormatError: If the input data doesn't have the expected format
             AnalysisError: If there's an error during analysis
+
         """
         try:
             if "delegations" not in governance_data:
@@ -326,6 +331,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             NetworkX DiGraph representing the delegation network
+
         """
         # Create a directed graph
         graph = nx.DiGraph()
@@ -362,6 +368,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             Dictionary of calculated metrics
+
         """
         # Calculate total tokens
         total_tokens = sum(holder["balance"] for holder in token_holders)
@@ -425,6 +432,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             List of key delegatees with their metrics
+
         """
         # Calculate total tokens
         total_tokens = sum(holder["balance"] for holder in token_holders)
@@ -491,6 +499,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             Dictionary with delegation pattern analysis
+
         """
         # Create holder categories by balance
         balance_categories = self._categorize_holders_by_balance(token_holders)
@@ -552,6 +561,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             Dictionary mapping categories to lists of holders
+
         """
         # Calculate total supply
         total_supply = sum(holder["balance"] for holder in token_holders)
@@ -593,6 +603,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             List of circular delegation chains
+
         """
         # Find all simple cycles in the graph
         try:
@@ -616,6 +627,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             List of whale-to-whale delegations
+
         """
         # Calculate total supply
         total_supply = sum(holder["balance"] for holder in token_holders)
@@ -659,6 +671,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             Dictionary with comparison results
+
         """
         if len(snapshots_analysis) < 2:
             return {"metrics_trends": {}, "delegatee_changes": []}
@@ -722,6 +735,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             Dictionary with metric changes
+
         """
         changes = {}
 
@@ -758,6 +772,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             Dictionary with delegatee changes
+
         """
         # Extract addresses
         prev_addresses = {d["address"] for d in previous_delegatees}
@@ -809,6 +824,7 @@ class DelegationPatternAnalyzer:
 
         Returns:
             Dictionary with shift metrics
+
         """
         if not shifts:
             return {
@@ -865,6 +881,7 @@ def analyze_delegation_patterns(
     Raises:
         DataFormatError: If protocol data is missing required fields
         AnalysisError: If there's an error during analysis
+
     """
     try:
         analyzer = DelegationPatternAnalyzer(min_delegation_threshold=min_threshold)
@@ -912,6 +929,7 @@ def analyze_historical_delegation_patterns(
     Raises:
         DataFormatError: If historical data is missing required fields
         AnalysisError: If there's an error during analysis
+
     """
     try:
         analyzer = DelegationPatternAnalyzer(min_delegation_threshold=min_threshold)

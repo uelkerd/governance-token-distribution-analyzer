@@ -29,6 +29,7 @@ class TokenDistributionSimulator:
 
         Args:
             seed: Optional random seed for reproducible simulations
+
         """
         self.seed = seed
         if seed is not None:
@@ -50,6 +51,7 @@ class TokenDistributionSimulator:
 
         Returns:
             List of dictionaries with token holder information
+
         """
         # Generate power-law distributed values
         weights = np.random.power(alpha, num_holders)
@@ -97,6 +99,7 @@ class TokenDistributionSimulator:
 
         Returns:
             List of dictionaries with token holder information
+
         """
         # Calculate how many tokens are held by protocol wallets
         protocol_tokens = int(total_supply * protocol_percentage / 100)
@@ -167,6 +170,7 @@ class TokenDistributionSimulator:
 
         Returns:
             List of dictionaries with token holder information
+
         """
         # Tune the distribution to achieve the target Gini coefficient
         # We'll use a lognormal distribution and adjust parameters to hit target Gini
@@ -232,6 +236,7 @@ class TokenDistributionSimulator:
 
         Returns:
             Dictionary matching the format of API responses
+
         """
         return {"status": "1", "message": "OK", "result": holders}
 
@@ -261,6 +266,7 @@ class TokenDistributionSimulator:
 
         Returns:
             Dictionary mapping dates to token holder distributions
+
         """
         if start_date is None:
             start_date = datetime.now() - timedelta(days=period_days * num_periods)

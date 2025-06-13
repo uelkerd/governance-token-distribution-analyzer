@@ -38,6 +38,7 @@ def load_token_data(protocol: str) -> dict:
 
     Returns:
         Dictionary containing token analysis data
+
     """
     output_dir = Path(DEFAULT_OUTPUT_DIR)
     file_path = output_dir / f"{protocol}_analysis.json"
@@ -61,6 +62,7 @@ def create_pie_chart(data: dict, output_dir: Path):
     Args:
         data: Token analysis data
         output_dir: Directory to save the visualization
+
     """
     top_holders = data["top_holders"]
 
@@ -114,6 +116,7 @@ def create_concentration_bar_chart(data: dict, output_dir: Path):
     Args:
         data: Token analysis data
         output_dir: Directory to save the visualization
+
     """
     top_percentages = data["concentration_metrics"]["top_holders_percentage"]
 
@@ -166,6 +169,7 @@ def visualize_holder_distribution(analysis_results, output_dir="plots"):
     Args:
         analysis_results: Token analysis results dictionary
         output_dir: Directory to save the plot
+
     """
     token_name = analysis_results["token"]
     holders = analysis_results["holders"]
@@ -214,6 +218,7 @@ def visualize_concentration_metrics(analysis_results, output_dir="plots"):
     Args:
         analysis_results: Token analysis results dictionary
         output_dir: Directory to save the plot
+
     """
     token_name = analysis_results["token"]
     metrics = analysis_results["metrics"]
@@ -253,6 +258,7 @@ def visualize_historical_gini(token_name, historical_data, output_dir="plots"):
         token_name: Name of the token
         historical_data: List of historical data points
         output_dir: Directory to save the plot
+
     """
     if not historical_data:
         print(f"No historical data found for {token_name}")
@@ -311,6 +317,7 @@ def visualize_historical_herfindahl(token_name, historical_data, output_dir="plo
         token_name: Name of the token
         historical_data: List of historical data points
         output_dir: Directory to save the plot
+
     """
     if not historical_data:
         print(f"No historical data found for {token_name}")
@@ -368,6 +375,7 @@ def visualize_historical_concentration(token_name, historical_data, output_dir="
         token_name: Name of the token
         historical_data: List of historical data points
         output_dir: Directory to save the plot
+
     """
     if not historical_data:
         print(f"No historical data found for {token_name}")
@@ -445,6 +453,7 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
         token_name: Name of the token
         historical_data: List of historical data points
         output_dir: Directory to save the plot
+
     """
     if not historical_data:
         print(f"No historical data found for {token_name}")
@@ -564,6 +573,7 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
         tokens: List of token names
         historical_data_dict: Dictionary mapping token names to their historical data
         output_dir: Directory to save the plots
+
     """
     if not tokens or not historical_data_dict:
         print("No data available for comparative analysis")

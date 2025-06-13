@@ -1,11 +1,10 @@
-"""
-Tests for the API module.
+"""Tests for the API module.
 
 These tests validate the API client functionality.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from src.analyzer.api import EtherscanAPI, TheGraphAPI
 
 

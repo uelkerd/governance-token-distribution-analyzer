@@ -1,11 +1,9 @@
-import unittest
-import sys
 import os
-from pathlib import Path
-import json
-from unittest.mock import patch, MagicMock, mock_open
+import sys
 import tempfile
-import shutil
+import unittest
+from pathlib import Path
+from unittest.mock import mock_open, patch
 
 # Add the src directory to the Python path
 src_dir = Path(__file__).parent.parent

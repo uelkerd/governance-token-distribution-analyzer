@@ -33,6 +33,7 @@ class GovernanceEffectivenessAnalyzer:
 
         Returns:
             Dictionary with participation metrics
+
         """
         if not proposal_votes:
             return {
@@ -85,6 +86,7 @@ class GovernanceEffectivenessAnalyzer:
 
         Returns:
             Dictionary with proposal success metrics
+
         """
         if not proposals:
             return {"proposal_success_rate": 0.0, "proposal_implementation_rate": 0.0}
@@ -134,6 +136,7 @@ class GovernanceEffectivenessAnalyzer:
 
         Returns:
             Dictionary with all governance effectiveness metrics
+
         """
         if not proposals:
             return {

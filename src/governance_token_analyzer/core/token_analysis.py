@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from .api import EtherscanAPI
+from .api_client import APIClient
 from .config import PROTOCOLS, Config
 
 # Configure logging
@@ -22,7 +22,7 @@ class TokenDistributionAnalyzer:
 
     def __init__(
         self,
-        etherscan_api: Optional[EtherscanAPI] = None,
+        etherscan_api: Optional[APIClient] = None,
         config: Optional[Config] = None,
     ):
         """Initialize the token distribution analyzer.
@@ -30,9 +30,10 @@ class TokenDistributionAnalyzer:
         Args:
             etherscan_api: Optional EtherscanAPI instance. If None, a new instance will be created.
             config: Optional Config instance. If None, a new instance will be created.
+
         """
         self.config = config or Config()
-        self.etherscan_api = etherscan_api or EtherscanAPI(self.config.get_api_key())
+        self.etherscan_api = etherscan_api or APIClient()
 
     def get_token_holders(
         self, protocol_key: str, limit: int = 100
@@ -45,6 +46,7 @@ class TokenDistributionAnalyzer:
 
         Returns:
             List of token holders with their addresses and balances.
+
         """
         # Use the Config class first, fall back to the global variable
         protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(
@@ -105,6 +107,7 @@ class TokenDistributionAnalyzer:
 
         Returns:
             Gini coefficient as a float between 0 and 1.
+
         """
         if not balances or sum(balances) == 0:
             return 0
@@ -138,6 +141,7 @@ class TokenDistributionAnalyzer:
 
         Returns:
             HHI as a float between 0 and 10000.
+
         """
         if not balances:
             return 0
@@ -167,6 +171,7 @@ class TokenDistributionAnalyzer:
 
         Returns:
             Dictionary of concentration metrics.
+
         """
         if not holders:
             logger.warning("No holders provided for concentration metrics calculation")
@@ -233,6 +238,7 @@ def analyze_compound_token() -> Dict[str, Any]:
 
     Returns:
         Dictionary containing the analysis results.
+
     """
     logger.info("Starting Compound (COMP) token analysis")
 
@@ -241,7 +247,7 @@ def analyze_compound_token() -> Dict[str, Any]:
         config = Config()
 
         # Create API client
-        etherscan_api = EtherscanAPI(config.get_api_key())
+        etherscan_api = APIClient()
 
         # Get token info from config
         protocol_key = "compound"

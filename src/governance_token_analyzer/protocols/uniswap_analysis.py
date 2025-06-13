@@ -24,6 +24,7 @@ class UniswapAnalyzer:
         Args:
             api_client: An instance of EtherscanAPI or compatible client
             config: Configuration object
+
         """
         self.config = config or Config()
         self.api_client = api_client or EtherscanAPI(self.config.get_api_key())
@@ -37,6 +38,7 @@ class UniswapAnalyzer:
 
         Returns:
             List of token holders with their balances
+
         """
         logger.info(f"Retrieving top {limit} UNI token holders")
         return self.api_client.get_token_holders(self.UNI_CONTRACT_ADDRESS, limit)
@@ -49,6 +51,7 @@ class UniswapAnalyzer:
 
         Returns:
             Dictionary containing distribution metrics
+
         """
         logger.info(f"Analyzing UNI token distribution for top {limit} holders")
         holders_response = self.get_token_holders(limit)
@@ -136,6 +139,7 @@ class UniswapAnalyzer:
         Args:
             results: Analysis results dictionary
             filename: Optional filename, defaults to uni_analysis_{timestamp}.json
+
         """
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
