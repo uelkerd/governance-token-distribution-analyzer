@@ -1252,7 +1252,7 @@ class APIClient:
             # For now, since getOwnersForToken might not be available in free tier,
             # we'll simulate the response based on the token address
             # In a production environment, you would use the actual API endpoint
-            return self._simulate_alchemy_response(token_address, limit)
+            return self._generate_simulated_holders(token_address, 1, limit)["result"]
 
         except Exception as exception:
             logger.error(f"Alchemy API error: {str(exception)}")
@@ -1277,7 +1277,7 @@ class APIClient:
         try:
             # In a production environment, you would query the appropriate subgraph
             # For now, we'll simulate the response based on the token address
-            return self._simulate_graph_response(token_address, limit)
+            return self._generate_simulated_holders(token_address, 1, limit)["result"]
 
         except Exception as exception:
             logger.error(f"Graph API error: {str(exception)}")
