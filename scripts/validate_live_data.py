@@ -208,4 +208,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+        print(f"network error: {net_err}", file=sys.stderr)
