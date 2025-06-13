@@ -242,7 +242,7 @@ def calculate_top_percentiles(balances: List[float], percentiles: List[int] = No
     """
     if percentiles is None:
         percentiles = [1, 5, 10, 20, 50]
-        
+
     if not balances or sum(balances) == 0:
         return {str(p): 0.0 for p in percentiles}
 
