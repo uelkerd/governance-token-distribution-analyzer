@@ -361,13 +361,9 @@ class TestLiveDataIntegration:
         if not api_client.graph_api_key:
             pytest.skip("No Graph API key available for live data testing")
 
-<<<<<<< HEAD
-        proposals = api_client.get_governance_proposals("uniswap", limit=5, use_real_data=True)
-=======
         proposals = api_client.get_governance_proposals(
             "uniswap", limit=5, use_real_data=True
         )
->>>>>>> deepsource-transform-921fc2de
 
         assert isinstance(proposals, list)
 
