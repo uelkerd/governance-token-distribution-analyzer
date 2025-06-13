@@ -204,8 +204,7 @@ def analyze(protocol, limit, format, output_dir, charts, live_data, verbose):
             "total_holders_analyzed": len(balances),
             "metrics": metrics,
             "summary": {
-                "top_10_concentration": sum(sorted(balances, reverse=True)[:10]) / sum(balances) * 100
-                if balances
+                "top_10_concentration": sum(sorted(balances, reverse=True)[:10]) / sum(balances) * 100 if balances and sum(balances) > 0 else 0,
                 else 0,
                 "top_50_concentration": sum(sorted(balances, reverse=True)[:50]) / sum(balances) * 100
                 if balances
