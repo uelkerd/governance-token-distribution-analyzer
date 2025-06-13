@@ -1,5 +1,4 @@
-"""
-Governance Effectiveness Metrics
+"""Governance Effectiveness Metrics.
 
 This module provides tools to analyze the effectiveness of DAO governance
 and correlate token distribution patterns with governance outcomes.
@@ -17,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class GovernanceEffectivenessAnalyzer:
-    """
-    Analyzes governance effectiveness metrics and correlates them with
+    """Analyzes governance effectiveness metrics and correlates them with
     token distribution patterns.
     """
 
@@ -29,8 +27,7 @@ class GovernanceEffectivenessAnalyzer:
     def calculate_voter_participation(
         self, proposal_votes: List[Dict[str, Any]], total_eligible_votes: float
     ) -> Dict[str, float]:
-        """
-        Calculate voter participation metrics.
+        """Calculate voter participation metrics.
 
         Args:
             proposal_votes: List of dictionaries containing proposal voting data
@@ -83,8 +80,7 @@ class GovernanceEffectivenessAnalyzer:
     def calculate_proposal_success_rate(
         self, proposals: List[Dict[str, Any]]
     ) -> Dict[str, float]:
-        """
-        Calculate metrics related to proposal success rates.
+        """Calculate metrics related to proposal success rates.
 
         Args:
             proposals: List of dictionaries containing proposal data
@@ -131,8 +127,7 @@ class GovernanceEffectivenessAnalyzer:
         token_distribution: List[Dict[str, Any]],
         total_eligible_votes: float,
     ) -> Dict[str, Any]:
-        """
-        Calculate comprehensive governance effectiveness metrics.
+        """Calculate comprehensive governance effectiveness metrics.
 
         Args:
             proposals: List of dictionaries containing proposal data
@@ -181,8 +176,7 @@ class GovernanceEffectivenessAnalyzer:
 
 
 class ParticipationAnalyzer:
-    """
-    Analyzes governance participation metrics for token holders.
+    """Analyzes governance participation metrics for token holders.
 
     This class provides methods for analyzing participation in governance processes,
     including voting patterns, voter segmentation, and proposal participation rates.
@@ -199,8 +193,7 @@ class ParticipationAnalyzer:
         token_holders: List[Dict[str, Any]],
         total_supply: float,
     ) -> Dict[str, Any]:
-        """
-        Analyze the participation metrics for a specific protocol.
+        """Analyze participation metrics for a specific protocol.
 
         Args:
             protocol_key: Key of the protocol being analyzed
@@ -316,8 +309,7 @@ class ParticipationAnalyzer:
     def calculate_voter_engagement_trends(
         self, proposals: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Calculate trends in voter engagement over time.
+        """Calculate trends in voter engagement over time.
 
         Args:
             proposals: List of governance proposals with voting data, ordered by time
@@ -398,14 +390,13 @@ class ParticipationAnalyzer:
             }
 
     def analyze_voter_overlap(self, proposals: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Analyze the overlap of voters between different proposals.
+        """Analyze the overlap of voters between different proposals.
 
         Args:
             proposals: List of governance proposals with voting data
 
         Returns:
-            Dictionary containing voter overlap metrics
+            Dictionary containing voter overlap analysis
         """
         if not proposals or len(proposals) < 2:
             return {"average_overlap": 0.0, "max_overlap": 0.0, "min_overlap": 0.0}

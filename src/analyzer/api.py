@@ -1,5 +1,4 @@
-"""
-API module for interacting with blockchain data sources.
+"""API module for interacting with blockchain data sources.
 
 This module handles API requests to Etherscan, The Graph, and other data sources.
 """
@@ -41,8 +40,7 @@ class EtherscanAPI:
             )
 
     def _make_request(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Make a request to the Etherscan API.
+        """Make a request to the Etherscan API.
 
         Args:
             params (Dict[str, Any]): Parameters for the API request.
@@ -77,8 +75,7 @@ class EtherscanAPI:
             raise
 
     def get_token_supply(self, token_address: str) -> Dict[str, Any]:
-        """
-        Get the total supply of a token.
+        """Return the total supply of a token.
 
         Args:
             token_address (str): The Ethereum address of the token.
@@ -97,8 +94,7 @@ class EtherscanAPI:
     def get_token_holders(
         self, token_address: str, page: int = 1, offset: int = 100
     ) -> Dict[str, Any]:
-        """
-        Get a list of token holders.
+        """Return a list of token holders.
 
         Note: This requires a paid Etherscan API key for the tokenholderslist endpoint.
         For the free tier, we'll simulate this with a limited list of holders.
@@ -142,8 +138,7 @@ class EtherscanAPI:
     def _generate_simulated_holders(
         self, token_address: str, page: int, offset: int
     ) -> Dict[str, Any]:
-        """
-        Generate simulated token holder data for testing purposes.
+        """Generate simulated token holder data for testing purposes.
 
         Args:
             token_address: The token contract address
@@ -210,8 +205,7 @@ class EtherscanAPI:
         return {"status": "1", "message": "OK", "result": holders}
 
     def get_token_balance(self, token_address: str, address: str) -> Dict[str, Any]:
-        """
-        Get the token balance for a specific address.
+        """Return the token balance for a specific address.
 
         Args:
             token_address (str): The Ethereum address of the token.
@@ -235,8 +229,7 @@ class TheGraphAPI:
     """Client for interacting with The Graph API."""
 
     def __init__(self, subgraph_url: str):
-        """
-        Initialize The Graph API client.
+        """Initialize The Graph API client.
 
         Args:
             subgraph_url (str): URL of the subgraph to query.
@@ -246,8 +239,7 @@ class TheGraphAPI:
     def execute_query(
         self, query: str, variables: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """
-        Execute a GraphQL query against the subgraph.
+        """Execute a GraphQL query against the subgraph.
 
         Args:
             query (str): GraphQL query.

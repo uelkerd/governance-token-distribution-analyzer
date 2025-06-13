@@ -1,5 +1,4 @@
-"""
-Token Analysis Module for the Governance Token Distribution Analyzer.
+"""Token Analysis Module for the Governance Token Distribution Analyzer.
 
 This module provides functions to analyze token distribution data,
 including concentration metrics and governance participation.
@@ -97,8 +96,7 @@ class TokenDistributionAnalyzer:
         return holders[:limit]
 
     def calculate_gini_coefficient(self, balances: List[float]) -> float:
-        """
-        Calculate the Gini coefficient for token balances.
+        """Calculate the Gini coefficient for token balances.
 
         The Gini coefficient is a measure of inequality where:
         - 0 represents perfect equality (everyone has the same amount)
@@ -131,8 +129,7 @@ class TokenDistributionAnalyzer:
     def calculate_herfindahl_index(
         self, balances: List[float], total_supply: Optional[float] = None
     ) -> float:
-        """
-        Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
+        """Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
 
         HHI is a measure of market concentration, calculated as the sum of
         squared market shares. Higher values indicate more concentration.
@@ -164,8 +161,7 @@ class TokenDistributionAnalyzer:
     def calculate_concentration_metrics(
         self, holders: List[Dict[str, Any]], total_supply: str
     ) -> Dict[str, Any]:
-        """
-        Calculate concentration metrics for token holders.
+        """Calculate concentration metrics for token holders.
 
         Args:
             holders: List of token holders with their addresses and balances.
@@ -249,8 +245,7 @@ class ConcentrationAnalyzer:
     def analyze_protocol_concentration(
         self, protocol_key: str, limit: int = 100
     ) -> Dict[str, Any]:
-        """
-        Analyze the concentration metrics for a specific protocol.
+        """Analyze the concentration metrics for a specific protocol.
 
         Args:
             protocol_key: Key of the protocol in the PROTOCOLS dictionary.
@@ -305,8 +300,7 @@ class ConcentrationAnalyzer:
     def calculate_lorenz_curve(
         self, holders: List[Dict[str, Any]], total_supply: str
     ) -> Dict[str, List[float]]:
-        """
-        Calculate the Lorenz curve data points for token distribution.
+        """Calculate the Lorenz curve data points for token distribution.
 
         The Lorenz curve shows the cumulative share of tokens held by
         the cumulative share of token holders.
@@ -350,8 +344,7 @@ class ConcentrationAnalyzer:
     def calculate_nakamoto_coefficient(
         self, holders: List[Dict[str, Any]], total_supply: str, threshold: float = 51.0
     ) -> int:
-        """
-        Calculate the Nakamoto coefficient.
+        """Calculate the Nakamoto coefficient.
 
         The Nakamoto coefficient is the minimum number of entities required to
         reach a specified threshold (usually 51%) of the token supply.
@@ -396,8 +389,7 @@ class ConcentrationAnalyzer:
 
 
 def analyze_compound_token() -> Dict[str, Any]:
-    """
-    Analyze the Compound (COMP) token distribution as a proof of concept.
+    """Analyze the Compound (COMP) token distribution as a proof of concept.
 
     Returns:
         Dictionary containing the analysis results.

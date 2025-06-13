@@ -84,7 +84,7 @@ def analyze_protocols(protocol_keys: List[str]) -> List[Dict[str, Any]]:
 
 
 def main():
-    """Main function to run the analyzer."""
+    """Run the analyzer."""
     logger.info("Starting Governance Token Distribution Analyzer")
 
     # Use all protocols defined in config by default

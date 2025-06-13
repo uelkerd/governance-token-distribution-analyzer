@@ -1,5 +1,4 @@
-"""
-Advanced Concentration Metrics for Token Distribution Analysis
+"""Advanced Concentration Metrics for Token Distribution Analysis.
 
 This module provides advanced metrics for analyzing token distribution concentration
 beyond the basic Gini coefficient and Herfindahl index.
@@ -18,8 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def calculate_palma_ratio(balances: List[float]) -> float:
-    """
-    Calculate the Palma ratio, which is the ratio of the share of total income held by the
+    """Calculate the Palma ratio, which is the ratio of the share of total income held by the
     top 10% to that held by the bottom 40%.
 
     In the context of token distribution, this measures the ratio of tokens held by the top 10%
@@ -56,8 +54,7 @@ def calculate_palma_ratio(balances: List[float]) -> float:
 
 
 def calculate_hoover_index(balances: List[float]) -> float:
-    """
-    Calculate the Hoover index (also known as Robin Hood index), which represents
+    """Calculate the Hoover index (also known as Robin Hood index), which represents
     the proportion of tokens that would need to be redistributed to achieve perfect equality.
 
     Args:
@@ -83,8 +80,7 @@ def calculate_hoover_index(balances: List[float]) -> float:
 
 
 def calculate_theil_index(balances: List[float]) -> float:
-    """
-    Calculate the Theil index, which is a measure of economic inequality.
+    """Calculate the Theil index, which is a measure of economic inequality.
     The Theil index can be decomposed to show inequality within and between different subgroups.
 
     Args:
@@ -116,8 +112,7 @@ def calculate_theil_index(balances: List[float]) -> float:
 def calculate_nakamoto_coefficient(
     balances: List[float], threshold: float = 51.0
 ) -> int:
-    """
-    Calculate the Nakamoto coefficient, which is the minimum number of entities
+    """Calculate the Nakamoto coefficient, which is the minimum number of entities
     required to achieve a specified threshold of control (usually 51%).
 
     Args:
@@ -146,8 +141,7 @@ def calculate_nakamoto_coefficient(
 
 
 def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
-    """
-    Calculate the Lorenz curve coordinates for token distribution.
+    """Calculate the Lorenz curve coordinates for token distribution.
 
     The Lorenz curve plots the cumulative share of tokens (y-axis) against
     the cumulative share of holders (x-axis).
@@ -182,10 +176,9 @@ def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
 
 
 def calculate_top_percentiles(
-    balances: List[float], percentiles: List[int] = [1, 5, 10, 20, 50]
+    balances: List[float], percentiles: List[int] = None
 ) -> Dict[str, float]:
-    """
-    Calculate the percentage of tokens held by the top X% of holders for specified percentiles.
+    """Calculate the percentage of tokens held by the top X% of holders for specified percentiles.
 
     Args:
         balances: List of token balances
@@ -194,6 +187,9 @@ def calculate_top_percentiles(
     Returns:
         Dictionary mapping percentiles to concentration percentages
     """
+    if percentiles is None:
+        percentiles = [1, 5, 10, 20, 50]
+        
     if not balances or sum(balances) == 0:
         return {str(p): 0.0 for p in percentiles}
 
@@ -216,8 +212,7 @@ def calculate_top_percentiles(
 
 
 def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]:
-    """
-    Calculate all concentration metrics available in this module.
+    """Calculate all concentration metrics for a set of token balances.
 
     Args:
         balances: List of token balances
@@ -270,8 +265,7 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
 
 
 class VotingBlockAnalyzer:
-    """
-    Analyzes voting patterns to identify voting blocks or coalitions in governance.
+    """Analyzes voting patterns to identify voting blocks or coalitions in governance.
 
     This class provides methods for analyzing voting patterns across proposals,
     identifying groups of token holders that tend to vote similarly, and
@@ -285,8 +279,7 @@ class VotingBlockAnalyzer:
     def identify_voting_blocks(
         self, proposals: List[Dict[str, Any]], similarity_threshold: float = 0.7
     ) -> Dict[str, Any]:
-        """
-        Identify voting blocks based on voting patterns.
+        """Identify voting blocks based on voting patterns.
 
         Args:
             proposals: List of governance proposals with voting data
@@ -419,12 +412,11 @@ class VotingBlockAnalyzer:
     def analyze_block_voting_patterns(
         self, proposals: List[Dict[str, Any]], blocks: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """
-        Analyze how different voting blocks vote on proposals.
+        """Analyze how different voting blocks vote on proposals.
 
         Args:
             proposals: List of governance proposals with voting data
-            blocks: Voting block data from identify_voting_blocks
+            blocks: Voting blocks data from identify_voting_blocks
 
         Returns:
             Dictionary containing block voting pattern analysis
@@ -519,8 +511,7 @@ class VotingBlockAnalyzer:
         blocks: Dict[str, Any],
         token_holders: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-        """
-        Calculate the influence of each voting block based on token holdings and voting patterns.
+        """Calculate the influence of each voting block based on token holdings and voting patterns.
 
         Args:
             proposals: List of governance proposals with voting data
@@ -599,8 +590,7 @@ class VotingBlockAnalyzer:
 
 
 class DelegationAnalyzer:
-    """
-    Analyzes delegation patterns in governance token systems.
+    """Analyzes delegation patterns in governance token systems.
 
     This class provides methods for analyzing how token holders delegate their
     voting power, identifying key delegates, and visualizing delegation networks.
@@ -613,8 +603,7 @@ class DelegationAnalyzer:
     def analyze_delegation_network(
         self, delegations: List[Dict[str, Any]], token_holders: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Analyze the delegation network structure.
+        """Analyze the delegation network structure.
 
         Args:
             delegations: List of delegation records (delegator -> delegate)
@@ -717,7 +706,16 @@ class DelegationAnalyzer:
             return {"error": str(e)}
 
     def _trace_delegation_chain(self, G, start_node, max_depth=10):
-        """Helper method to trace a delegation chain from a starting node."""
+        """Trace a delegation chain starting from a specific node.
+
+        Args:
+            G: NetworkX graph of delegations
+            start_node: Starting node for the chain
+            max_depth: Maximum depth to trace (to avoid infinite loops)
+
+        Returns:
+            List representing the delegation chain
+        """
         chain = [start_node]
         current = start_node
         depth = 0
@@ -744,15 +742,14 @@ class DelegationAnalyzer:
     def analyze_delegation_effectiveness(
         self, delegations: List[Dict[str, Any]], proposals: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Analyze how effective delegation is in terms of increasing participation.
+        """Analyze how effective delegation is in terms of governance participation.
 
         Args:
-            delegations: List of delegation records (delegator -> delegate)
+            delegations: List of delegation records
             proposals: List of governance proposals with voting data
 
         Returns:
-            Dictionary containing delegation effectiveness analysis
+            Dictionary containing delegation effectiveness metrics
         """
         try:
             # Create a mapping from delegators to delegates
@@ -842,11 +839,10 @@ class DelegationAnalyzer:
     def calculate_delegation_metrics(
         self, delegations: List[Dict[str, Any]], token_holders: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Calculate various metrics related to the delegation system.
+        """Calculate various metrics about the delegation patterns.
 
         Args:
-            delegations: List of delegation records (delegator -> delegate)
+            delegations: List of delegation records
             token_holders: List of token holders with their balances
 
         Returns:

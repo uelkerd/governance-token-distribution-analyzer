@@ -54,15 +54,15 @@ class Config:
         )
 
     def get_api_key(self):
-        """Get the Etherscan API key."""
+        """Return the Etherscan API key."""
         return self.etherscan_api_key
 
     def get_protocol_info(self, protocol_name):
-        """Get information for a specific protocol."""
+        """Return information for a specific protocol."""
         return self.protocols.get(protocol_name.lower())
 
     def get_token_address(self, protocol_name):
-        """Get the token contract address for a specific protocol."""
+        """Return the token contract address for a specific protocol."""
         protocol_info = self.get_protocol_info(protocol_name)
         return protocol_info["token_address"] if protocol_info else None
 
