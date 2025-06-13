@@ -250,8 +250,7 @@ class APIClient:
                 self.graph_clients[protocol] = TheGraphAPI(endpoint)
 
     def get_token_holders(self, protocol: str, limit: int = 100, use_real_data: bool = True) -> List[Dict[str, Any]]:
-        """
-        Get token holders for a specific protocol.
+        """Get token holders for a specific protocol.
 
         Args:
             protocol: Protocol name (compound, uniswap, aave)
@@ -361,6 +360,7 @@ class APIClient:
 
         Raises:
             ValueError: If the protocol is not supported
+
         """
         if protocol not in PROTOCOL_INFO:
             raise ValueError(f"Unsupported protocol: {protocol}")
@@ -377,17 +377,18 @@ class APIClient:
 
             return {
                 "protocol": protocol,
-                "token_symbol": protocol_info.get("token_symbol", ""),
-                "token_name": protocol_info.get("token_name", ""),
-                "total_supply": protocol_info.get("total_supply", 0),
+                "token_symbol": PROTOCOL_INFO[protocol]["token_symbol"],
                 "token_holders": holders,
+                "holders": holders,  # Add this for backward compatibility with tests
                 "proposals": proposals,
                 "votes": votes,
                 "participation_rate": participation_rate,
                 "holder_concentration": holder_concentration,
+                "active_holder_count": len([h for h in holders if float(h["balance"]) > 0]),
                 "proposal_count": len(proposals),
-                "active_holder_count": len(holders),
-                "timestamp": datetime.now().isoformat(),
+                "total_votes": len(votes),
+                "data_source": "live" if use_real_data else "simulated",
+                "last_updated": datetime.now().isoformat(),
             }
 
         except Exception as exception:
@@ -403,6 +404,7 @@ class APIClient:
 
         Returns:
             List of token holder dictionaries
+
         """
         return self.get_token_holders(protocol, 100, use_real_data)
 
@@ -415,6 +417,7 @@ class APIClient:
 
         Returns:
             List of proposal dictionaries
+
         """
         return self.get_governance_proposals(protocol, 20, use_real_data)
 
@@ -426,6 +429,7 @@ class APIClient:
 
         Returns:
             List of vote dictionaries
+
         """
         votes = []
         if proposals and isinstance(proposals, list):
@@ -443,6 +447,7 @@ class APIClient:
 
         Returns:
             Holder concentration as a percentage
+
         """
         if not holders:
             return 0.0
@@ -737,7 +742,7 @@ class APIClient:
                     "proposal_id": proposal_id,
                     "voter": voter,
                     "vote_choice": vote_choice,
-                    "vote_power": vote_power,
+                    "voting_power": vote_power,
                     "vote_weight": vote_power / info["total_supply"],
                     "voted_at": (datetime.now() - timedelta(days=random.randint(1, 14))).isoformat(),
                     "tx_hash": f"0x{random.getrandbits(256):064x}",
@@ -745,6 +750,37 @@ class APIClient:
             )
 
         return votes
+
+    @staticmethod
+    def _normalize_holder_balances(holders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Normalize holder balances to consistent string format and sort by balance.
+
+        Args:
+            holders: List of token holder dictionaries
+
+        Returns:
+            List of normalized and sorted token holder dictionaries
+        """
+        normalized_holders = []
+        for holder in holders:
+            if "balance" in holder:
+                # Convert all balances to float first, then back to string for consistency
+                try:
+                    balance_float = float(holder["balance"]) if holder["balance"] is not None else 0.0
+                    holder_copy = holder.copy()
+                    holder_copy["balance"] = str(balance_float)
+                    normalized_holders.append(holder_copy)
+                except (ValueError, TypeError):
+                    # If balance can't be converted, use 0
+                    holder_copy = holder.copy()
+                    holder_copy["balance"] = "0"
+                    normalized_holders.append(holder_copy)
+            else:
+                normalized_holders.append(holder)
+
+        # Sort by balance in descending order to ensure consistent ordering
+        normalized_holders.sort(key=lambda h: float(h.get("balance", 0)), reverse=True)
+        return normalized_holders
 
     def _fetch_token_holders_with_fallback(self, protocol: str, token_address: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch token holders with multiple API fallbacks for better reliability.
@@ -788,7 +824,7 @@ class APIClient:
 
                 if holders and len(holders) > 0:
                     logger.info(f"✅ Successfully fetched {len(holders)} holders from {api_name}")
-                    return holders
+                    return self._normalize_holder_balances(holders)
                 else:
                     logger.warning(f"⚠️  {api_name} returned no holders")
 
@@ -797,7 +833,14 @@ class APIClient:
 
         # Final fallback to simulation
         logger.info("🔄 All APIs failed, using protocol-specific simulation")
-        return self._generate_simulated_holders(token_address, 1, limit)["result"]
+        holders = self._generate_simulated_holders(token_address, 1, limit)["result"]
+
+        # Ensure consistent balance format
+        for holder in holders:
+            if "balance" in holder:
+                holder["balance"] = str(holder["balance"]) if holder["balance"] is not None else "0"
+
+        return holders
 
     def _fetch_governance_proposals(self, protocol: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch real governance proposals data from The Graph API.
@@ -1059,6 +1102,7 @@ class APIClient:
 
         Returns:
             Dictionary containing simulation parameters
+
         """
         # Create protocol-specific parameters for different distributions
         protocol_params = {
@@ -1117,6 +1161,7 @@ class APIClient:
 
         Returns:
             List of simulated holder dictionaries
+
         """
         holders = []
         protocol = params["protocol"]
@@ -1138,6 +1183,7 @@ class APIClient:
             # Determine holder type and allocate tokens
             quantity, pct = self._calculate_holder_allocation(i, whale_count, institution_count, total_supply, params)
 
+            # Ensure balance is stored as string to avoid precision issues
             holders.append(
                 {
                     "protocol": protocol,
@@ -1149,9 +1195,6 @@ class APIClient:
                     "TokenHolderPercentage": str(pct),
                 }
             )
-
-            if len(holders) >= offset:
-                break
 
         return holders
 
@@ -1169,6 +1212,7 @@ class APIClient:
 
         Returns:
             Tuple of (quantity, percentage)
+
         """
         seed_offset = params["seed_offset"]
 
@@ -1214,8 +1258,7 @@ class APIClient:
         return self._make_request(params)
 
     def _fetch_token_holders_alchemy(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
-        """
-        Fetch token holders using Alchemy API (requires paid tier).
+        """Fetch token holders using Alchemy API (requires paid tier).
 
         Args:
             token_address: Token contract address
@@ -1223,6 +1266,7 @@ class APIClient:
 
         Returns:
             List of token holder dictionaries
+
         """
         if not self.alchemy_api_key:
             logger.warning("Alchemy API key not configured")
@@ -1239,8 +1283,7 @@ class APIClient:
             raise
 
     def _fetch_token_holders_graph(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
-        """
-        Fetch token holders using The Graph Protocol (generous query limits).
+        """Fetch token holders using The Graph Protocol (generous query limits).
 
         Args:
             token_address: Token contract address
@@ -1248,6 +1291,7 @@ class APIClient:
 
         Returns:
             List of token holder dictionaries
+
         """
         if not self.graph_api_key:
             raise ValueError("Graph API key not configured")
@@ -1264,8 +1308,7 @@ class APIClient:
             raise
 
     def _fetch_token_holders_moralis(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
-        """
-        Fetch token holders using Moralis API (40k requests/month free).
+        """Fetch token holders using Moralis API (40k requests/month free).
 
         Args:
             token_address: Token contract address
@@ -1273,6 +1316,7 @@ class APIClient:
 
         Returns:
             List of token holder dictionaries
+
         """
         moralis_api_key = os.getenv("MORALIS_API_KEY")
         if not moralis_api_key:

@@ -7,7 +7,6 @@ of metrics for a specific timestamp.
 
 import json
 import os
-from datetime import datetime
 
 
 def convert_historical_data(token, input_file, output_file=None):
@@ -17,6 +16,7 @@ def convert_historical_data(token, input_file, output_file=None):
         token: Token symbol (e.g., 'COMP', 'UNI')
         input_file: Path to input file in old format
         output_file: Path to output file in new format (defaults to same as input)
+
     """
     # Load the old format data
     with open(input_file, "r") as f:

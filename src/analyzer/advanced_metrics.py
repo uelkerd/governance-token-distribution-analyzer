@@ -5,8 +5,7 @@ beyond the basic Gini coefficient and Herfindahl index.
 """
 
 import numpy as np
-import pandas as pd
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import logging
 import networkx as nx
 from collections import defaultdict
@@ -28,6 +27,7 @@ def calculate_palma_ratio(balances: List[float]) -> float:
 
     Returns:
         Palma ratio as a float
+
     """
     if not balances or sum(balances) == 0:
         return 0.0
@@ -62,6 +62,7 @@ def calculate_hoover_index(balances: List[float]) -> float:
 
     Returns:
         Hoover index as a float between 0 and 1
+
     """
     if not balances or sum(balances) == 0:
         return 0.0
@@ -88,6 +89,7 @@ def calculate_theil_index(balances: List[float]) -> float:
 
     Returns:
         Theil index as a float (0 = perfect equality, higher values = more inequality)
+
     """
     if not balances or sum(balances) == 0:
         return 0.0
@@ -119,6 +121,7 @@ def calculate_nakamoto_coefficient(balances: List[float], threshold: float = 51.
 
     Returns:
         Nakamoto coefficient as an integer
+
     """
     if not balances or sum(balances) == 0:
         return 0
@@ -149,6 +152,7 @@ def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
 
     Returns:
         Dictionary with 'x' and 'y' coordinates for the Lorenz curve
+
     """
     if not balances or sum(balances) == 0:
         return {"x": [0, 1], "y": [0, 1]}
@@ -182,6 +186,7 @@ def calculate_top_percentiles(balances: List[float], percentiles: List[int] = No
 
     Returns:
         Dictionary mapping percentiles to concentration percentages
+
     """
     if percentiles is None:
         percentiles = [1, 5, 10, 20, 50]
@@ -215,6 +220,7 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
 
     Returns:
         Dictionary of concentration metrics
+
     """
     # Ensure positive balances for calculations
     positive_balances = [b for b in balances if b > 0]
@@ -282,6 +288,7 @@ class VotingBlockAnalyzer:
 
         Returns:
             Dictionary containing voting block analysis results
+
         """
         try:
             # Extract voting data
@@ -330,7 +337,7 @@ class VotingBlockAnalyzer:
             G = nx.Graph()
 
             # Add all active voters as nodes
-            for voter in active_voters.keys():
+            for voter in active_voters:
                 G.add_node(voter)
 
             # Add edges between similar voters
@@ -399,6 +406,7 @@ class VotingBlockAnalyzer:
 
         Returns:
             Dictionary containing block voting pattern analysis
+
         """
         try:
             # Extract the voter to block mapping
@@ -488,6 +496,7 @@ class VotingBlockAnalyzer:
 
         Returns:
             Dictionary containing block influence analysis
+
         """
         try:
             # Extract the voter to block mapping
@@ -570,6 +579,7 @@ class DelegationAnalyzer:
 
         Returns:
             Dictionary containing delegation network analysis
+
         """
         try:
             # Create a network graph of delegations
@@ -660,6 +670,7 @@ class DelegationAnalyzer:
 
         Returns:
             List representing the delegation chain
+
         """
         chain = [start_node]
         current = start_node
@@ -695,6 +706,7 @@ class DelegationAnalyzer:
 
         Returns:
             Dictionary containing delegation effectiveness metrics
+
         """
         try:
             # Create a mapping from delegators to delegates
@@ -772,6 +784,7 @@ class DelegationAnalyzer:
 
         Returns:
             Dictionary containing delegation metrics
+
         """
         try:
             # Count unique delegators and delegates

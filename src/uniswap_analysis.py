@@ -24,6 +24,7 @@ class UniswapAnalyzer:
         Args:
             api_client: An instance of EtherscanAPI or compatible client
             config: Configuration object
+
         """
         self.config = config or Config()
         self.api_client = api_client or EtherscanAPI(self.config.get_api_key())
@@ -37,6 +38,7 @@ class UniswapAnalyzer:
 
         Returns:
             List of token holders with their balances
+
         """
         logger.info(f"Retrieving top {limit} UNI token holders")
         return self.api_client.get_token_holders(self.UNI_CONTRACT_ADDRESS, limit)
@@ -49,6 +51,7 @@ class UniswapAnalyzer:
 
         Returns:
             Dictionary containing distribution metrics
+
         """
         logger.info(f"Analyzing UNI token distribution for top {limit} holders")
         holders_response = self.get_token_holders(limit)
@@ -82,9 +85,7 @@ class UniswapAnalyzer:
                             continue
                     else:
                         # If no numeric value found, skip this holder
-                        logger.warning(
-                            f"Could not extract balance from holder data: {holder}"
-                        )
+                        logger.warning(f"Could not extract balance from holder data: {holder}")
                         continue
 
                 balances.append(balance)
@@ -101,15 +102,9 @@ class UniswapAnalyzer:
         # Calculate percentage held by top holders
         total_supply = sum(balances)
         top_5_pct = sum(balances[:5]) / total_supply * 100 if len(balances) >= 5 else 0
-        top_10_pct = (
-            sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
-        )
-        top_20_pct = (
-            sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
-        )
-        top_50_pct = (
-            sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
-        )
+        top_10_pct = sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
+        top_20_pct = sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
+        top_50_pct = sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
 
         results = {
             "token": "UNI",
@@ -136,6 +131,7 @@ class UniswapAnalyzer:
         Args:
             results: Analysis results dictionary
             filename: Optional filename, defaults to uni_analysis_{timestamp}.json
+
         """
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -163,12 +159,8 @@ def main():
     print("UNI Token Distribution Analysis:")
     print(f"Gini Coefficient: {results['metrics']['gini_coefficient']:.4f}")
     print(f"Herfindahl Index: {results['metrics']['herfindahl_index']:.4f}")
-    print(
-        f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%"
-    )
-    print(
-        f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%"
-    )
+    print(f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%")
+    print(f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%")
 
 
 if __name__ == "__main__":

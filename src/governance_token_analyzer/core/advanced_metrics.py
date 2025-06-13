@@ -15,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def calculate_gini_coefficient(balances: List[float]) -> float:
-    """
-    Calculate the Gini coefficient, which measures inequality in token distribution.
+    """Calculate the Gini coefficient, which measures inequality in token distribution.
 
     The Gini coefficient ranges from 0 (perfect equality) to 1 (maximum inequality).
 
@@ -45,8 +44,7 @@ def calculate_gini_coefficient(balances: List[float]) -> float:
 
 
 def calculate_herfindahl_index(balances: List[float]) -> float:
-    """
-    Calculate the Herfindahl-Hirschman Index (HHI) for token concentration.
+    """Calculate the Herfindahl-Hirschman Index (HHI) for token concentration.
 
     The HHI is the sum of the squares of market shares (percentages).
     Higher values indicate more concentration.

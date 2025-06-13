@@ -1,5 +1,4 @@
-"""
-Delegation Patterns Analysis Page
+"""Delegation Patterns Analysis Page
 
 This page provides visualizations and metrics for delegation pattern analysis,
 showing how voting power is delegated and flows between addresses.
@@ -7,7 +6,6 @@ showing how voting power is delegated and flows between addresses.
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import networkx as nx
@@ -24,9 +22,7 @@ sys.path.insert(0, os.path.dirname(src_dir))
 
 from src.analyzer.config import DEFAULT_OUTPUT_DIR
 
-st.set_page_config(
-    page_title="Delegation Patterns Analysis", page_icon="🔄", layout="wide"
-)
+st.set_page_config(page_title="Delegation Patterns Analysis", page_icon="🔄", layout="wide")
 
 st.title("Delegation Patterns Analysis")
 st.sidebar.markdown("# Delegation Patterns")
@@ -82,9 +78,7 @@ if data and "delegation_patterns" in data:
         st.caption("% of total voting power delegated")
 
     # Main content area
-    tab1, tab2, tab3 = st.tabs(
-        ["Delegation Overview", "Network Visualization", "Delegation Metrics"]
-    )
+    tab1, tab2, tab3 = st.tabs(["Delegation Overview", "Network Visualization", "Delegation Metrics"])
 
     with tab1:
         st.subheader("Delegation Overview")
@@ -119,9 +113,7 @@ if data and "delegation_patterns" in data:
             viz_data = viz_data.head(10)
 
             # Create short address labels
-            viz_data["short_address"] = viz_data["address"].apply(
-                lambda x: f"{x[:6]}...{x[-4:]}"
-            )
+            viz_data["short_address"] = viz_data["address"].apply(lambda x: f"{x[:6]}...{x[-4:]}")
 
             fig = px.bar(
                 viz_data,
@@ -150,13 +142,9 @@ if data and "delegation_patterns" in data:
 
             for category, value in distribution.items():
                 # Format category name for display
-                formatted_category = " ".join(
-                    word.capitalize() for word in category.split("_")
-                )
+                formatted_category = " ".join(word.capitalize() for word in category.split("_"))
 
-                distribution_data.append(
-                    {"Category": formatted_category, "Percentage": value}
-                )
+                distribution_data.append({"Category": formatted_category, "Percentage": value})
 
             distribution_df = pd.DataFrame(distribution_data)
 
@@ -178,9 +166,7 @@ if data and "delegation_patterns" in data:
         # Network visualization settings
         st.sidebar.markdown("## Network Settings")
         show_labels = st.sidebar.checkbox("Show Address Labels", value=False)
-        min_delegation = st.sidebar.slider(
-            "Minimum Delegation Amount (%)", 0.0, 5.0, 0.1
-        )
+        min_delegation = st.sidebar.slider("Minimum Delegation Amount (%)", 0.0, 5.0, 0.1)
 
         # Create network visualization using NetworkX and Plotly
         if "delegation_network" in delegation_data:
@@ -231,18 +217,13 @@ if data and "delegation_patterns" in data:
                     edge_traces.append(edge_trace)
 
                 # Create delegator node trace
-                delegator_nodes = [
-                    node for node in G.nodes() if not G.nodes[node]["is_delegatee"]
-                ]
+                delegator_nodes = [node for node in G.nodes() if not G.nodes[node]["is_delegatee"]]
                 delegator_trace = go.Scatter(
                     x=[pos[node][0] for node in delegator_nodes],
                     y=[pos[node][1] for node in delegator_nodes],
                     mode="markers",
                     marker=dict(
-                        size=[
-                            G.nodes[node].get("voting_power", 1) * 5 + 5
-                            for node in delegator_nodes
-                        ],
+                        size=[G.nodes[node].get("voting_power", 1) * 5 + 5 for node in delegator_nodes],
                         color="blue",
                         line=dict(width=1, color="rgb(50,50,50)"),
                     ),
@@ -255,18 +236,13 @@ if data and "delegation_patterns" in data:
                 )
 
                 # Create delegatee node trace
-                delegatee_nodes = [
-                    node for node in G.nodes() if G.nodes[node]["is_delegatee"]
-                ]
+                delegatee_nodes = [node for node in G.nodes() if G.nodes[node]["is_delegatee"]]
                 delegatee_trace = go.Scatter(
                     x=[pos[node][0] for node in delegatee_nodes],
                     y=[pos[node][1] for node in delegatee_nodes],
                     mode="markers",
                     marker=dict(
-                        size=[
-                            G.nodes[node].get("delegated_power", 1) * 5 + 10
-                            for node in delegatee_nodes
-                        ],
+                        size=[G.nodes[node].get("delegated_power", 1) * 5 + 10 for node in delegatee_nodes],
                         color="red",
                         line=dict(width=1, color="rgb(50,50,50)"),
                     ),
@@ -325,9 +301,7 @@ if data and "delegation_patterns" in data:
 
             for category, count in classification.items():
                 # Format category name for display
-                formatted_category = " ".join(
-                    word.capitalize() for word in category.split("_")
-                )
+                formatted_category = " ".join(word.capitalize() for word in category.split("_"))
 
                 class_data.append({"Category": formatted_category, "Count": count})
 
@@ -354,9 +328,7 @@ if data and "delegation_patterns" in data:
             metrics_data = []
             for metric, value in concentration.items():
                 # Format metric name for display
-                formatted_metric = " ".join(
-                    word.capitalize() for word in metric.split("_")
-                )
+                formatted_metric = " ".join(word.capitalize() for word in metric.split("_"))
 
                 if "percentage" in metric or "ratio" in metric:
                     formatted_value = f"{value:.2f}%"
@@ -365,9 +337,7 @@ if data and "delegation_patterns" in data:
                 else:
                     formatted_value = f"{value:,.2f}"
 
-                metrics_data.append(
-                    {"Metric": formatted_metric, "Value": formatted_value}
-                )
+                metrics_data.append({"Metric": formatted_metric, "Value": formatted_value})
 
             metrics_df = pd.DataFrame(metrics_data)
             st.dataframe(metrics_df, use_container_width=True)

@@ -48,24 +48,18 @@ def test_get_token_holders_real_api(api_client):
 def test_get_governance_proposals_real_api(api_client):
     """Test fetching governance proposals using real API."""
     # Test Compound proposals
-    comp_proposals = api_client.get_governance_proposals(
-        "compound", limit=3, use_real_data=True
-    )
+    comp_proposals = api_client.get_governance_proposals("compound", limit=3, use_real_data=True)
     assert len(comp_proposals) > 0
     assert "id" in comp_proposals[0]
     assert "title" in comp_proposals[0]
 
     # Test Uniswap proposals
-    uni_proposals = api_client.get_governance_proposals(
-        "uniswap", limit=3, use_real_data=True
-    )
+    uni_proposals = api_client.get_governance_proposals("uniswap", limit=3, use_real_data=True)
     assert len(uni_proposals) > 0
     assert "id" in uni_proposals[0]
 
     # Test Aave proposals
-    aave_proposals = api_client.get_governance_proposals(
-        "aave", limit=3, use_real_data=True
-    )
+    aave_proposals = api_client.get_governance_proposals("aave", limit=3, use_real_data=True)
     assert len(aave_proposals) > 0
     assert "id" in aave_proposals[0]
 
@@ -74,20 +68,15 @@ def test_get_governance_proposals_real_api(api_client):
 def test_get_governance_votes_real_api(api_client):
     """Test fetching governance votes using real API."""
     # Get a real proposal ID first
-    comp_proposals = api_client.get_governance_proposals(
-        "compound", limit=1, use_real_data=True
-    )
-    if comp_proposals:
+    if comp_proposals := api_client.get_governance_proposals("compound", limit=1, use_real_data=True):
         proposal_id = comp_proposals[0]["id"]
 
         # Test Compound votes
-        comp_votes = api_client.get_governance_votes(
-            "compound", proposal_id, use_real_data=True
-        )
+        comp_votes = api_client.get_governance_votes("compound", proposal_id, use_real_data=True)
         assert len(comp_votes) > 0
         assert "voter" in comp_votes[0]
         assert "vote_choice" in comp_votes[0]
-        assert "vote_power" in comp_votes[0]
+        assert "voting_power" in comp_votes[0]
 
 
 @pytest.mark.skipif(skip_tests, reason="Integration tests skipped")

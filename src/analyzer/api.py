@@ -4,8 +4,7 @@ This module handles API requests to Etherscan, The Graph, and other data sources
 """
 
 import requests
-from typing import Dict, Any, Optional, List
-import time
+from typing import Dict, Any, Optional
 import logging
 from .config import Config, ETHERSCAN_API_KEY, ETHERSCAN_BASE_URL
 
@@ -18,11 +17,11 @@ class EtherscanAPI:
     """Client for interacting with the Etherscan API."""
 
     def __init__(self, api_key: Optional[str] = None):
-        """
-        Initialize the Etherscan API client.
+        """Initialize the Etherscan API client.
 
         Args:
             api_key (str, optional): Etherscan API key. If None, uses the key from config.
+
         """
         # Keep backward compatibility but also support the new Config class
         if api_key is None:
@@ -48,6 +47,7 @@ class EtherscanAPI:
 
         Raises:
             requests.exceptions.RequestException: If the request fails.
+
         """
         # Add API key to parameters
         params["apikey"] = self.api_key
@@ -80,6 +80,7 @@ class EtherscanAPI:
 
         Returns:
             Dict[str, Any]: Token supply information.
+
         """
         params = {
             "module": "stats",
@@ -102,6 +103,7 @@ class EtherscanAPI:
 
         Returns:
             Dict[str, Any]: List of token holders.
+
         """
         # For free tier API, we'll use account/txlist to get transactions and simulate holder data
         # In a real implementation with a paid API key, use the tokenholderlist endpoint
@@ -139,6 +141,7 @@ class EtherscanAPI:
 
         Returns:
             Simulated API response with token holders
+
         """
         # Get the total supply to make realistic percentages
         supply_response = self.get_token_supply(token_address)
@@ -205,6 +208,7 @@ class EtherscanAPI:
 
         Returns:
             Dict[str, Any]: Token balance information.
+
         """
         params = {
             "module": "account",
@@ -225,6 +229,7 @@ class TheGraphAPI:
 
         Args:
             subgraph_url (str): URL of the subgraph to query.
+
         """
         self.subgraph_url = subgraph_url
 
@@ -240,6 +245,7 @@ class TheGraphAPI:
 
         Raises:
             requests.exceptions.RequestException: If the request fails.
+
         """
         payload = {"query": query}
         if variables:

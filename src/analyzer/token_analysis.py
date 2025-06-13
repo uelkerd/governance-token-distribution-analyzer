@@ -5,9 +5,8 @@ including concentration metrics and governance participation.
 """
 
 import logging
-import pandas as pd
 import numpy as np
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Dict, List, Any, Optional
 
 from .api import EtherscanAPI
 from .config import Config, PROTOCOLS
@@ -25,19 +24,18 @@ class TokenDistributionAnalyzer:
         etherscan_api: Optional[EtherscanAPI] = None,
         config: Optional[Config] = None,
     ):
-        """
-        Initialize the token distribution analyzer.
+        """Initialize the token distribution analyzer.
 
         Args:
             etherscan_api: Optional EtherscanAPI instance. If None, a new instance will be created.
             config: Optional Config instance. If None, a new instance will be created.
+
         """
         self.config = config or Config()
         self.etherscan_api = etherscan_api or EtherscanAPI(self.config.get_api_key())
 
     def get_token_holders(self, protocol_key: str, limit: int = 100) -> List[Dict[str, Any]]:
-        """
-        Get the top token holders for a specific protocol.
+        """Get the top token holders for a specific protocol.
 
         Args:
             protocol_key: Key of the protocol in the PROTOCOLS dictionary.
@@ -45,6 +43,7 @@ class TokenDistributionAnalyzer:
 
         Returns:
             List of token holders with their addresses and balances.
+
         """
         # Use the Config class first, fall back to the global variable
         protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(protocol_key)
@@ -101,6 +100,7 @@ class TokenDistributionAnalyzer:
 
         Returns:
             Gini coefficient as a float between 0 and 1.
+
         """
         if not balances or sum(balances) == 0:
             return 0
@@ -129,6 +129,7 @@ class TokenDistributionAnalyzer:
 
         Returns:
             HHI as a float between 0 and 10000.
+
         """
         if not balances:
             return 0
@@ -156,6 +157,7 @@ class TokenDistributionAnalyzer:
 
         Returns:
             Dictionary of concentration metrics.
+
         """
         if not holders:
             logger.warning("No holders provided for concentration metrics calculation")
@@ -219,11 +221,11 @@ class ConcentrationAnalyzer:
     """Analyzes token concentration metrics for governance tokens."""
 
     def __init__(self, token_analyzer: Optional[TokenDistributionAnalyzer] = None):
-        """
-        Initialize the concentration analyzer.
+        """Initialize the concentration analyzer.
 
         Args:
             token_analyzer: Optional TokenDistributionAnalyzer instance. If None, a new instance will be created.
+
         """
         self.token_analyzer = token_analyzer or TokenDistributionAnalyzer()
 
@@ -236,6 +238,7 @@ class ConcentrationAnalyzer:
 
         Returns:
             Dictionary of concentration metrics and analysis.
+
         """
         # Get protocol info
         protocol = self.token_analyzer.config.get_protocol_info(protocol_key) or PROTOCOLS.get(protocol_key)
@@ -284,6 +287,7 @@ class ConcentrationAnalyzer:
 
         Returns:
             Dictionary with x and y coordinates for the Lorenz curve.
+
         """
         if not holders:
             return {"x": [], "y": []}
@@ -323,6 +327,7 @@ class ConcentrationAnalyzer:
 
         Returns:
             Nakamoto coefficient as an integer.
+
         """
         if not holders:
             return 0
@@ -360,6 +365,7 @@ def analyze_compound_token() -> Dict[str, Any]:
 
     Returns:
         Dictionary containing the analysis results.
+
     """
     logger.info("Starting Compound (COMP) token analysis")
 

@@ -1,5 +1,4 @@
-"""
-Voting Blocks Analysis Page
+"""Voting Blocks Analysis Page
 
 This page provides visualizations and metrics for voting block analysis,
 showing coordinated voting behavior and influential voter groups.
@@ -7,7 +6,6 @@ showing coordinated voting behavior and influential voter groups.
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import networkx as nx
@@ -65,9 +63,7 @@ if data and "voting_blocks" in data:
         st.caption("Number of identified voting blocks")
 
     with col2:
-        total_block_members = sum(
-            len(block["members"]) for block in voting_blocks.get("blocks", [])
-        )
+        total_block_members = sum(len(block["members"]) for block in voting_blocks.get("blocks", []))
         st.metric("Total Block Members", total_block_members)
         st.caption("Total addresses in voting blocks")
 
@@ -77,9 +73,7 @@ if data and "voting_blocks" in data:
         st.caption("Average voting agreement within blocks")
 
     # Main content area
-    tab1, tab2, tab3 = st.tabs(
-        ["Block Overview", "Network Visualization", "Block Influence"]
-    )
+    tab1, tab2, tab3 = st.tabs(["Block Overview", "Network Visualization", "Block Influence"])
 
     with tab1:
         st.subheader("Voting Blocks Overview")
@@ -159,11 +153,7 @@ if data and "voting_blocks" in data:
                     patterns_data.append(
                         {
                             "Proposal ID": proposal_id,
-                            "Vote": "For"
-                            if vote == 1
-                            else "Against"
-                            if vote == 0
-                            else "Abstain",
+                            "Vote": "For" if vote == 1 else "Against" if vote == 0 else "Abstain",
                             "Agreement %": f"{block['proposal_agreement'].get(proposal_id, 0):.2f}%",
                         }
                     )
@@ -177,9 +167,7 @@ if data and "voting_blocks" in data:
         # Network visualization settings
         st.sidebar.markdown("## Network Visualization")
         show_labels = st.sidebar.checkbox("Show Address Labels", value=False)
-        min_edge_weight = st.sidebar.slider(
-            "Minimum Connection Strength", 0.0, 1.0, 0.5
-        )
+        min_edge_weight = st.sidebar.slider("Minimum Connection Strength", 0.0, 1.0, 0.5)
 
         # Create network visualization using NetworkX and Plotly
         if "network_data" in voting_blocks:
@@ -226,10 +214,7 @@ if data and "voting_blocks" in data:
                 y=[pos[node][1] for node in G.nodes()],
                 mode="markers",
                 marker=dict(
-                    size=[
-                        G.nodes[node].get("voting_power", 1) * 10 + 5
-                        for node in G.nodes()
-                    ],
+                    size=[G.nodes[node].get("voting_power", 1) * 10 + 5 for node in G.nodes()],
                     color=[G.nodes[node].get("block", 0) for node in G.nodes()],
                     colorscale="Viridis",
                     line=dict(width=1, color="rgb(50,50,50)"),
@@ -350,6 +335,4 @@ if data and "voting_blocks" in data:
             st.info("Block influence data not available for this protocol.")
 else:
     st.error(f"Unable to load voting block data for {protocol}")
-    st.info(
-        "Please make sure you've run the voting block analysis for this protocol first."
-    )
+    st.info("Please make sure you've run the voting block analysis for this protocol first.")

@@ -1,12 +1,10 @@
-"""
-Compound Token Distribution Page
+"""Compound Token Distribution Page
 
 This page shows detailed analysis of the Compound governance token (COMP) distribution.
 """
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import json
@@ -55,12 +53,8 @@ if data:
     with col1:
         if "concentration_metrics" in data:
             metrics = data["concentration_metrics"]
-            st.metric(
-                "Gini Coefficient", f"{metrics.get('gini_coefficient', 'N/A'):.4f}"
-            )
-            st.metric(
-                "Herfindahl Index", f"{metrics.get('herfindahl_index', 'N/A'):.4f}"
-            )
+            st.metric("Gini Coefficient", f"{metrics.get('gini_coefficient', 'N/A'):.4f}")
+            st.metric("Herfindahl Index", f"{metrics.get('herfindahl_index', 'N/A'):.4f}")
 
             # Show CR metrics in expandable section
             with st.expander("Concentration Ratios"):
@@ -71,10 +65,7 @@ if data:
             st.info("Concentration metrics not available")
 
     with col2:
-        if (
-            "concentration_metrics" in data
-            and "lorenz_curve" in data["concentration_metrics"]
-        ):
+        if "concentration_metrics" in data and "lorenz_curve" in data["concentration_metrics"]:
             lorenz_data = data["concentration_metrics"]["lorenz_curve"]
 
             fig = go.Figure()
@@ -118,9 +109,7 @@ if data:
         holders = data["top_holders"][:top_n]
         others_pct = 100 - sum(h["percentage"] for h in holders)
 
-        labels = [
-            f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}" for h in holders
-        ]
+        labels = [f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}" for h in holders]
         values = [h["percentage"] for h in holders]
 
         if others_pct > 0:
@@ -147,9 +136,7 @@ if data:
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            st.metric(
-                "Nakamoto Coefficient", metrics.get("nakamoto_coefficient", "N/A")
-            )
+            st.metric("Nakamoto Coefficient", metrics.get("nakamoto_coefficient", "N/A"))
 
         with col2:
             st.metric("Palma Ratio", f"{metrics.get('palma_ratio', 'N/A'):.2f}")

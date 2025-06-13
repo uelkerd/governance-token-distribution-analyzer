@@ -43,6 +43,7 @@ class HistoricalTokenAnalyzer:
         Args:
             token_symbol: Symbol of the token to analyze (e.g., 'COMP', 'UNI')
             config: Configuration object
+
         """
         self.token_symbol = token_symbol.upper()
         self.config = config or Config()
@@ -67,6 +68,7 @@ class HistoricalTokenAnalyzer:
 
         Returns:
             Analysis results dictionary
+
         """
         logger.info(f"Analyzing {self.token_symbol} distribution for date: {target_date.strftime('%Y-%m-%d')}")
 
@@ -88,6 +90,7 @@ class HistoricalTokenAnalyzer:
 
         Returns:
             Path to the saved file
+
         """
         date_str = target_date.strftime("%Y%m%d")
         filename = f"{self.token_symbol.lower()}_analysis_{date_str}.json"
@@ -109,6 +112,7 @@ class HistoricalTokenAnalyzer:
 
         Returns:
             List of file paths containing the analysis results
+
         """
         if end_date is None:
             end_date = datetime.now()
@@ -149,6 +153,7 @@ class HistoricalTokenAnalyzer:
 
         Returns:
             Dictionary with time series data for each metric
+
         """
         logger.info(f"Compiling historical metrics for {self.token_symbol}")
 

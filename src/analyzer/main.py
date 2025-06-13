@@ -1,5 +1,4 @@
-"""
-Main entry point for the Governance Token Distribution Analyzer.
+"""Main entry point for the Governance Token Distribution Analyzer.
 
 This module contains the main function for running the analyzer.
 """
@@ -21,14 +20,14 @@ logger = logging.getLogger(__name__)
 
 
 def fetch_token_data(protocol_key: str) -> Dict[str, Any]:
-    """
-    Fetch basic token data for a protocol.
+    """Fetch basic token data for a protocol.
 
     Args:
         protocol_key (str): Key of the protocol in the PROTOCOLS dictionary.
 
     Returns:
         Dict[str, Any]: Token data including supply and other information.
+
     """
     protocol = PROTOCOLS.get(protocol_key)
     if not protocol:
@@ -65,14 +64,14 @@ def fetch_token_data(protocol_key: str) -> Dict[str, Any]:
 
 
 def analyze_protocols(protocol_keys: List[str]) -> List[Dict[str, Any]]:
-    """
-    Analyze the specified protocols.
+    """Analyze the specified protocols.
 
     Args:
         protocol_keys (List[str]): List of protocol keys to analyze.
 
     Returns:
         List[Dict[str, Any]]: Analysis results for each protocol.
+
     """
     results = []
 
