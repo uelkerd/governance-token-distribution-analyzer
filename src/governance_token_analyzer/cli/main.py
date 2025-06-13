@@ -585,6 +585,30 @@ def report(protocol, format, output_dir, include_charts, detailed):
 
 
 @cli.command()
+@click.option('--file', '-f', type=click.Path(exists=True), help='Validate specific output file')
+@click.option('--directory', '-d', type=click.Path(exists=True), default='outputs', 
+              help='Directory containing output files to validate')
+@click.option('--verbose', '-v', is_flag=True, help='Show detailed validation results')
+@click.option('--report', '-r', is_flag=True, help='Generate validation report')
+def validate(file, directory, verbose, report):
+    """🔍 Validate governance token analysis outputs for accuracy and consistency.
+    
+    This command validates analysis outputs against:
+    • Mathematical accuracy (ranges, calculations)
+    • Data consistency (structure, formats)
+    • Known benchmarks (expected ranges for protocols)
+    • Cross-protocol comparison consistency
+    
+    Examples:
+      gova validate --file outputs/compound_analysis.json
+      gova validate --directory outputs --verbose
+      gova validate --report
+    """
+    from .validate import validate as validate_cmd
+    validate_cmd.callback(file, directory, verbose, report)
+
+
+@cli.command()
 @click.option('--check-apis', is_flag=True,
               help='Check API connectivity and keys')
 @click.option('--test-protocols', is_flag=True,
