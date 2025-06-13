@@ -26,7 +26,7 @@ def pytest_runtest_setup(item):
 
     # Skip performance tests in CI/CD environment
     if os.environ.get("TEST_MODE", "").lower() == "ci":
-        for marker in item.iter_markers(name="performance"):
+        for _ in item.iter_markers(name="performance"):
             pytest.skip("Skipping performance test in CI environment")
 
 
