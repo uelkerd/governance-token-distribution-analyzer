@@ -699,6 +699,162 @@ class ReportGenerator:
 
         return visualizations
 
+    def generate_html_report(self, report_data: Dict[str, Any]) -> str:
+        """Generate an HTML report from report data.
+        
+        Args:
+            report_data: Dictionary containing report data including protocol info,
+                        metrics, visualizations, etc.
+        
+        Returns:
+            HTML content as string
+        """
+        # Extract data from report_data
+        protocol_name = report_data.get("protocol", "Unknown")
+        protocol_info = report_data.get("protocol_info", {})
+        current_metrics = report_data.get("current_metrics", {})
+        timestamp = report_data.get("timestamp", datetime.now().isoformat())
+        
+        # Convert metrics to the expected format
+        metrics = []
+        for key, value in current_metrics.items():
+            metrics.append({
+                "name": key.replace("_", " ").title(),
+                "value": f"{value:.4f}" if isinstance(value, (int, float)) else str(value),
+                "description": self._get_metric_description(key)
+            })
+        
+        # Create basic HTML report
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{protocol_name.upper()} Analysis Report</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }}
+                h1, h2, h3 {{ color: #333; }}
+                .header {{ border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }}
+                .metrics {{ margin: 20px 0; }}
+                .metric-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }}
+                .metric-card {{ background: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #007acc; }}
+                .metric-value {{ font-size: 24px; font-weight: bold; color: #007acc; }}
+                .protocol-info {{ background: #e8f4f8; padding: 15px; border-radius: 5px; margin-bottom: 20px; }}
+                table {{ border-collapse: collapse; width: 100%; margin: 20px 0; }}
+                th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
+                th {{ background-color: #f2f2f2; font-weight: bold; }}
+                tr:nth-child(even) {{ background-color: #f9f9f9; }}
+                .footer {{ margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🏛️ {protocol_name.upper()} Governance Token Analysis</h1>
+                <p><strong>Generated:</strong> {timestamp}</p>
+                <p><strong>Total Holders:</strong> {report_data.get('holders_count', 'N/A'):,}</p>
+                <p><strong>Total Supply:</strong> {report_data.get('total_supply', 'N/A'):,.2f} tokens</p>
+            </div>
+
+            <div class="protocol-info">
+                <h2>📋 Protocol Information</h2>
+                <p><strong>Name:</strong> {protocol_info.get('name', protocol_name.title())}</p>
+                <p><strong>Description:</strong> {protocol_info.get('description', 'Decentralized governance protocol')}</p>
+                <p><strong>Website:</strong> <a href="{protocol_info.get('website', '#')}">{protocol_info.get('website', 'N/A')}</a></p>
+            </div>
+
+            <div class="metrics">
+                <h2>📊 Key Concentration Metrics</h2>
+                <div class="metric-grid">
+        """
+        
+        # Add metric cards
+        for metric in metrics:
+            html_content += f"""
+                    <div class="metric-card">
+                        <h3>{metric['name']}</h3>
+                        <div class="metric-value">{metric['value']}</div>
+                        <p>{metric['description']}</p>
+                    </div>
+            """
+        
+        html_content += """
+                </div>
+            </div>
+
+            <div class="analysis">
+                <h2>🔍 Analysis Summary</h2>
+                <table>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Assessment</th>
+                        <th>Interpretation</th>
+                    </tr>
+        """
+        
+        # Add analysis rows based on metrics
+        gini = current_metrics.get('gini_coefficient', 0)
+        nakamoto = current_metrics.get('nakamoto_coefficient', 0)
+        
+        # Gini coefficient analysis
+        if gini < 0.5:
+            gini_assessment = "Low Concentration"
+            gini_interpretation = "Token distribution is relatively decentralized"
+        elif gini < 0.7:
+            gini_assessment = "Moderate Concentration" 
+            gini_interpretation = "Token distribution shows moderate concentration"
+        else:
+            gini_assessment = "High Concentration"
+            gini_interpretation = "Token distribution is highly concentrated"
+            
+        html_content += f"""
+                    <tr>
+                        <td>Token Distribution (Gini)</td>
+                        <td>{gini_assessment}</td>
+                        <td>{gini_interpretation}</td>
+                    </tr>
+        """
+        
+        # Nakamoto coefficient analysis
+        if nakamoto >= 50:
+            nakamoto_assessment = "Highly Decentralized"
+            nakamoto_interpretation = "Requires many entities to control 51% of tokens"
+        elif nakamoto >= 20:
+            nakamoto_assessment = "Moderately Decentralized"
+            nakamoto_interpretation = "Moderate number of entities needed for control"
+        else:
+            nakamoto_assessment = "Centralized"
+            nakamoto_interpretation = "Few entities could potentially control the protocol"
+            
+        html_content += f"""
+                    <tr>
+                        <td>Governance Decentralization</td>
+                        <td>{nakamoto_assessment}</td>
+                        <td>{nakamoto_interpretation}</td>
+                    </tr>
+                </table>
+            </div>
+        """
+        
+        # Add historical analysis if available
+        if report_data.get("include_historical"):
+            html_content += f"""
+            <div class="historical">
+                <h2>📈 Historical Analysis</h2>
+                <p>Historical data shows {report_data.get('historical_snapshots', 0)} snapshots analyzed.</p>
+                <p>Historical trend analysis helps understand how token concentration has evolved over time.</p>
+            </div>
+            """
+        
+        html_content += f"""
+            <div class="footer">
+                <p>Generated using Governance Token Distribution Analyzer v1.0.0</p>
+                <p>Report includes mathematical validation and cross-protocol benchmarking.</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return html_content
+    
     def _generate_html_report(
         self,
         protocol_name: str,

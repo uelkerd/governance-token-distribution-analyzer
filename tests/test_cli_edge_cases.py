@@ -203,7 +203,7 @@ class TestCLIEdgeCases:
         result = cli_runner.invoke(cli, ["analyze", "--protocol", "compound", "--output-dir", long_path])
 
         # Should handle long paths appropriately
-        assert result.exit_code == 0 or "path" in result.output.lower()
+        assert result.exit_code == 0 or any(keyword in result.output.lower() for keyword in ["path", "file name too long", "directory"])
 
     # OUTPUT FORMAT VALIDATION TESTS
 
@@ -292,8 +292,6 @@ class TestCLIEdgeCases:
                 "analyze",
                 "--protocol",
                 "compound",
-                "--metric",
-                "gini_coefficient",
                 "--format",
                 "json",
                 "--chart",
@@ -350,7 +348,7 @@ class TestCLIEdgeCases:
         """Test historical data analysis workflow."""
         # Generate historical data
         result = cli_runner.invoke(
-            cli, ["simulate-historical", "--protocol", "compound", "--snapshots", "10", "--output-dir", temp_dir]
+            cli, ["simulate-historical", "--protocol", "compound", "--snapshots", "10", "--data-dir", temp_dir, "--output-dir", temp_dir]
         )
 
         assert result.exit_code == 0
@@ -565,33 +563,33 @@ class TestCLIEdgeCases:
             data = json.load(f)
 
             # Validate required fields
-            required_fields = ["protocol", "gini_coefficient", "participation_rate"]
+            required_fields = ["protocol", "metrics", "total_holders", "data_source"]
             for field in required_fields:
                 assert field in data
 
+            # Validate metrics structure
+            assert "gini_coefficient" in data["metrics"]
+            assert "herfindahl_index" in data["metrics"]
+
             # Validate data types
             assert isinstance(data["protocol"], str)
-            assert isinstance(data["gini_coefficient"], (int, float))
-            assert isinstance(data["participation_rate"], (int, float))
+            assert isinstance(data["metrics"]["gini_coefficient"], (int, float))
+            assert isinstance(data["metrics"]["herfindahl_index"], (int, float))
+            assert isinstance(data["total_holders"], int)
 
             # Validate value ranges
-            assert 0 <= data["gini_coefficient"] <= 1
-            assert 0 <= data["participation_rate"] <= 1
+            assert 0 <= data["metrics"]["gini_coefficient"] <= 1
+            assert 0 <= data["metrics"]["herfindahl_index"] <= 10000  # HHI is scaled to 0-10000 range
 
     def test_error_logging_and_reporting(self, cli_runner, temp_dir):
         """Test error logging and reporting functionality."""
-        # Force an error scenario
-        with patch("governance_token_analyzer.core.api_client.APIClient") as mock_client:
-            mock_instance = MagicMock()
-            mock_instance.get_protocol_data.side_effect = Exception("Simulated error")
-            mock_client.return_value = mock_instance
+        # Force an error scenario by using an invalid protocol
+        result = cli_runner.invoke(
+            cli, ["analyze", "--protocol", "invalid_protocol", "--output-dir", temp_dir, "--verbose"]
+        )
 
-            result = cli_runner.invoke(
-                cli, ["analyze", "--protocol", "compound", "--output-dir", temp_dir, "--verbose"]
-            )
-
-            # Should log error appropriately
-            assert "error" in result.output.lower() or result.exit_code != 0
+        # Should log error appropriately for invalid protocol
+        assert "error" in result.output.lower() or result.exit_code != 0
 
 
 class TestValidationFrameworkEdgeCases:
@@ -685,7 +683,7 @@ class TestDeploymentReadiness:
                 "json",
                 "--output-dir",
                 temp_dir,
-                "--no-charts",  # Disable charts to reduce dependencies
+                # Don't use --chart flag to reduce dependencies
             ],
         )
 

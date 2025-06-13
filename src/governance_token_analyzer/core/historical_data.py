@@ -280,7 +280,7 @@ class HistoricalDataManager:
             protocol: Name of the protocol
 
         Returns:
-            Set of metric names
+            Set of metric names found in snapshots
 
         Raises:
             ProtocolNotSupportedError: If the protocol is not supported
@@ -289,31 +289,64 @@ class HistoricalDataManager:
         """
         self._validate_protocol(protocol)
 
+        metrics = set()
+        snapshots = self.get_snapshots(protocol)
+
+        for snapshot in snapshots:
+            data = snapshot.get("data", {})
+            if "metrics" in data:
+                metrics.update(data["metrics"].keys())
+
+        logger.info(f"Found {len(metrics)} metrics for {protocol}")
+        return metrics
+
+    def load_snapshot(self, protocol: str, timestamp: str) -> Optional[Dict[str, Any]]:
+        """Load a specific snapshot by protocol and timestamp.
+
+        Args:
+            protocol: Name of the protocol
+            timestamp: ISO format timestamp of the snapshot to load
+
+        Returns:
+            Snapshot data or None if not found
+
+        Raises:
+            ProtocolNotSupportedError: If the protocol is not supported
+            DataAccessError: If there's an issue accessing the data
+
+        """
+        self._validate_protocol(protocol)
+
+        protocol_dir = os.path.join(self.data_dir, protocol)
+
+        if not os.path.exists(protocol_dir):
+            logger.warning(f"Data directory for {protocol} does not exist")
+            return None
+
         try:
-            snapshots = self.get_snapshots(protocol)
+            # Convert timestamp to filename format
+            if 'T' in timestamp:  # ISO format
+                dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            else:
+                dt = datetime.fromisoformat(timestamp)
+            
+            timestamp_str = dt.strftime("%Y%m%d_%H%M%S")
+            filename = f"{protocol}_snapshot_{timestamp_str}.json"
+            filepath = os.path.join(protocol_dir, filename)
 
-            if not snapshots:
-                return set()
+            if not os.path.exists(filepath):
+                logger.warning(f"Snapshot file not found: {filepath}")
+                return None
 
-            metrics = set()
+            with open(filepath) as f:
+                snapshot = json.load(f)
 
-            for snapshot in snapshots:
-                if isinstance(snapshot["data"], dict):
-                    metrics.update(snapshot["data"].keys())
-                    if "metrics" in snapshot["data"] and isinstance(snapshot["data"]["metrics"], dict):
-                        metrics.update(snapshot["data"]["metrics"].keys())
+            # Return the data portion of the snapshot
+            return snapshot.get("data", {})
 
-            # Remove non-metric keys
-            for key in ["token_holders", "timestamp", "data"]:
-                metrics.discard(key)
-
-            return metrics
-
-        except Exception as e:
-            if isinstance(e, (ProtocolNotSupportedError, DataAccessError)):
-                raise
-            logger.error(f"Failed to get available metrics: {e}")
-            raise HistoricalDataError(f"Failed to get available metrics: {e}") from e
+        except (OSError, ValueError, json.JSONDecodeError) as e:
+            logger.error(f"Failed to load snapshot for {protocol} at {timestamp}: {e}")
+            raise DataAccessError(f"Failed to load snapshot for {protocol} at {timestamp}: {e}") from e
 
 
 def calculate_distribution_change(
