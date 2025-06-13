@@ -54,10 +54,13 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
     # Create API client
     api_client = APIClient()
-    
+
     # Display available APIs with their free tier limits
     logger.info("🔍 Available APIs for data fetching:")
-    if api_client.alchemy_api_key and api_client.alchemy_api_key != "your_alchemy_api_key":
+    if (
+        api_client.alchemy_api_key
+        and api_client.alchemy_api_key != "your_alchemy_api_key"
+    ):
         logger.info("  ✅ Alchemy (300M compute units/month - PRIORITIZED)")
     if api_client.graph_api_key:
         logger.info("  ✅ The Graph (generous query limits)")
@@ -67,73 +70,89 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
         logger.info("  ✅ Etherscan (5 calls/sec free)")
     else:
         logger.info("  ⚠️  Etherscan API key not configured")
-    
+
     # Get token holders data with real API calls prioritized
     try:
-        holders_data = api_client.get_token_holders(token_name, limit=limit, use_real_data=True)
-        
+        holders_data = api_client.get_token_holders(
+            token_name, limit=limit, use_real_data=True
+        )
+
         # Extract balances for analysis
         balances = []
         for holder in holders_data:
             if isinstance(holder, dict):
                 # Try different balance field names
-                balance = holder.get("balance") or holder.get("TokenHolderQuantity") or 0
+                balance = (
+                    holder.get("balance") or holder.get("TokenHolderQuantity") or 0
+                )
                 if isinstance(balance, str):
                     try:
                         balance = float(balance)
                     except ValueError:
                         balance = 0
                 balances.append(float(balance))
-        
+
         if not balances:
             logger.warning("No valid balances found, using simulated data")
             # Generate simulated data as fallback
             simulator = TokenDistributionSimulator()
             balances = simulator.generate_power_law_distribution(limit)
-        
+
         # Calculate concentration metrics
         metrics = calculate_all_concentration_metrics(balances)
-        
+
         # Add metadata
-        data_source = holders_data[0].get("data_source", "simulation") if holders_data else "simulation"
-        
+        data_source = (
+            holders_data[0].get("data_source", "simulation")
+            if holders_data
+            else "simulation"
+        )
+
         results = {
             "protocol": token_name,
             "timestamp": datetime.now().isoformat(),
             "total_holders_analyzed": len(balances),
             "data_source": data_source,
             "concentration_metrics": metrics,
-            "top_10_concentration": sum(sorted(balances, reverse=True)[:10]) / sum(balances) if balances else 0,
-            "top_50_concentration": sum(sorted(balances, reverse=True)[:50]) / sum(balances) if balances else 0,
-            "holders_data": holders_data[:10] if holders_data else []  # Include top 10 for reference
+            "top_10_concentration": sum(sorted(balances, reverse=True)[:10])
+            / sum(balances)
+            if balances
+            else 0,
+            "top_50_concentration": sum(sorted(balances, reverse=True)[:50])
+            / sum(balances)
+            if balances
+            else 0,
+            "holders_data": holders_data[:10]
+            if holders_data
+            else [],  # Include top 10 for reference
         }
-        
+
         # Save results to file
         output_file = f"data/{token_name}_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         os.makedirs("data", exist_ok=True)
-        
+
         with open(output_file, "w") as f:
             json.dump(results, f, indent=2)
-        
+
         # Also save as latest
         latest_file = f"data/{token_name}_analysis_latest.json"
         with open(latest_file, "w") as f:
             json.dump(results, f, indent=2)
-        
+
         logger.info(f"📊 Analysis complete! Results saved to {output_file}")
         logger.info(f"📈 Data source: {data_source.upper()}")
-        
+
         # Fix the formatting issue - check if gini_coefficient exists and is a number
-        gini_coeff = metrics.get('gini_coefficient', 'N/A')
+        gini_coeff = metrics.get("gini_coefficient", "N/A")
         if isinstance(gini_coeff, (int, float)):
             logger.info(f"🎯 Gini coefficient: {gini_coeff:.4f}")
         else:
             logger.info(f"🎯 Gini coefficient: {gini_coeff}")
-            
+
         logger.info(f"🏆 Top 10% concentration: {results['top_10_concentration']:.2%}")
-        
+
         return results
-        
+
     except Exception as e:
         logger.error(f"Analysis failed: {e}")
         return {"error": str(e), "protocol": token_name}
@@ -175,7 +194,9 @@ def compare_tokens(
 
     # Note about report generation
     if output_format.lower() == "report":
-        logger.info("HTML report generation is not available in this simplified CLI version")
+        logger.info(
+            "HTML report generation is not available in this simplified CLI version"
+        )
 
     return results
 
@@ -199,13 +220,9 @@ def generate_simulated_data(
     )
 
     # Use different seeds for different distribution types to create variety
-    seed_map = {
-        "power_law": 42,
-        "protocol_dominated": 123,
-        "community": 456
-    }
+    seed_map = {"power_law": 42, "protocol_dominated": 123, "community": 456}
     seed = seed_map.get(distribution_type, 42)
-    
+
     simulator = TokenDistributionSimulator(seed=seed)
 
     # Generate the specified distribution
@@ -293,7 +310,7 @@ def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
     # Generate simple text report
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_filename = f"token_report_{timestamp}.txt"
-    
+
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
         report_path = os.path.join(output_dir, report_filename)
@@ -305,23 +322,29 @@ def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
         f.write("Governance Token Distribution Analysis Report\n")
         f.write("=" * 50 + "\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-        
+
         for token, data in results.items():
             f.write(f"{token.upper()} Analysis\n")
             f.write("-" * 20 + "\n")
-            
+
             if "metrics" in data:
                 metrics = data["metrics"]
-                f.write(f"Gini Coefficient: {metrics.get('gini_coefficient', 'N/A'):.4f}\n")
-                f.write(f"Herfindahl Index: {metrics.get('herfindahl_index', 'N/A'):.4f}\n")
-                
+                f.write(
+                    f"Gini Coefficient: {metrics.get('gini_coefficient', 'N/A'):.4f}\n"
+                )
+                f.write(
+                    f"Herfindahl Index: {metrics.get('herfindahl_index', 'N/A'):.4f}\n"
+                )
+
                 if "concentration" in metrics:
                     conc = metrics["concentration"]
                     f.write("Concentration Metrics:\n")
                     for key, value in conc.items():
                         if key.startswith("top_"):
-                            f.write(f"  {key.replace('_', ' ').title()}: {value:.2f}%\n")
-            
+                            f.write(
+                                f"  {key.replace('_', ' ').title()}: {value:.2f}%\n"
+                            )
+
             f.write(f"Number of holders analyzed: {data.get('num_holders', 'N/A')}\n")
             f.write("\n")
 

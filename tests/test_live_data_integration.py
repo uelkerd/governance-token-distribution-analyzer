@@ -40,18 +40,18 @@ class TestLiveDataIntegration:
     def test_api_client_initialization(self, api_client):
         """Test that API client initializes correctly with environment variables."""
         assert api_client is not None
-        assert hasattr(api_client, 'etherscan_api_key')
-        assert hasattr(api_client, 'graph_api_key')
-        assert hasattr(api_client, 'alchemy_api_key')
-        assert hasattr(api_client, 'graph_clients')
+        assert hasattr(api_client, "etherscan_api_key")
+        assert hasattr(api_client, "graph_api_key")
+        assert hasattr(api_client, "alchemy_api_key")
+        assert hasattr(api_client, "graph_clients")
 
     def test_graph_clients_initialization(self, api_client):
         """Test that Graph API clients are initialized when API key is available."""
         if api_client.graph_api_key:
             assert len(api_client.graph_clients) > 0
-            assert 'compound' in api_client.graph_clients
-            assert 'uniswap' in api_client.graph_clients
-            assert 'aave' in api_client.graph_clients
+            assert "compound" in api_client.graph_clients
+            assert "uniswap" in api_client.graph_clients
+            assert "aave" in api_client.graph_clients
         else:
             logger.warning("No Graph API key found, skipping Graph client tests")
 
@@ -62,10 +62,10 @@ class TestLiveDataIntegration:
             pytest.skip("No API keys available for live data testing")
 
         holders = api_client.get_token_holders("compound", limit=10, use_real_data=True)
-        
+
         assert isinstance(holders, list)
         assert len(holders) > 0
-        
+
         # Validate holder data structure
         for holder in holders:
             assert "address" in holder
@@ -81,10 +81,10 @@ class TestLiveDataIntegration:
             pytest.skip("No API keys available for live data testing")
 
         holders = api_client.get_token_holders("uniswap", limit=10, use_real_data=True)
-        
+
         assert isinstance(holders, list)
         assert len(holders) > 0
-        
+
         # Validate holder data structure
         for holder in holders:
             assert "address" in holder
@@ -98,10 +98,10 @@ class TestLiveDataIntegration:
             pytest.skip("No API keys available for live data testing")
 
         holders = api_client.get_token_holders("aave", limit=10, use_real_data=True)
-        
+
         assert isinstance(holders, list)
         assert len(holders) > 0
-        
+
         # Validate holder data structure
         for holder in holders:
             assert "address" in holder
@@ -114,10 +114,12 @@ class TestLiveDataIntegration:
         if not api_client.graph_api_key:
             pytest.skip("No Graph API key available for live data testing")
 
-        proposals = api_client.get_governance_proposals("compound", limit=5, use_real_data=True)
-        
+        proposals = api_client.get_governance_proposals(
+            "compound", limit=5, use_real_data=True
+        )
+
         assert isinstance(proposals, list)
-        
+
         if len(proposals) > 0:
             # Validate proposal data structure
             for proposal in proposals:
@@ -132,10 +134,12 @@ class TestLiveDataIntegration:
         if not api_client.graph_api_key:
             pytest.skip("No Graph API key available for live data testing")
 
-        proposals = api_client.get_governance_proposals("uniswap", limit=5, use_real_data=True)
-        
+        proposals = api_client.get_governance_proposals(
+            "uniswap", limit=5, use_real_data=True
+        )
+
         assert isinstance(proposals, list)
-        
+
         if len(proposals) > 0:
             # Validate proposal data structure
             for proposal in proposals:
@@ -149,10 +153,12 @@ class TestLiveDataIntegration:
         if not api_client.graph_api_key:
             pytest.skip("No Graph API key available for live data testing")
 
-        proposals = api_client.get_governance_proposals("aave", limit=5, use_real_data=True)
-        
+        proposals = api_client.get_governance_proposals(
+            "aave", limit=5, use_real_data=True
+        )
+
         assert isinstance(proposals, list)
-        
+
         if len(proposals) > 0:
             # Validate proposal data structure
             for proposal in proposals:
@@ -167,14 +173,18 @@ class TestLiveDataIntegration:
             pytest.skip("No Graph API key available for live data testing")
 
         # First, get a proposal to test votes for
-        proposals = api_client.get_governance_proposals("compound", limit=1, use_real_data=True)
-        
+        proposals = api_client.get_governance_proposals(
+            "compound", limit=1, use_real_data=True
+        )
+
         if len(proposals) > 0:
             proposal_id = proposals[0]["id"]
-            votes = api_client.get_governance_votes("compound", proposal_id, use_real_data=True)
-            
+            votes = api_client.get_governance_votes(
+                "compound", proposal_id, use_real_data=True
+            )
+
             assert isinstance(votes, list)
-            
+
             if len(votes) > 0:
                 # Validate vote data structure
                 for vote in votes:
@@ -207,7 +217,9 @@ class TestLiveDataIntegration:
         assert isinstance(holders, list)
         assert len(holders) > 0
 
-        proposals = empty_client.get_governance_proposals("compound", use_real_data=True)
+        proposals = empty_client.get_governance_proposals(
+            "compound", use_real_data=True
+        )
         assert isinstance(proposals, list)
         assert len(proposals) > 0
 
@@ -215,7 +227,7 @@ class TestLiveDataIntegration:
     def test_protocol_data_integration(self, api_client):
         """Test comprehensive protocol data collection."""
         protocol_data = api_client.get_protocol_data("compound", use_real_data=True)
-        
+
         assert isinstance(protocol_data, dict)
         assert "protocol" in protocol_data
         assert "holders" in protocol_data
@@ -237,7 +249,7 @@ class TestLiveDataIntegration:
         # Test token supply endpoint
         comp_address = "0xc00e94Cb662C3520282E6f5717214004A7f26888"
         supply_data = api_client.get_token_supply(comp_address)
-        
+
         assert isinstance(supply_data, dict)
         if "result" in supply_data:
             assert isinstance(supply_data["result"], str)
@@ -251,7 +263,7 @@ class TestLiveDataIntegration:
         # Test token holders endpoint
         comp_address = "0xc00e94Cb662C3520282E6f5717214004A7f26888"
         holders = api_client._fetch_token_holders_alchemy(comp_address, 5)
-        
+
         assert isinstance(holders, list)
         if len(holders) > 0:
             for holder in holders:
@@ -291,16 +303,16 @@ class TestLiveDataIntegration:
     def test_cross_protocol_data_consistency(self, api_client):
         """Test that data is consistent across different protocols."""
         protocols = ["compound", "uniswap", "aave"]
-        
+
         for protocol in protocols:
             protocol_data = api_client.get_protocol_data(protocol, use_real_data=True)
-            
+
             # Basic structure validation
             assert "protocol" in protocol_data
             assert "token_symbol" in protocol_data
             assert "holders" in protocol_data
             assert "proposals" in protocol_data
-            
+
             # Data type validation
             assert isinstance(protocol_data["holders"], list)
             assert isinstance(protocol_data["proposals"], list)
@@ -309,7 +321,7 @@ class TestLiveDataIntegration:
     def test_data_quality_validation(self, api_client):
         """Test that fetched data meets quality standards."""
         holders = api_client.get_token_holders("compound", limit=10, use_real_data=True)
-        
+
         if len(holders) > 1:
             # Check that holders are sorted by balance (descending)
             for i in range(len(holders) - 1):
@@ -326,18 +338,20 @@ class TestLiveDataIntegration:
     def test_api_response_times(self, api_client):
         """Test that API response times are reasonable."""
         import time
-        
+
         start_time = time.time()
         holders = api_client.get_token_holders("compound", limit=10, use_real_data=True)
         elapsed_time = time.time() - start_time
-        
+
         # Should complete within 30 seconds
         assert elapsed_time < 30
-        
+
         start_time = time.time()
-        proposals = api_client.get_governance_proposals("compound", limit=5, use_real_data=True)
+        proposals = api_client.get_governance_proposals(
+            "compound", limit=5, use_real_data=True
+        )
         elapsed_time = time.time() - start_time
-        
+
         # Should complete within 30 seconds
         assert elapsed_time < 30
 
@@ -345,21 +359,23 @@ class TestLiveDataIntegration:
 if __name__ == "__main__":
     # Run basic integration tests
     client = APIClient()
-    
+
     print("Testing live data integration...")
-    
+
     # Test token holders
     print("\n1. Testing token holders...")
     for protocol in ["compound", "uniswap", "aave"]:
         holders = client.get_token_holders(protocol, limit=5, use_real_data=True)
         print(f"   {protocol}: {len(holders)} holders fetched")
-    
+
     # Test governance proposals
     print("\n2. Testing governance proposals...")
     for protocol in ["compound", "uniswap", "aave"]:
-        proposals = client.get_governance_proposals(protocol, limit=3, use_real_data=True)
+        proposals = client.get_governance_proposals(
+            protocol, limit=3, use_real_data=True
+        )
         print(f"   {protocol}: {len(proposals)} proposals fetched")
-    
+
     # Test comprehensive data
     print("\n3. Testing comprehensive protocol data...")
     for protocol in ["compound", "uniswap", "aave"]:
@@ -368,5 +384,5 @@ if __name__ == "__main__":
         print(f"      - Holders: {len(data.get('holders', []))}")
         print(f"      - Proposals: {len(data.get('proposals', []))}")
         print(f"      - Participation rate: {data.get('participation_rate', 0):.2f}")
-    
-    print("\nLive data integration test completed!") 
+
+    print("\nLive data integration test completed!")
