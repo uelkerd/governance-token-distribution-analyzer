@@ -726,6 +726,19 @@ class ReportGenerator:
                 }
             )
 
+        # Format holders count and total supply safely
+        holders_count = report_data.get("holders_count", "N/A")
+        if isinstance(holders_count, (int, float)):
+            holders_display = f"{holders_count:,g}"
+        else:
+            holders_display = str(holders_count)
+        
+        total_supply = report_data.get("total_supply", "N/A")
+        if isinstance(total_supply, (int, float)):
+            supply_display = f"{total_supply:,.2f} tokens"
+        else:
+            supply_display = str(total_supply)
+
         # Create basic HTML report
         html_content = f"""
         <!DOCTYPE html>
@@ -752,8 +765,8 @@ class ReportGenerator:
             <div class="header">
                 <h1>🏛️ {protocol_name.upper()} Governance Token Analysis</h1>
                 <p><strong>Generated:</strong> {timestamp}</p>
-                <p><strong>Total Holders:</strong> {report_data.get("holders_count", "N/A"):,}</p>
-                <p><strong>Total Supply:</strong> {report_data.get("total_supply", "N/A"):,.2f} tokens</p>
+                <p><strong>Total Holders:</strong> {holders_display}</p>
+                <p><strong>Total Supply:</strong> {supply_display}</p>
             </div>
 
             <div class="protocol-info">
