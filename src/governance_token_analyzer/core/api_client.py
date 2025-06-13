@@ -1280,8 +1280,8 @@ class APIClient:
             logger.warning("No token holders found via The Graph")
             raise ValueError("No holders data from The Graph")
 
-        except Exception as e:
-            logger.error(f"The Graph API error: {e}")
+        except Exception as exception:
+            logger.error(f"The Graph API error: {exception}")
             raise
 
     def _fetch_token_holders_moralis(
