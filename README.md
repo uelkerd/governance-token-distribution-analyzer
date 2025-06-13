@@ -18,6 +18,8 @@ The Governance Token Distribution Analyzer provides tools to:
 - Compare distribution patterns across protocols
 - Track historical changes in token distributions over time
 - Analyze governance voting patterns and identify voting blocks
+- **Fetch live blockchain data from multiple providers (Etherscan, The Graph, Alchemy, Infura) with robust fallback and error handling**
+- **Gracefully handle missing API keys, rate limits, and provider outages by falling back to simulated or cached data**
 
 This tool helps researchers, investors, and protocol designers understand the decentralization and concentration patterns in governance token distributions.
 
@@ -42,6 +44,8 @@ This tool helps researchers, investors, and protocol designers understand the de
 - **Command Line Interface**: User-friendly CLI for all functionality
 - **Voting Block Analysis**: Identify coordinated governance participation and analyze voting patterns
 - **Governance Anomaly Detection**: Detect unusual voting patterns that might indicate coordination
+- **Live Data Integration**: Fetch real-time data from Etherscan, The Graph, Alchemy, and Infura with automatic fallback to simulated data if live data is unavailable
+- **Robust Fallback Logic**: System automatically detects missing API keys, rate limits, or provider errors and logs warnings/errors while switching to fallback data sources
 
 ## Supported Protocols
 
@@ -450,3 +454,28 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [DeFi Pulse](https://defipulse.com/) for DeFi protocol data
 - [Etherscan](https://etherscan.io/) for blockchain data
 - [Matplotlib](https://matplotlib.org/) and [Seaborn](https://seaborn.pydata.org/) for visualizations
+
+## Fallback Behavior and Error Logging
+
+The analyzer is designed to be robust in real-world conditions:
+
+- If a required API key is missing or a provider is rate-limited/unavailable, the system will log a warning and automatically fall back to simulated or cached data.
+- All errors and warnings are logged with context to help with debugging and transparency.
+- The system validates data structure and quality at every step, ensuring that analysis is only performed on well-formed data.
+
+## Live Data Validation Script
+
+A standalone script is provided to validate that live API integrations are working correctly:
+
+```bash
+python scripts/validate_live_data.py
+```
+
+This script will:
+- Check for available API keys (Etherscan, The Graph, Alchemy, Infura)
+- Attempt to fetch live token holder data for Compound, Uniswap, and Aave
+- Validate the structure and quality of returned data
+- Log all errors and warnings, and print a summary of validation results
+- Exit with a nonzero code if any critical errors are detected
+
+Use this script to verify your environment and API setup before running full analyses or deploying.

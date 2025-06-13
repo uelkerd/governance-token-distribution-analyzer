@@ -222,4 +222,19 @@ If integration tests are failing, consider the following:
 2. **Add Performance Tests**: Test system performance under various loads
 3. **Add Security Tests**: Test for security vulnerabilities
 4. **Add Stress Tests**: Test system behavior under extreme conditions
-5. **Add Regression Tests**: Ensure bugs don't reappear 
+5. **Add Regression Tests**: Ensure bugs don't reappear
+
+## Live Data and Fallback Logic Testing
+
+Integration tests now include validation of live data connectors and fallback logic. The system is tested to ensure that:
+- Live data is fetched from Etherscan, The Graph, Alchemy, and Infura when API keys are available and providers are responsive.
+- If any provider is unavailable, rate-limited, or missing an API key, the system logs a warning and automatically falls back to simulated or cached data.
+- All errors and warnings are logged, and the system continues to function with available data sources.
+
+A standalone validation script is provided:
+
+```bash
+python scripts/validate_live_data.py
+```
+
+This script checks API key availability, attempts live data fetches, validates data structure, and summarizes results. Use it to verify your environment and API setup before running full integration tests or deploying. 

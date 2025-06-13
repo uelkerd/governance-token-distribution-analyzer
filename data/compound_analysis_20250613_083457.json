@@ -1,0 +1,584 @@
+{
+  "token": "COMPOUND",
+  "timestamp": "2025-06-13T08:34:57.697091",
+  "num_holders": 50,
+  "metrics": {
+    "palma_ratio": 21.81598231027544,
+    "hoover_index": 0.6676066669535248,
+    "theil_index": 1.6078138128799924,
+    "nakamoto_coefficient": 2,
+    "top_percentile_concentration": {
+      "1": 42.901151242031176,
+      "5": 58.068998724006136,
+      "10": 75.52516865491113,
+      "20": 85.60223267976379,
+      "50": 95.08333839704997
+    },
+    "lorenz_curve": {
+      "x": [
+        0,
+        0.02,
+        0.04,
+        0.06,
+        0.08,
+        0.1,
+        0.12,
+        0.14,
+        0.16,
+        0.18,
+        0.2,
+        0.22,
+        0.24,
+        0.26,
+        0.28,
+        0.3,
+        0.32,
+        0.34,
+        0.36,
+        0.38,
+        0.4,
+        0.42,
+        0.44,
+        0.46,
+        0.48,
+        0.5,
+        0.52,
+        0.54,
+        0.56,
+        0.58,
+        0.6,
+        0.62,
+        0.64,
+        0.66,
+        0.68,
+        0.7,
+        0.72,
+        0.74,
+        0.76,
+        0.78,
+        0.8,
+        0.82,
+        0.84,
+        0.86,
+        0.88,
+        0.9,
+        0.92,
+        0.94,
+        0.96,
+        0.98,
+        1.0
+      ],
+      "y": [
+        0,
+        0.0012134277985579966,
+        0.002464190225439372,
+        0.003754241851383723,
+        0.005085683566526013,
+        0.006460776970965616,
+        0.007881960533783117,
+        0.009351867783205708,
+        0.010873347836701661,
+        0.012449488635243512,
+        0.0140836433130045,
+        0.01577946021510675,
+        0.01754091717523477,
+        0.019372360786452686,
+        0.021278551548188872,
+        0.02326471595754217,
+        0.025336606843539552,
+        0.02750057353147871,
+        0.029763643787846482,
+        0.03213361995690507,
+        0.03461919228791196,
+        0.0372300732077121,
+        0.03997715727256514,
+        0.042872712811972906,
+        0.045930612962359514,
+        0.049166616029500225,
+        0.05259870812886272,
+        0.05624752514000665,
+        0.060136876624183204,
+        0.06429440215931113,
+        0.06875240154632602,
+        0.07354889607083509,
+        0.07872900085824695,
+        0.0843467221478673,
+        0.0904673442250816,
+        0.09717064910664897,
+        0.10455533551969395,
+        0.11274520334856396,
+        0.12189800219942662,
+        0.13221841520698144,
+        0.14397767320236216,
+        0.15754420841918018,
+        0.17343352369400655,
+        0.19239333304647524,
+        0.21555777736173734,
+        0.24474831345088877,
+        0.2831202696469613,
+        0.3367467086995003,
+        0.41931001275993873,
+        0.5709884875796883,
+        1.0
+      ]
+    },
+    "concentration": {
+      "top_5_percentage": 75.52516865491113,
+      "top_10_percentage": 85.60223267976379,
+      "top_20_percentage": 93.12475984536741,
+      "top_50_percentage": 100.0
+    }
+  },
+  "holders": [
+    {
+      "protocol": "compound",
+      "address": "0x6626593c237f530d15ae9980a95ef938ac15c35c",
+      "balance": 4290115.124203118,
+      "percentage": 0.42901151242031177,
+      "label": "Whale 1",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696610"
+    },
+    {
+      "protocol": "compound",
+      "address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+      "balance": 1516784.7481974957,
+      "percentage": 0.15167847481974958,
+      "label": "Whale 2",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696628"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x2775b1c75658be0f640272ccb8c72ac986009e38",
+      "balance": 825633.0406043848,
+      "percentage": 0.08256330406043849,
+      "label": "Whale 3",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696635"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000004",
+      "balance": 536264.3905253897,
+      "percentage": 0.05362643905253897,
+      "label": "Whale 4",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696639"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000005",
+      "balance": 383719.56196072494,
+      "percentage": 0.0383719561960725,
+      "label": "Whale 5",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696644"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000006",
+      "balance": 291905.36089151434,
+      "percentage": 0.029190536089151436,
+      "label": "Holder 6",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696649"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000007",
+      "balance": 231644.4431526209,
+      "percentage": 0.02316444431526209,
+      "label": "Holder 7",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696653"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000008",
+      "balance": 189598.09352468696,
+      "percentage": 0.018959809352468698,
+      "label": "Holder 8",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696657"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000009",
+      "balance": 158893.1527482636,
+      "percentage": 0.015889315274826357,
+      "label": "Holder 9",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696660"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000000a",
+      "balance": 135665.35216818008,
+      "percentage": 0.013566535216818007,
+      "label": "Holder 10",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696664"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000000b",
+      "balance": 117592.57995380736,
+      "percentage": 0.011759257995380737,
+      "label": "Holder 11",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696668"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000000c",
+      "balance": 103204.1300755481,
+      "percentage": 0.010320413007554811,
+      "label": "Holder 12",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696672"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000000d",
+      "balance": 91527.98850862663,
+      "percentage": 0.009152798850862663,
+      "label": "Holder 13",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696675"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000000e",
+      "balance": 81898.67828869999,
+      "percentage": 0.008189867828869999,
+      "label": "Holder 14",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696679"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000000f",
+      "balance": 73846.86413044995,
+      "percentage": 0.007384686413044995,
+      "label": "Holder 15",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696683"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000010",
+      "balance": 67033.04881567371,
+      "percentage": 0.006703304881567371,
+      "label": "Holder 16",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696686"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000011",
+      "balance": 61206.22077214285,
+      "percentage": 0.006120622077214285,
+      "label": "Holder 17",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696690"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000012",
+      "balance": 56177.21289620355,
+      "percentage": 0.005617721289620355,
+      "label": "Holder 18",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696694"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000013",
+      "balance": 51801.047874118645,
+      "percentage": 0.0051801047874118645,
+      "label": "Holder 19",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696701"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000014",
+      "balance": 47964.94524509062,
+      "percentage": 0.004796494524509062,
+      "label": "Holder 20",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696708"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000015",
+      "balance": 44579.993870148886,
+      "percentage": 0.004457999387014889,
+      "label": "Holder 21",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696711"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000016",
+      "balance": 41575.25535127924,
+      "percentage": 0.004157525535127923,
+      "label": "Holder 22",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696715"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000017",
+      "balance": 38893.514841765544,
+      "percentage": 0.0038893514841765544,
+      "label": "Holder 23",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696719"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000018",
+      "balance": 36488.17011143929,
+      "percentage": 0.0036488170111439295,
+      "label": "Holder 24",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696722"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000019",
+      "balance": 34320.92099362494,
+      "percentage": 0.003432092099362494,
+      "label": "Holder 25",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696726"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000001a",
+      "balance": 32360.030671407145,
+      "percentage": 0.0032360030671407143,
+      "label": "Holder 26",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696729"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000001b",
+      "balance": 30579.001503866108,
+      "percentage": 0.003057900150386611,
+      "label": "Holder 27",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696733"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000001c",
+      "balance": 28955.55539407761,
+      "percentage": 0.0028955555394077613,
+      "label": "Holder 28",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696737"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000001d",
+      "balance": 27470.840648530437,
+      "percentage": 0.002747084064853044,
+      "label": "Holder 29",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696740"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000001e",
+      "balance": 26108.809198001385,
+      "percentage": 0.0026108809198001387,
+      "label": "Holder 30",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696744"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000001f",
+      "balance": 24855.723310068897,
+      "percentage": 0.0024855723310068896,
+      "label": "Holder 31",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696747"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000020",
+      "balance": 23699.76169058587,
+      "percentage": 0.002369976169058587,
+      "label": "Holder 32",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696751"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000021",
+      "balance": 22630.702563677758,
+      "percentage": 0.002263070256367776,
+      "label": "Holder 33",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696754"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000022",
+      "balance": 21639.666879391563,
+      "percentage": 0.0021639666879391564,
+      "label": "Holder 34",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696758"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000023",
+      "balance": 20718.908859973842,
+      "percentage": 0.0020718908859973842,
+      "label": "Holder 35",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696768"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000024",
+      "balance": 19861.64409353295,
+      "percentage": 0.0019861644093532946,
+      "label": "Holder 36",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696772"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000025",
+      "balance": 19061.90761736188,
+      "percentage": 0.0019061907617361881,
+      "label": "Holder 37",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696776"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000026",
+      "balance": 18314.436112179144,
+      "percentage": 0.0018314436112179145,
+      "label": "Holder 38",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696782"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000027",
+      "balance": 17614.569601280185,
+      "percentage": 0.0017614569601280185,
+      "label": "Holder 39",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696786"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000028",
+      "balance": 16958.16902102251,
+      "percentage": 0.001695816902102251,
+      "label": "Holder 40",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696790"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000029",
+      "balance": 16341.546777609885,
+      "percentage": 0.0016341546777609885,
+      "label": "Holder 41",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696793"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000002a",
+      "balance": 15761.407985418498,
+      "percentage": 0.0015761407985418498,
+      "label": "Holder 42",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696825"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000002b",
+      "balance": 15214.800534959537,
+      "percentage": 0.0015214800534959537,
+      "label": "Holder 43",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696842"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000002c",
+      "balance": 14699.07249422592,
+      "percentage": 0.001469907249422592,
+      "label": "Holder 44",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696846"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000002d",
+      "balance": 14211.835628174997,
+      "percentage": 0.0014211835628174998,
+      "label": "Holder 45",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696850"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000002e",
+      "balance": 13750.934044396023,
+      "percentage": 0.0013750934044396022,
+      "label": "Holder 46",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:34:57.696854"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x000000000000000000000000000000000000002f",
+      "balance": 13314.417151422906,
+      "percentage": 0.0013314417151422905,
+      "label": "Holder 47",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696858"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000030",
+      "balance": 12900.516259443513,
+      "percentage": 0.0012900516259443514,
+      "label": "Holder 48",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696862"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000031",
+      "balance": 12507.624268813752,
+      "percentage": 0.0012507624268813752,
+      "label": "Holder 49",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696865"
+    },
+    {
+      "protocol": "compound",
+      "address": "0x0000000000000000000000000000000000000032",
+      "balance": 12134.277985579967,
+      "percentage": 0.0012134277985579966,
+      "label": "Holder 50",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:34:57.696869"
+    }
+  ]
+}

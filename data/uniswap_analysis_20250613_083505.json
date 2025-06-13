@@ -1,0 +1,584 @@
+{
+  "token": "UNISWAP",
+  "timestamp": "2025-06-13T08:35:05.557684",
+  "num_holders": 50,
+  "metrics": {
+    "palma_ratio": 21.81598231027544,
+    "hoover_index": 0.6676066669535247,
+    "theil_index": 1.6078138128799924,
+    "nakamoto_coefficient": 2,
+    "top_percentile_concentration": {
+      "1": 42.90115124203117,
+      "5": 58.06899872400613,
+      "10": 75.52516865491113,
+      "20": 85.60223267976377,
+      "50": 95.08333839704997
+    },
+    "lorenz_curve": {
+      "x": [
+        0,
+        0.02,
+        0.04,
+        0.06,
+        0.08,
+        0.1,
+        0.12,
+        0.14,
+        0.16,
+        0.18,
+        0.2,
+        0.22,
+        0.24,
+        0.26,
+        0.28,
+        0.3,
+        0.32,
+        0.34,
+        0.36,
+        0.38,
+        0.4,
+        0.42,
+        0.44,
+        0.46,
+        0.48,
+        0.5,
+        0.52,
+        0.54,
+        0.56,
+        0.58,
+        0.6,
+        0.62,
+        0.64,
+        0.66,
+        0.68,
+        0.7,
+        0.72,
+        0.74,
+        0.76,
+        0.78,
+        0.8,
+        0.82,
+        0.84,
+        0.86,
+        0.88,
+        0.9,
+        0.92,
+        0.94,
+        0.96,
+        0.98,
+        1.0
+      ],
+      "y": [
+        0,
+        0.0012134277985579964,
+        0.0024641902254393714,
+        0.003754241851383723,
+        0.005085683566526013,
+        0.006460776970965616,
+        0.007881960533783115,
+        0.009351867783205708,
+        0.010873347836701661,
+        0.01244948863524351,
+        0.014083643313004499,
+        0.01577946021510675,
+        0.017540917175234767,
+        0.019372360786452686,
+        0.021278551548188872,
+        0.023264715957542165,
+        0.025336606843539552,
+        0.027500573531478705,
+        0.029763643787846482,
+        0.03213361995690507,
+        0.03461919228791196,
+        0.0372300732077121,
+        0.03997715727256514,
+        0.0428727128119729,
+        0.04593061296235951,
+        0.049166616029500225,
+        0.05259870812886271,
+        0.056247525140006645,
+        0.0601368766241832,
+        0.06429440215931112,
+        0.06875240154632602,
+        0.07354889607083506,
+        0.07872900085824694,
+        0.08434672214786729,
+        0.09046734422508158,
+        0.09717064910664895,
+        0.10455533551969394,
+        0.11274520334856394,
+        0.1218980021994266,
+        0.1322184152069814,
+        0.14397767320236216,
+        0.15754420841918015,
+        0.1734335236940065,
+        0.1923933330464752,
+        0.21555777736173728,
+        0.2447483134508887,
+        0.2831202696469612,
+        0.3367467086995002,
+        0.41931001275993873,
+        0.5709884875796883,
+        1.0
+      ]
+    },
+    "concentration": {
+      "top_5_percentage": 75.52516865491113,
+      "top_10_percentage": 85.60223267976377,
+      "top_20_percentage": 93.1247598453674,
+      "top_50_percentage": 100.0
+    }
+  },
+  "holders": [
+    {
+      "protocol": "uniswap",
+      "address": "0x1a9c8182c09f50c8318d769245bea52c32be35bc",
+      "balance": 429011512.4203117,
+      "percentage": 0.4290115124203117,
+      "label": "Whale 1",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557191"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x4750c43867ef5f89869132eccf19b9b6c4286e1a",
+      "balance": 151678474.8197496,
+      "percentage": 0.15167847481974958,
+      "label": "Whale 2",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557211"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0xe78388b4ce79068e89bf8aa7f218ef6b9ab0e9d0",
+      "balance": 82563304.06043848,
+      "percentage": 0.08256330406043848,
+      "label": "Whale 3",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557218"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000004",
+      "balance": 53626439.05253896,
+      "percentage": 0.053626439052538964,
+      "label": "Whale 4",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557223"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000005",
+      "balance": 38371956.1960725,
+      "percentage": 0.0383719561960725,
+      "label": "Whale 5",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557227"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000006",
+      "balance": 29190536.089151435,
+      "percentage": 0.029190536089151436,
+      "label": "Holder 6",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557232"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000007",
+      "balance": 23164444.31526209,
+      "percentage": 0.02316444431526209,
+      "label": "Holder 7",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557236"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000008",
+      "balance": 18959809.3524687,
+      "percentage": 0.018959809352468698,
+      "label": "Holder 8",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557240"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000009",
+      "balance": 15889315.274826359,
+      "percentage": 0.01588931527482636,
+      "label": "Holder 9",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557243"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000000a",
+      "balance": 13566535.216818009,
+      "percentage": 0.013566535216818009,
+      "label": "Holder 10",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557247"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000000b",
+      "balance": 11759257.995380739,
+      "percentage": 0.011759257995380738,
+      "label": "Holder 11",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557251"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000000c",
+      "balance": 10320413.00755481,
+      "percentage": 0.01032041300755481,
+      "label": "Holder 12",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557255"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000000d",
+      "balance": 9152798.850862663,
+      "percentage": 0.009152798850862663,
+      "label": "Holder 13",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557258"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000000e",
+      "balance": 8189867.828869999,
+      "percentage": 0.008189867828869999,
+      "label": "Holder 14",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557262"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000000f",
+      "balance": 7384686.413044994,
+      "percentage": 0.007384686413044994,
+      "label": "Holder 15",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557266"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000010",
+      "balance": 6703304.88156737,
+      "percentage": 0.0067033048815673705,
+      "label": "Holder 16",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557269"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000011",
+      "balance": 6120622.077214285,
+      "percentage": 0.0061206220772142845,
+      "label": "Holder 17",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557273"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000012",
+      "balance": 5617721.289620355,
+      "percentage": 0.005617721289620355,
+      "label": "Holder 18",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557277"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000013",
+      "balance": 5180104.787411865,
+      "percentage": 0.0051801047874118645,
+      "label": "Holder 19",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557283"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000014",
+      "balance": 4796494.524509062,
+      "percentage": 0.004796494524509062,
+      "label": "Holder 20",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557287"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000015",
+      "balance": 4457999.387014889,
+      "percentage": 0.00445799938701489,
+      "label": "Holder 21",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557294"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000016",
+      "balance": 4157525.535127924,
+      "percentage": 0.004157525535127924,
+      "label": "Holder 22",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557299"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000017",
+      "balance": 3889351.4841765547,
+      "percentage": 0.003889351484176555,
+      "label": "Holder 23",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557303"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000018",
+      "balance": 3648817.0111439293,
+      "percentage": 0.0036488170111439295,
+      "label": "Holder 24",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557307"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000019",
+      "balance": 3432092.0993624935,
+      "percentage": 0.0034320920993624934,
+      "label": "Holder 25",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557310"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000001a",
+      "balance": 3236003.0671407143,
+      "percentage": 0.0032360030671407143,
+      "label": "Holder 26",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557314"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000001b",
+      "balance": 3057900.1503866105,
+      "percentage": 0.0030579001503866104,
+      "label": "Holder 27",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557321"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000001c",
+      "balance": 2895555.5394077613,
+      "percentage": 0.0028955555394077613,
+      "label": "Holder 28",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557325"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000001d",
+      "balance": 2747084.0648530438,
+      "percentage": 0.002747084064853044,
+      "label": "Holder 29",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557328"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000001e",
+      "balance": 2610880.9198001386,
+      "percentage": 0.0026108809198001387,
+      "label": "Holder 30",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557332"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000001f",
+      "balance": 2485572.3310068897,
+      "percentage": 0.0024855723310068896,
+      "label": "Holder 31",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557336"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000020",
+      "balance": 2369976.1690585874,
+      "percentage": 0.002369976169058587,
+      "label": "Holder 32",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557344"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000021",
+      "balance": 2263070.2563677756,
+      "percentage": 0.002263070256367776,
+      "label": "Holder 33",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557350"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000022",
+      "balance": 2163966.6879391563,
+      "percentage": 0.0021639666879391564,
+      "label": "Holder 34",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557357"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000023",
+      "balance": 2071890.8859973846,
+      "percentage": 0.0020718908859973847,
+      "label": "Holder 35",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557362"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000024",
+      "balance": 1986164.4093532949,
+      "percentage": 0.001986164409353295,
+      "label": "Holder 36",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557366"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000025",
+      "balance": 1906190.7617361883,
+      "percentage": 0.0019061907617361883,
+      "label": "Holder 37",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557369"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000026",
+      "balance": 1831443.6112179146,
+      "percentage": 0.0018314436112179147,
+      "label": "Holder 38",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557376"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000027",
+      "balance": 1761456.9601280184,
+      "percentage": 0.0017614569601280183,
+      "label": "Holder 39",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557380"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000028",
+      "balance": 1695816.902102251,
+      "percentage": 0.0016958169021022511,
+      "label": "Holder 40",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557383"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000029",
+      "balance": 1634154.6777609885,
+      "percentage": 0.0016341546777609885,
+      "label": "Holder 41",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557387"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000002a",
+      "balance": 1576140.7985418497,
+      "percentage": 0.0015761407985418498,
+      "label": "Holder 42",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557391"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000002b",
+      "balance": 1521480.0534959536,
+      "percentage": 0.0015214800534959535,
+      "label": "Holder 43",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557397"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000002c",
+      "balance": 1469907.2494225923,
+      "percentage": 0.0014699072494225923,
+      "label": "Holder 44",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557401"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000002d",
+      "balance": 1421183.5628175,
+      "percentage": 0.0014211835628175,
+      "label": "Holder 45",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557404"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000002e",
+      "balance": 1375093.4044396023,
+      "percentage": 0.0013750934044396022,
+      "label": "Holder 46",
+      "is_contract": true,
+      "last_updated": "2025-06-13T08:35:05.557408"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x000000000000000000000000000000000000002f",
+      "balance": 1331441.7151422906,
+      "percentage": 0.0013314417151422905,
+      "label": "Holder 47",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557411"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000030",
+      "balance": 1290051.6259443513,
+      "percentage": 0.0012900516259443512,
+      "label": "Holder 48",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557415"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000031",
+      "balance": 1250762.4268813753,
+      "percentage": 0.0012507624268813752,
+      "label": "Holder 49",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557419"
+    },
+    {
+      "protocol": "uniswap",
+      "address": "0x0000000000000000000000000000000000000032",
+      "balance": 1213427.7985579965,
+      "percentage": 0.0012134277985579964,
+      "label": "Holder 50",
+      "is_contract": false,
+      "last_updated": "2025-06-13T08:35:05.557422"
+    }
+  ]
+}

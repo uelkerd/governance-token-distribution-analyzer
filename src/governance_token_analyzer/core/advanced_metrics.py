@@ -15,6 +15,59 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def calculate_gini_coefficient(balances: List[float]) -> float:
+    """
+    Calculate the Gini coefficient, which measures inequality in token distribution.
+    
+    The Gini coefficient ranges from 0 (perfect equality) to 1 (maximum inequality).
+    
+    Args:
+        balances: List of token balances
+        
+    Returns:
+        Gini coefficient as a float between 0 and 1
+    """
+    if not balances or sum(balances) == 0:
+        return 0.0
+    
+    # Sort balances in ascending order
+    sorted_balances = sorted(balances)
+    n = len(sorted_balances)
+    
+    # Calculate the Gini coefficient using the formula:
+    # G = (2 * sum(i * x_i)) / (n * sum(x_i)) - (n + 1) / n
+    total = sum(sorted_balances)
+    weighted_sum = sum((i + 1) * balance for i, balance in enumerate(sorted_balances))
+    
+    gini = (2 * weighted_sum) / (n * total) - (n + 1) / n
+    
+    return max(0.0, min(1.0, gini))  # Ensure result is between 0 and 1
+
+
+def calculate_herfindahl_index(balances: List[float]) -> float:
+    """
+    Calculate the Herfindahl-Hirschman Index (HHI) for token concentration.
+    
+    The HHI is the sum of the squares of market shares (percentages).
+    Higher values indicate more concentration.
+    
+    Args:
+        balances: List of token balances
+        
+    Returns:
+        Herfindahl index as a float
+    """
+    if not balances or sum(balances) == 0:
+        return 0.0
+    
+    total = sum(balances)
+    
+    # Calculate the sum of squared market shares
+    hhi = sum((balance / total) ** 2 for balance in balances)
+    
+    return hhi * 10000  # Scale to traditional HHI range (0-10000)
+
+
 def calculate_palma_ratio(balances: List[float]) -> float:
     """
     Calculate the Palma ratio, which is the ratio of the share of total income held by the
@@ -247,6 +300,8 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
     try:
         # Calculate all metrics
         return {
+            "gini_coefficient": calculate_gini_coefficient(sorted_balances),
+            "herfindahl_index": calculate_herfindahl_index(sorted_balances),
             "palma_ratio": calculate_palma_ratio(sorted_balances),
             "hoover_index": calculate_hoover_index(sorted_balances),
             "theil_index": calculate_theil_index(sorted_balances),
@@ -258,6 +313,8 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
         logger.error(f"Error calculating concentration metrics: {str(e)}")
         # Return empty metrics in case of calculation error
         return {
+            "gini_coefficient": None,
+            "herfindahl_index": None,
             "palma_ratio": None,
             "hoover_index": None,
             "theil_index": None,

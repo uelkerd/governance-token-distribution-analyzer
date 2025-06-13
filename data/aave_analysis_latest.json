@@ -1,7 +1,7 @@
 {
-  "token": "COMP",
-  "contract_address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
-  "timestamp": "2025-06-13T08:28:14.715883",
+  "token": "AAVE",
+  "contract_address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+  "timestamp": "2025-06-13T08:28:27.439757",
   "metrics": {
     "gini_coefficient": 0.46451612903225814,
     "herfindahl_index": 3548.3870967741927,
@@ -10,6 +10,9 @@
       "top_10_pct": 0,
       "top_20_pct": 0,
       "top_50_pct": 0
+    },
+    "staking": {
+      "staked_percentage": 35.0
     }
   },
   "holders": []
