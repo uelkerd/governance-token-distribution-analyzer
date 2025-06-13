@@ -294,8 +294,8 @@ class APIClient:
                         f"⚠️  No real data available for {protocol}, falling back to simulation"
                     )
 
-            except Exception as e:
-                logger.warning(f"❌ Real data fetch failed for {protocol}: {e}")
+            except Exception as exception:
+                logger.warning(f"❌ Real data fetch failed for {protocol}: {exception}")
 
         # Fallback to protocol-specific simulation
         logger.info(f"🔄 Using protocol-specific simulation for {protocol}")
@@ -326,8 +326,8 @@ class APIClient:
                 # Generate sample data for testing
                 return self._generate_sample_proposal_data(protocol, limit)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance proposals for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
             return []
 
     def get_governance_votes(
@@ -355,8 +355,8 @@ class APIClient:
                 # Generate sample data for testing
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance votes for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance votes for {protocol}: {exception}")
             return []
 
     def get_protocol_data(self, protocol: str, use_real_data: bool = False) -> Dict[str, Any]:
@@ -400,8 +400,8 @@ class APIClient:
                 "timestamp": datetime.now().isoformat(),
             }
 
-        except Exception as e:
-            logger.error(f"Error fetching protocol data for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching protocol data for {protocol}: {exception}")
             return {}
             
     def _get_token_holder_data(self, protocol: str, use_real_data: bool) -> List[Dict[str, Any]]:
@@ -806,9 +806,8 @@ class APIClient:
                 else:
                     logger.warning(f"⚠️  {api_name} returned no holders")
 
-            except Exception as e:
-                logger.warning(f"❌ {api_name} API failed: {e}")
-                continue
+            except Exception as exception:
+                logger.warning(f"❌ {api_name} API failed: {exception}")
 
         # Final fallback to simulation
         logger.info("🔄 All APIs failed, using protocol-specific simulation")
@@ -876,8 +875,8 @@ class APIClient:
                 logger.warning(f"No proposals found for {protocol}, using sample data")
                 return self._generate_sample_proposal_data(protocol, limit)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance proposals for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_proposal_data(protocol, limit)
 
@@ -938,8 +937,8 @@ class APIClient:
                 logger.warning(f"No votes found for proposal {proposal_id}, using sample data")
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance votes for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance votes for {protocol}: {exception}")
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_vote_data(protocol, proposal_id)
 
@@ -975,8 +974,8 @@ class APIClient:
 
             return data
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request failed: {str(e)}")
+        except requests.exceptions.RequestException as exception:
+            logger.error(f"Request failed: {str(exception)}")
             raise
 
     def get_token_supply(self, token_address: str) -> Dict[str, Any]:
@@ -1028,8 +1027,8 @@ class APIClient:
             result = self._make_request(params)
             if "result" in result and not isinstance(result["result"], str):
                 return result
-        except Exception as e:
-            logger.warning(f"Token holder list endpoint failed: {str(e)}")
+        except Exception as exception:
+            logger.warning(f"Token holder list endpoint failed: {str(exception)}")
 
         # Fallback to simulated data if the API call doesn't work
         logger.info("Using simulated token holder data (API requires paid tier for actual data)")
@@ -1232,7 +1231,7 @@ class APIClient:
 
     def _fetch_token_holders_alchemy(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
         """
-        Fetch token holders using Alchemy API (300M compute units/month free - most generous!).
+        Fetch token holders using Alchemy API (requires paid tier).
 
         Args:
             token_address: Token contract address
@@ -1242,28 +1241,17 @@ class APIClient:
             List of token holder dictionaries
         """
         if not self.alchemy_api_key:
-            raise ValueError("Alchemy API key not configured")
+            logger.warning("Alchemy API key not configured")
+            raise ValueError("Alchemy API key not available")
 
-        logger.info(f"Fetching token holders from Alchemy for {token_address}")
-
-        # First get token metadata to confirm it's a valid token
         try:
-            metadata_url = f"{ALCHEMY_API_URL}/getTokenMetadata?contractAddress={token_address}"
-            response = self.session.get(metadata_url)
-            response.raise_for_status()
-
-            metadata = response.json()
-            logger.info(
-                f"Token metadata: {metadata.get('result', {}).get('name', 'Unknown')}"
-            )
-
             # For now, since getOwnersForToken might not be available in free tier,
             # we'll simulate the response based on the token address
             # In a production environment, you would use the actual API endpoint
             return self._simulate_alchemy_response(token_address, limit)
 
-        except Exception as e:
-            logger.error(f"Alchemy API error: {str(e)}")
+        except Exception as exception:
+            logger.error(f"Alchemy API error: {str(exception)}")
             raise
 
     def _fetch_token_holders_graph(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
@@ -1287,8 +1275,8 @@ class APIClient:
             # For now, we'll simulate the response based on the token address
             return self._simulate_graph_response(token_address, limit)
 
-        except Exception as e:
-            logger.error(f"Graph API error: {str(e)}")
+        except Exception as exception:
+            logger.error(f"Graph API error: {str(exception)}")
             raise
 
     def _fetch_token_holders_moralis(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
@@ -1354,8 +1342,8 @@ class APIClient:
 
             logger.warning("No token holders found via Moralis, using fallback")
             return self._generate_simulated_holders(token_address, 1, limit)["result"]
-        except Exception as e:
-            logger.error(f"Moralis API error: {e}")
+        except Exception as exception:
+            logger.error(f"Moralis API error: {exception}")
             return self._generate_simulated_holders(token_address, 1, limit)["result"]
 
 
@@ -1412,15 +1400,17 @@ class TheGraphAPI:
                 except (
                     requests.exceptions.Timeout,
                     requests.exceptions.ConnectionError,
-                ) as e:
+                ) as exception:
                     if attempt < max_retries - 1:
                         wait_time = 2**attempt  # Exponential backoff
-                        logger.warning(f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {e}")
+                        logger.warning(
+                            f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {exception}"
+                        )
                         time.sleep(wait_time)
                         continue
                     else:
                         raise
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"GraphQL query failed after {max_retries} attempts: {str(e)}")
+        except requests.exceptions.RequestException as exception:
+            logger.error(f"GraphQL query failed after {max_retries} attempts: {str(exception)}")
             raise
