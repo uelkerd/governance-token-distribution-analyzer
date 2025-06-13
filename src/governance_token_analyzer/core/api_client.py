@@ -1200,8 +1200,8 @@ class APIClient:
             )
             raise ValueError("Alchemy token holders requires paid tier")
 
-        except Exception as e:
-            logger.error(f"Alchemy API error: {e}")
+        except Exception as exception:
+            logger.error(f"Alchemy API error: {exception}")
             raise
 
     def _fetch_token_holders_graph(
