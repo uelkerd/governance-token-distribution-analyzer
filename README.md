@@ -14,8 +14,6 @@ A tool for analyzing governance token distribution and governance participation 
 
 [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/67798)
 
---
-
 ## Overview
 
 The Governance Token Distribution Analyzer provides tools to:
