@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Aave Token Analysis
+"""Aave Token Analysis.
 
 This script analyzes the Aave (AAVE) governance token distribution.
 It retrieves data from Etherscan and calculates concentration metrics.
@@ -37,8 +36,7 @@ class AaveAnalyzer:
     AAVE_CONTRACT_ADDRESS = "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9"
 
     def __init__(self, api_client=None, config=None):
-        """
-        Initialize the Aave analyzer with API client and configuration.
+        """Initialize the Aave analyzer with API client and configuration.
 
         Args:
             api_client: An instance of EtherscanAPI or compatible client
@@ -49,8 +47,7 @@ class AaveAnalyzer:
         self.analyzer = TokenDistributionAnalyzer(self.api_client, self.config)
 
     def get_token_holders(self, limit=100):
-        """
-        Get Aave token holders.
+        """Get Aave token holders.
 
         Args:
             limit: Maximum number of holders to retrieve
@@ -62,8 +59,7 @@ class AaveAnalyzer:
         return self.api_client.get_token_holders(self.AAVE_CONTRACT_ADDRESS, limit)
 
     def analyze_distribution(self, limit=100):
-        """
-        Analyze the distribution of AAVE tokens.
+        """Analyze the distribution of AAVE tokens.
 
         Args:
             limit: Maximum number of holders to analyze
@@ -103,9 +99,7 @@ class AaveAnalyzer:
                             continue
                     else:
                         # If no numeric value found, skip this holder
-                        logger.warning(
-                            f"Could not extract balance from holder data: {holder}"
-                        )
+                        logger.warning(f"Could not extract balance from holder data: {holder}")
                         continue
 
                 balances.append(balance)
@@ -122,15 +116,9 @@ class AaveAnalyzer:
         # Calculate percentage held by top holders
         total_supply = sum(balances)
         top_5_pct = sum(balances[:5]) / total_supply * 100 if len(balances) >= 5 else 0
-        top_10_pct = (
-            sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
-        )
-        top_20_pct = (
-            sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
-        )
-        top_50_pct = (
-            sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
-        )
+        top_10_pct = sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
+        top_20_pct = sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
+        top_50_pct = sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
 
         # Calculate staking statistics specific to Aave
         # In a real implementation, this would query the Aave staking contract
@@ -158,8 +146,7 @@ class AaveAnalyzer:
         return results
 
     def save_analysis_results(self, results, filename=None):
-        """
-        Save analysis results to a JSON file.
+        """Save analysis results to a JSON file.
 
         Args:
             results: Analysis results dictionary
@@ -181,7 +168,7 @@ class AaveAnalyzer:
 
 
 def main():
-    """Main function to run the Aave token analysis."""
+    """Run the Aave token analysis."""
     logger.info("Starting Aave token analysis")
 
     try:
@@ -201,15 +188,9 @@ def main():
         print(f"\nAAVE Token Distribution Analysis:")
         print(f"Gini Coefficient: {results['metrics']['gini_coefficient']:.4f}")
         print(f"Herfindahl Index: {results['metrics']['herfindahl_index']:.4f}")
-        print(
-            f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%"
-        )
-        print(
-            f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%"
-        )
-        print(
-            f"Staked percentage: {results['metrics']['staking']['staked_percentage']:.2f}%"
-        )
+        print(f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%")
+        print(f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%")
+        print(f"Staked percentage: {results['metrics']['staking']['staked_percentage']:.2f}%")
 
         return 0
 

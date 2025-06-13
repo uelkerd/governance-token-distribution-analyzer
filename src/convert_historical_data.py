@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Script to convert historical metrics data from the old format to the new format.
+"""Script to convert historical metrics data from the old format to the new format.
 
 The new format is a list of data points, each containing a complete snapshot
 of metrics for a specific timestamp.
@@ -12,8 +11,7 @@ from datetime import datetime
 
 
 def convert_historical_data(token, input_file, output_file=None):
-    """
-    Convert historical data from old format to new format.
+    """Convert historical data from old format to new format.
 
     Args:
         token: Token symbol (e.g., 'COMP', 'UNI')
@@ -41,9 +39,7 @@ def convert_historical_data(token, input_file, output_file=None):
                     "top_5_pct": old_data["top_5_pct"][i],
                     "top_10_pct": old_data["top_10_pct"][i],
                     "top_20_pct": old_data["top_20_pct"][i],
-                    "top_50_pct": old_data.get(
-                        "top_50_pct", [0] * len(old_data["dates"])
-                    )[i],
+                    "top_50_pct": old_data.get("top_50_pct", [0] * len(old_data["dates"]))[i],
                 },
             },
         }
@@ -62,7 +58,7 @@ def convert_historical_data(token, input_file, output_file=None):
 
 
 def main():
-    """Convert historical data for all tokens."""
+    """Execute the conversion process for all tokens."""
     # Define paths
     data_dir = "data/historical"
 
