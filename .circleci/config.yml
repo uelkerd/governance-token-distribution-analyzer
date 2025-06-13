@@ -141,6 +141,7 @@ jobs:
             python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
           
   unit-tests-python-39:
     executor: python-39
@@ -154,6 +155,7 @@ jobs:
             python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
           
   unit-tests-python-310:
     executor: python-310
@@ -167,6 +169,7 @@ jobs:
             python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
           
   unit-tests-python-312:
     executor: python-312
@@ -180,6 +183,7 @@ jobs:
             python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
           
   # Integration tests - similar structure to unit tests but for integration tests
   integration-tests-python-38:
@@ -194,6 +198,7 @@ jobs:
             python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
           
   integration-tests-python-39:
     executor: python-39
@@ -207,6 +212,7 @@ jobs:
             python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
           
   integration-tests-python-310:
     executor: python-310
@@ -220,6 +226,7 @@ jobs:
             python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
           
   integration-tests-python-312:
     executor: python-312
@@ -233,6 +240,7 @@ jobs:
             python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
 
   # CLI tests - test the command-line interface functionality
   cli-tests:
@@ -247,6 +255,7 @@ jobs:
             python -m pytest tests/test_cli*.py -v
       - codecov/upload:
           file: coverage.xml
+          token: CODECOV_TOKEN
 
   # Build documentation
   build-docs:
