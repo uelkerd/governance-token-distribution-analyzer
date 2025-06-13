@@ -105,6 +105,7 @@ class TestCliIntegration:
 
         # Check that output files were created (with timestamp pattern)
         import glob
+
         pattern = os.path.join(temp_output_dir, "protocol_comparison_*.png")
         output_files = glob.glob(pattern)
         assert len(output_files) > 0, f"No PNG files found matching pattern: {pattern}"

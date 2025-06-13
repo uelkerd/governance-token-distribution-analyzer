@@ -230,7 +230,7 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
                 # Handle various string formats
                 if isinstance(b, str):
                     # Remove common formatting characters
-                    clean_balance = b.replace(',', '').replace('$', '').replace(' ', '')
+                    clean_balance = b.replace(",", "").replace("$", "").replace(" ", "")
                     if clean_balance:
                         numeric_balances.append(float(clean_balance))
                 elif isinstance(b, (int, float)):
@@ -238,7 +238,7 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
             except (ValueError, TypeError):
                 # Skip invalid values
                 continue
-        
+
         positive_balances = [b for b in numeric_balances if b > 0]
     except Exception as e:
         logger.error(f"Error processing balances: {str(e)}")

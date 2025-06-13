@@ -34,18 +34,20 @@ except ImportError as e:
 SUPPORTED_PROTOCOLS = list(PROTOCOLS.keys())
 SUPPORTED_METRICS = [
     "gini_coefficient",
-    "nakamoto_coefficient", 
+    "nakamoto_coefficient",
     "shannon_entropy",
     "herfindahl_index",
-    "participation_rate"
+    "participation_rate",
 ]
 SUPPORTED_FORMATS = ["json", "csv", "html", "png"]
 
+
 class ProtocolChoice(click.Choice):
     """Custom choice class for protocol selection."""
-    
+
     def __init__(self):
         super().__init__(SUPPORTED_PROTOCOLS, case_sensitive=False)
+
 
 def validate_output_dir(ctx, param, value):
     """Validate and create output directory if it doesn't exist."""
@@ -57,11 +59,13 @@ def validate_output_dir(ctx, param, value):
             raise click.BadParameter(f"Cannot create output directory '{value}': {e}")
     return value
 
+
 def validate_positive_int(ctx, param, value):
     """Validate that the value is a positive integer."""
     if value is not None and value <= 0:
         raise click.BadParameter(f"Value must be a positive integer, got: {value}")
     return value
+
 
 # CLI Group Configuration
 @click.group()
@@ -69,41 +73,49 @@ def validate_positive_int(ctx, param, value):
 @click.pass_context
 def cli(ctx):
     """🏛️ Governance Token Distribution Analyzer
-    
-    A comprehensive tool for analyzing token concentration, 
-    governance participation, and voting power distribution 
+
+    A comprehensive tool for analyzing token concentration,
+    governance participation, and voting power distribution
     across DeFi protocols.
-    
+
     Examples:
       gova analyze --protocol compound --format json
-      gova compare-protocols --protocols compound,uniswap --metric gini_coefficient  
+      gova compare-protocols --protocols compound,uniswap --metric gini_coefficient
       gova generate-report --protocol compound --format html
       gova status --check-apis --test-protocols
     """
     # Ensure context object exists
     ctx.ensure_object(dict)
 
+
 # ANALYZE COMMAND
 @cli.command()
-@click.option('--protocol', type=ProtocolChoice(), required=True,
-              help='Protocol to analyze (compound, uniswap, aave)')
-@click.option('--limit', type=int, default=1000, callback=validate_positive_int,
-              help='Maximum number of token holders to analyze (default: 1000)')
-@click.option('--format', type=click.Choice(['json', 'csv']), default='json',
-              help='Output format (default: json)')
-@click.option('--output-dir', type=str, default='outputs', callback=validate_output_dir,
-              help='Directory to save output files (default: outputs)')
-@click.option('--chart', is_flag=True, 
-              help='Generate distribution charts')
-@click.option('--live-data/--simulated-data', default=True,
-              help='Use live blockchain data or simulated data (default: live)')
-@click.option('--verbose', '-v', is_flag=True,
-              help='Enable verbose output with detailed metrics')
+@click.option("--protocol", type=ProtocolChoice(), required=True, help="Protocol to analyze (compound, uniswap, aave)")
+@click.option(
+    "--limit",
+    type=int,
+    default=1000,
+    callback=validate_positive_int,
+    help="Maximum number of token holders to analyze (default: 1000)",
+)
+@click.option("--format", type=click.Choice(["json", "csv"]), default="json", help="Output format (default: json)")
+@click.option(
+    "--output-dir",
+    type=str,
+    default="outputs",
+    callback=validate_output_dir,
+    help="Directory to save output files (default: outputs)",
+)
+@click.option("--chart", is_flag=True, help="Generate distribution charts")
+@click.option(
+    "--live-data/--simulated-data", default=True, help="Use live blockchain data or simulated data (default: live)"
+)
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output with detailed metrics")
 def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
     """📊 Analyze token distribution for a specific protocol.
-    
+
     Calculates concentration metrics and generates detailed analysis reports.
-    
+
     Examples:
       gova analyze --protocol compound --format json
       gova analyze --protocol uniswap --chart --verbose
@@ -116,45 +128,41 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
     try:
         # Initialize components
         api_client = APIClient()
-        
+
         # Get data based on user preference
         if live_data:
             click.echo("📡 Fetching live data...")
             holders_data = api_client.get_token_holders(protocol, limit=limit, use_real_data=True)
-            
+
             # Extract and convert balances with robust error handling
             balances = []
             for h in holders_data:
                 if isinstance(h, dict):
                     # Try multiple possible balance field names and formats
                     balance_value = (
-                        h.get("balance") or 
-                        h.get("TokenHolderQuantity") or 
-                        h.get("voting_power") or 
-                        h.get("value") or
-                        0
+                        h.get("balance") or h.get("TokenHolderQuantity") or h.get("voting_power") or h.get("value") or 0
                     )
-                    
+
                     if balance_value is not None and balance_value != "":
                         try:
                             # Convert to float, handling various string formats
                             if isinstance(balance_value, str):
                                 # Remove common formatting characters
-                                clean_value = balance_value.replace(',', '').replace('$', '').strip()
+                                clean_value = balance_value.replace(",", "").replace("$", "").strip()
                                 balance_float = float(clean_value)
                             else:
                                 balance_float = float(balance_value)
-                                
+
                             if balance_float > 0:
                                 balances.append(balance_float)
                         except (ValueError, TypeError, AttributeError):
                             # Skip invalid balance values silently
                             continue
-                            
+
             if not balances:
                 click.echo("⚠️  No valid live data found, falling back to simulated data", err=True)
                 live_data = False
-        
+
         if not live_data or not balances:
             click.echo("🎲 Generating simulated data...")
             simulator = TokenDistributionSimulator()
@@ -167,7 +175,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
         metrics = calculate_all_concentration_metrics(balances)
 
         # Prepare output data
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         results = {
             "protocol": protocol,
             "protocol_info": PROTOCOLS.get(protocol, {}),
@@ -177,14 +185,18 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
             "total_supply": sum(balances),
             "metrics": metrics,
             "top_holders": {
-                "top_10_percentage": sum(sorted(balances, reverse=True)[:10]) / sum(balances) * 100 if sum(balances) > 0 else 0,
-                "top_100_percentage": sum(sorted(balances, reverse=True)[:100]) / sum(balances) * 100 if sum(balances) > 0 else 0
-            }
+                "top_10_percentage": sum(sorted(balances, reverse=True)[:10]) / sum(balances) * 100
+                if sum(balances) > 0
+                else 0,
+                "top_100_percentage": sum(sorted(balances, reverse=True)[:100]) / sum(balances) * 100
+                if sum(balances) > 0
+                else 0,
+            },
         }
 
         # Generate output
         output_file = os.path.join(output_dir, f"{protocol}_analysis_{timestamp}.{format}")
-        
+
         if format == "json":
             with open(output_file, "w") as f:
                 json.dump(results, f, indent=2)
@@ -193,8 +205,8 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
             csv_data = []
             for key, value in metrics.items():
                 csv_data.append({"metric": key, "value": value})
-            
-            with open(output_file, "w", newline='') as f:
+
+            with open(output_file, "w", newline="") as f:
                 if csv_data:
                     fieldnames = ["metric", "value"]
                     writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -205,6 +217,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
         if chart:
             try:
                 from governance_token_analyzer.visualization.chart_generator import ChartGenerator
+
                 chart_gen = ChartGenerator()
                 chart_file = os.path.join(output_dir, f"{protocol}_distribution_analysis.png")
                 chart_gen.plot_distribution_analysis(balances, protocol, chart_file)
@@ -215,7 +228,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
         # Display summary
         click.echo(f"\n✅ Analysis complete!")
         click.echo(f"📁 Results saved: {output_file}")
-        
+
         if verbose:
             click.echo(f"\n📈 Key Metrics for {protocol.upper()}:")
             click.echo(f"  • Gini Coefficient: {metrics.get('gini_coefficient', 0):.4f}")
@@ -230,29 +243,45 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
         click.echo(f"❌ Analysis failed: {e}", err=True)
         sys.exit(1)
 
+
 # COMPARE PROTOCOLS COMMAND (renamed from compare)
-@cli.command('compare-protocols')
-@click.option('--protocols', type=str, required=True,
-              help='Comma-separated list of protocols to compare (e.g., compound,uniswap,aave) or "all"')
-@click.option('--metric', type=click.Choice(SUPPORTED_METRICS), default='gini_coefficient',
-              help='Primary metric for comparison (default: gini_coefficient)')
-@click.option('--format', type=click.Choice(['json', 'html', 'png']), default='json',
-              help='Output format (default: json)')
-@click.option('--output-dir', type=str, default='outputs', callback=validate_output_dir,
-              help='Directory to save output files (default: outputs)')
-@click.option('--chart', is_flag=True, 
-              help='Generate comparison charts')
-@click.option('--detailed', is_flag=True,
-              help='Include detailed metrics for each protocol')
-@click.option('--historical', is_flag=True,
-              help='Include historical data analysis')
-@click.option('--data-dir', type=str, default='data/historical',
-              help='Directory containing historical data (default: data/historical)')
+@cli.command("compare-protocols")
+@click.option(
+    "--protocols",
+    type=str,
+    required=True,
+    help='Comma-separated list of protocols to compare (e.g., compound,uniswap,aave) or "all"',
+)
+@click.option(
+    "--metric",
+    type=click.Choice(SUPPORTED_METRICS),
+    default="gini_coefficient",
+    help="Primary metric for comparison (default: gini_coefficient)",
+)
+@click.option(
+    "--format", type=click.Choice(["json", "html", "png"]), default="json", help="Output format (default: json)"
+)
+@click.option(
+    "--output-dir",
+    type=str,
+    default="outputs",
+    callback=validate_output_dir,
+    help="Directory to save output files (default: outputs)",
+)
+@click.option("--chart", is_flag=True, help="Generate comparison charts")
+@click.option("--detailed", is_flag=True, help="Include detailed metrics for each protocol")
+@click.option("--historical", is_flag=True, help="Include historical data analysis")
+@click.option(
+    "--data-dir",
+    type=str,
+    default="data/historical",
+    help="Directory containing historical data (default: data/historical)",
+)
 def compare_protocols(protocols, metric, format, output_dir, chart, detailed, historical, data_dir):
     """⚖️ Compare token distributions across multiple protocols.
-    
+
     Generates side-by-side comparisons of concentration metrics and governance patterns.
-    
+
     Examples:
       gova compare-protocols --protocols compound,uniswap --metric gini_coefficient
       gova compare-protocols --protocols compound,uniswap,aave --format html --chart
@@ -284,27 +313,22 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
             # Get data for each protocol with robust type conversion
             holders_data = api_client.get_token_holders(protocol, limit=100, use_real_data=True)
             balances = []
-            
+
             for h in holders_data:
                 if isinstance(h, dict):
                     # Try multiple possible balance field names
-                    balance_value = (
-                        h.get("balance") or 
-                        h.get("TokenHolderQuantity") or 
-                        h.get("voting_power") or 
-                        0
-                    )
-                    
+                    balance_value = h.get("balance") or h.get("TokenHolderQuantity") or h.get("voting_power") or 0
+
                     if balance_value is not None and balance_value != "":
                         try:
                             # Convert to float, handling string values properly
                             if isinstance(balance_value, str):
                                 # Remove formatting and convert
-                                clean_value = balance_value.replace(',', '').replace('$', '').strip()
+                                clean_value = balance_value.replace(",", "").replace("$", "").strip()
                                 balance_float = float(clean_value)
                             else:
                                 balance_float = float(balance_value)
-                                
+
                             if balance_float > 0:
                                 balances.append(balance_float)
                         except (ValueError, TypeError, AttributeError):
@@ -326,13 +350,15 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
                 "summary": {
                     "primary_metric_value": metrics.get(metric, 0),
                     "total_holders": len(balances),
-                    "top_10_concentration": sum(sorted(balances, reverse=True)[:10]) / sum(balances) * 100 if sum(balances) > 0 else 0,
+                    "top_10_concentration": sum(sorted(balances, reverse=True)[:10]) / sum(balances) * 100
+                    if sum(balances) > 0
+                    else 0,
                 },
             }
 
         # Generate comparison summary
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
+
         final_results = {
             "comparison_timestamp": datetime.now().isoformat(),
             "primary_metric": metric,
@@ -359,13 +385,14 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
             # Generate PNG chart
             try:
                 from governance_token_analyzer.visualization.chart_generator import ChartGenerator
+
                 chart_gen = ChartGenerator()
                 output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.png")
-                
+
                 # Extract protocols and values from comparison_results
                 protocol_names = list(comparison_results.keys())
                 metric_values = [result["summary"]["primary_metric_value"] for result in comparison_results.values()]
-                
+
                 chart_gen.plot_protocol_comparison(protocol_names, metric_values, metric, output_file)
             except ImportError:
                 click.echo("⚠️  Chart generation not available (missing dependencies)", err=True)
@@ -377,7 +404,7 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
         # Display summary
         click.echo(f"\n✅ Comparison complete!")
         click.echo(f"📁 Results saved: {output_file}")
-        
+
         if detailed:
             click.echo(f"\n📊 Protocol Rankings by {metric}:")
             for i, protocol in enumerate(final_results["ranking"], 1):
@@ -390,27 +417,38 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
         click.echo(f"❌ Comparison failed: {e}", err=True)
         sys.exit(1)
 
+
 # EXPORT COMMAND (renamed to export-historical-data for tests)
-@cli.command('export-historical-data')
-@click.option('--protocol', type=ProtocolChoice(), required=True,
-              help='Protocol to export data for')
-@click.option('--format', type=click.Choice(['json', 'csv']), default='json',
-              help='Export format (default: json)')
-@click.option('--output-dir', type=str, default='exports', callback=validate_output_dir,
-              help='Directory to save exported files (default: exports)')
-@click.option('--limit', type=int, default=1000, callback=validate_positive_int,
-              help='Maximum number of records to export (default: 1000)')
-@click.option('--include-historical', is_flag=True,
-              help='Include historical snapshots in export')
-@click.option('--metric', type=click.Choice(SUPPORTED_METRICS), default='gini_coefficient',
-              help='Metric to focus on for historical export')
-@click.option('--data-dir', type=str, default='data/historical',
-              help='Directory containing historical data')
+@cli.command("export-historical-data")
+@click.option("--protocol", type=ProtocolChoice(), required=True, help="Protocol to export data for")
+@click.option("--format", type=click.Choice(["json", "csv"]), default="json", help="Export format (default: json)")
+@click.option(
+    "--output-dir",
+    type=str,
+    default="exports",
+    callback=validate_output_dir,
+    help="Directory to save exported files (default: exports)",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=1000,
+    callback=validate_positive_int,
+    help="Maximum number of records to export (default: 1000)",
+)
+@click.option("--include-historical", is_flag=True, help="Include historical snapshots in export")
+@click.option(
+    "--metric",
+    type=click.Choice(SUPPORTED_METRICS),
+    default="gini_coefficient",
+    help="Metric to focus on for historical export",
+)
+@click.option("--data-dir", type=str, default="data/historical", help="Directory containing historical data")
 def export_historical_data(protocol, format, output_dir, limit, include_historical, metric, data_dir):
     """💾 Export token holder and governance data.
-    
+
     Exports current and historical data in various formats for external analysis.
-    
+
     Examples:
       gova export-historical-data --protocol compound --format csv --limit 500
       gova export-historical-data --protocol uniswap --include-historical --format json
@@ -419,35 +457,37 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
 
     try:
         api_client = APIClient()
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
         # Check if historical data exists first
         has_historical_data = False
         if os.path.exists(data_dir):
             data_manager = historical_data.HistoricalDataManager(data_dir=data_dir)
             snapshots = data_manager.get_snapshots(protocol)
             has_historical_data = len(snapshots) > 0
-        
+
         # Export historical data if available (default behavior for this command)
         if has_historical_data:
             output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical.{format}")
-            
+
             historical_data_export = {
                 "protocol": protocol,
                 "metric": metric,
                 "export_timestamp": datetime.now().isoformat(),
-                "data_points": []
+                "data_points": [],
             }
-            
+
             for snapshot in snapshots:
                 snapshot_data = data_manager.load_snapshot(protocol, snapshot["timestamp"])
                 if snapshot_data:
-                    historical_data_export["data_points"].append({
-                        "timestamp": snapshot["timestamp"],
-                        "metrics": snapshot_data.get("metrics", {}),
-                        "summary": snapshot_data.get("summary", {})
-                    })
-            
+                    historical_data_export["data_points"].append(
+                        {
+                            "timestamp": snapshot["timestamp"],
+                            "metrics": snapshot_data.get("metrics", {}),
+                            "summary": snapshot_data.get("summary", {}),
+                        }
+                    )
+
             if format == "json":
                 with open(output_file, "w") as f:
                     json.dump(historical_data_export, f, indent=2)
@@ -458,32 +498,32 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
                     row = {
                         "timestamp": data_point["timestamp"],
                         "metric": metric,
-                        "value": data_point["metrics"].get(metric, 0)
+                        "value": data_point["metrics"].get(metric, 0),
                     }
                     # Add other metrics as columns
                     for key, value in data_point["metrics"].items():
                         row[f"metric_{key}"] = value
                     csv_data.append(row)
-                
-                with open(output_file, "w", newline='') as f:
+
+                with open(output_file, "w", newline="") as f:
                     if csv_data:
                         fieldnames = csv_data[0].keys()
                         writer = csv.DictWriter(f, fieldnames=fieldnames)
                         writer.writeheader()
                         writer.writerows(csv_data)
-                        
+
             click.echo("✅ Export complete!")
             click.echo(f"📁 Historical data exported: {output_file}")
             return output_file
-        
+
         # Fall back to current data if no historical data available
         else:
             click.echo(f"⚠️  No historical data found for {protocol}, exporting current data instead", err=True)
             output_file = os.path.join(output_dir, f"{protocol}_export_{timestamp}.{format}")
-            
+
             # Get current data
             holders_data = api_client.get_token_holders(protocol, limit=limit, use_real_data=True)
-            
+
             if not holders_data:
                 click.echo("⚠️  No data available for export", err=True)
                 # Create empty file to satisfy tests
@@ -491,7 +531,7 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
                     with open(output_file, "w") as f:
                         json.dump({"protocol": protocol, "data": [], "message": "No data available"}, f, indent=2)
                 elif format == "csv":
-                    with open(output_file, "w", newline='') as f:
+                    with open(output_file, "w", newline="") as f:
                         writer = csv.writer(f)
                         writer.writerow(["protocol", "message"])
                         writer.writerow([protocol, "No data available"])
@@ -501,11 +541,11 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
                         "protocol": protocol,
                         "export_timestamp": datetime.now().isoformat(),
                         "total_records": len(holders_data),
-                        "holders": holders_data[:limit]
+                        "holders": holders_data[:limit],
                     }
                     with open(output_file, "w") as f:
                         json.dump(export_data, f, indent=2)
-                        
+
                 elif format == "csv":
                     with open(output_file, "w", newline="") as f:
                         if holders_data:
@@ -522,25 +562,36 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
         click.echo(f"❌ Export failed: {e}", err=True)
         sys.exit(1)
 
-# HISTORICAL ANALYSIS COMMAND  
-@cli.command('historical-analysis')
-@click.option('--protocol', type=ProtocolChoice(), required=True,
-              help='Protocol to analyze historical data for')
-@click.option('--metric', type=click.Choice(SUPPORTED_METRICS), default='gini_coefficient',
-              help='Metric to analyze over time (default: gini_coefficient)')
-@click.option('--data-dir', type=str, default='data/historical',
-              help='Directory containing historical data (default: data/historical)')
-@click.option('--output-dir', type=str, default='outputs', callback=validate_output_dir,
-              help='Directory to save analysis results (default: outputs)')
-@click.option('--format', type=click.Choice(['json', 'png']), default='png',
-              help='Output format (default: png)')
-@click.option('--plot', is_flag=True, default=True,
-              help='Generate time series plots')
+
+# HISTORICAL ANALYSIS COMMAND
+@cli.command("historical-analysis")
+@click.option("--protocol", type=ProtocolChoice(), required=True, help="Protocol to analyze historical data for")
+@click.option(
+    "--metric",
+    type=click.Choice(SUPPORTED_METRICS),
+    default="gini_coefficient",
+    help="Metric to analyze over time (default: gini_coefficient)",
+)
+@click.option(
+    "--data-dir",
+    type=str,
+    default="data/historical",
+    help="Directory containing historical data (default: data/historical)",
+)
+@click.option(
+    "--output-dir",
+    type=str,
+    default="outputs",
+    callback=validate_output_dir,
+    help="Directory to save analysis results (default: outputs)",
+)
+@click.option("--format", type=click.Choice(["json", "png"]), default="png", help="Output format (default: png)")
+@click.option("--plot", is_flag=True, default=True, help="Generate time series plots")
 def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
     """📈 Analyze historical trends in token distribution.
-    
+
     Examines how concentration metrics have evolved over time for a protocol.
-    
+
     Examples:
       gova historical-analysis --protocol compound --metric gini_coefficient
       gova historical-analysis --protocol uniswap --format json --data-dir ./data
@@ -556,7 +607,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
 
         data_manager = historical_data.HistoricalDataManager(data_dir=data_dir)
         snapshots = data_manager.get_snapshots(protocol)
-        
+
         if not snapshots:
             click.echo(f"❌ No historical data found for {protocol}", err=True)
             sys.exit(1)
@@ -564,15 +615,16 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
         click.echo(f"📊 Found {len(snapshots)} historical snapshots")
 
         # Analyze trends
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
         if format == "png" or plot:
             # Generate plot
             try:
                 from governance_token_analyzer.visualization.chart_generator import ChartGenerator
+
                 chart_gen = ChartGenerator()
                 plot_file = os.path.join(output_dir, f"{protocol}_{metric}.png")
-                
+
                 # Extract metric values over time
                 dates = []
                 values = []
@@ -581,37 +633,39 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
                     if snapshot_data and "metrics" in snapshot_data:
                         dates.append(snapshot["timestamp"])
                         values.append(snapshot_data["metrics"].get(metric, 0))
-                
+
                 chart_gen.plot_historical_trends(dates, values, metric, protocol, plot_file)
                 click.echo(f"📊 Historical plot saved: {plot_file}")
-                
+
             except ImportError:
                 click.echo("⚠️  Chart generation not available (missing dependencies)", err=True)
 
         if format == "json":
             # Save analysis results
             output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical_{timestamp}.json")
-            
+
             analysis_results = {
                 "protocol": protocol,
                 "metric": metric,
                 "analysis_timestamp": datetime.now().isoformat(),
                 "snapshots_analyzed": len(snapshots),
-                "historical_data": []
+                "historical_data": [],
             }
-            
+
             for snapshot in snapshots:
                 snapshot_data = data_manager.load_snapshot(protocol, snapshot["timestamp"])
                 if snapshot_data:
-                    analysis_results["historical_data"].append({
-                        "timestamp": snapshot["timestamp"],
-                        "metric_value": snapshot_data.get("metrics", {}).get(metric, 0),
-                        "summary": snapshot_data.get("summary", {})
-                    })
-            
+                    analysis_results["historical_data"].append(
+                        {
+                            "timestamp": snapshot["timestamp"],
+                            "metric_value": snapshot_data.get("metrics", {}).get(metric, 0),
+                            "summary": snapshot_data.get("summary", {}),
+                        }
+                    )
+
             with open(output_file, "w") as f:
                 json.dump(analysis_results, f, indent=2)
-                
+
             click.echo(f"📁 Analysis saved: {output_file}")
 
         click.echo("✅ Historical analysis complete!")
@@ -620,23 +674,25 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
         click.echo(f"❌ Historical analysis failed: {e}", err=True)
         sys.exit(1)
 
+
 # GENERATE REPORT COMMAND (renamed from report)
-@cli.command('generate-report')
-@click.option('--protocol', type=ProtocolChoice(), required=True,
-              help='Protocol to generate report for')
-@click.option('--format', type=click.Choice(['html']), default='html',
-              help='Report format (default: html)')
-@click.option('--output-dir', type=str, default='reports', callback=validate_output_dir,
-              help='Directory to save report files (default: reports)')
-@click.option('--include-historical', is_flag=True,
-              help='Include historical analysis in report')
-@click.option('--data-dir', type=str, default='data/historical',
-              help='Directory containing historical data')
+@cli.command("generate-report")
+@click.option("--protocol", type=ProtocolChoice(), required=True, help="Protocol to generate report for")
+@click.option("--format", type=click.Choice(["html"]), default="html", help="Report format (default: html)")
+@click.option(
+    "--output-dir",
+    type=str,
+    default="reports",
+    callback=validate_output_dir,
+    help="Directory to save report files (default: reports)",
+)
+@click.option("--include-historical", is_flag=True, help="Include historical analysis in report")
+@click.option("--data-dir", type=str, default="data/historical", help="Directory containing historical data")
 def generate_report(protocol, format, output_dir, include_historical, data_dir):
     """📋 Generate comprehensive analysis reports.
-    
+
     Creates detailed reports with visualizations, metrics, and insights.
-    
+
     Examples:
       gova generate-report --protocol compound --format html
       gova generate-report --protocol uniswap --include-historical
@@ -646,11 +702,11 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
     try:
         api_client = APIClient()
         report_gen = ReportGenerator()
-        
+
         # Get current data with improved error handling
         holders_data = api_client.get_token_holders(protocol, limit=1000, use_real_data=True)
         balances = []
-        
+
         for h in holders_data:
             if isinstance(h, dict):
                 balance_value = h.get("balance")
@@ -658,16 +714,16 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
                     try:
                         # Robust balance conversion
                         if isinstance(balance_value, str):
-                            clean_value = balance_value.replace(',', '').replace('$', '').strip()
+                            clean_value = balance_value.replace(",", "").replace("$", "").strip()
                             balance_float = float(clean_value)
                         else:
                             balance_float = float(balance_value)
-                            
+
                         if balance_float > 0:
                             balances.append(balance_float)
                     except (ValueError, TypeError, AttributeError):
                         continue
-        
+
         if not balances:
             click.echo("⚠️  No live data available, using simulated data", err=True)
             simulator = TokenDistributionSimulator()
@@ -675,7 +731,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
 
         # Calculate current metrics
         current_metrics = calculate_all_concentration_metrics(balances)
-        
+
         # Prepare report data
         report_data = {
             "protocol": protocol,
@@ -683,9 +739,9 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
             "timestamp": datetime.now().isoformat(),
             "current_metrics": current_metrics,
             "holders_count": len(balances),
-            "total_supply": sum(balances)
+            "total_supply": sum(balances),
         }
-        
+
         # Add historical data if requested
         if include_historical and os.path.exists(data_dir):
             data_manager = historical_data.HistoricalDataManager(data_dir=data_dir)
@@ -696,9 +752,9 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
             report_data["include_historical"] = False
 
         # Generate report
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_file = os.path.join(output_dir, f"{protocol}_report.{format}")
-        
+
         if format == "html":
             html_content = report_gen.generate_html_report(report_data)
             with open(report_file, "w") as f:
@@ -712,23 +768,31 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
         click.echo(f"❌ Report generation failed: {e}", err=True)
         sys.exit(1)
 
+
 # SIMULATE HISTORICAL COMMAND
-@cli.command('simulate-historical')
-@click.option('--protocol', type=ProtocolChoice(), required=True,
-              help='Protocol to simulate historical data for')
-@click.option('--snapshots', type=int, default=10,
-              help='Number of historical snapshots to generate (default: 10)')
-@click.option('--interval', type=int, default=7,
-              help='Interval between snapshots in days (default: 7)')
-@click.option('--data-dir', type=str, default='data/historical', callback=validate_output_dir,
-              help='Directory to store historical data (default: data/historical)')
-@click.option('--output-dir', type=str, default='outputs', callback=validate_output_dir,
-              help='Directory for output files (default: outputs)')
+@cli.command("simulate-historical")
+@click.option("--protocol", type=ProtocolChoice(), required=True, help="Protocol to simulate historical data for")
+@click.option("--snapshots", type=int, default=10, help="Number of historical snapshots to generate (default: 10)")
+@click.option("--interval", type=int, default=7, help="Interval between snapshots in days (default: 7)")
+@click.option(
+    "--data-dir",
+    type=str,
+    default="data/historical",
+    callback=validate_output_dir,
+    help="Directory to store historical data (default: data/historical)",
+)
+@click.option(
+    "--output-dir",
+    type=str,
+    default="outputs",
+    callback=validate_output_dir,
+    help="Directory for output files (default: outputs)",
+)
 def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
     """🕒 Generate simulated historical data for testing.
-    
+
     Creates synthetic historical snapshots for protocol analysis and testing.
-    
+
     Examples:
       gova simulate-historical --protocol compound --snapshots 20 --interval 7
       gova simulate-historical --protocol uniswap --snapshots 50 --data-dir ./test_data
@@ -738,19 +802,16 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
 
     try:
         data_manager = historical_data.HistoricalDataManager(data_dir=data_dir)
-        
+
         # Generate historical data
         historical_data.simulate_historical_data(
-            protocol=protocol,
-            num_snapshots=snapshots,
-            interval_days=interval,
-            data_manager=data_manager
+            protocol=protocol, num_snapshots=snapshots, interval_days=interval, data_manager=data_manager
         )
-        
+
         click.echo("✅ Historical data simulation complete!")
         click.echo(f"📁 Data stored in: {data_dir}")
         click.echo(f"📊 Generated {snapshots} snapshots with {interval}-day intervals")
-        
+
         # Verify the data was created
         generated_snapshots = data_manager.get_snapshots(protocol)
         click.echo(f"✅ Verified {len(generated_snapshots)} snapshots created")
@@ -759,19 +820,17 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
         click.echo(f"❌ Historical simulation failed: {e}", err=True)
         sys.exit(1)
 
+
 # STATUS COMMAND
 @cli.command()
-@click.option('--check-apis', is_flag=True,
-              help='Check API key configuration and connectivity')
-@click.option('--test-protocols', is_flag=True, 
-              help='Test data retrieval for all supported protocols')
-@click.option('--verbose', '-v', is_flag=True,
-              help='Show detailed status information')
+@click.option("--check-apis", is_flag=True, help="Check API key configuration and connectivity")
+@click.option("--test-protocols", is_flag=True, help="Test data retrieval for all supported protocols")
+@click.option("--verbose", "-v", is_flag=True, help="Show detailed status information")
 def status(check_apis, test_protocols, verbose):
     """🔍 Check system status and configuration.
-    
+
     Validates API keys, connectivity, and system health.
-    
+
     Examples:
       gova status --check-apis
       gova status --test-protocols --verbose
@@ -829,47 +888,53 @@ def status(check_apis, test_protocols, verbose):
         click.echo(f"❌ Status check failed: {e}", err=True)
         sys.exit(1)
 
+
 # VALIDATE COMMAND
 @cli.command()
-@click.argument('input_file', type=click.Path(exists=True))
-@click.option('--output-dir', type=str, default='validation', callback=validate_output_dir,
-              help='Directory to save validation results (default: validation)')
-@click.option('--verbose', '-v', is_flag=True,
-              help='Show detailed validation results')
+@click.argument("input_file", type=click.Path(exists=True))
+@click.option(
+    "--output-dir",
+    type=str,
+    default="validation",
+    callback=validate_output_dir,
+    help="Directory to save validation results (default: validation)",
+)
+@click.option("--verbose", "-v", is_flag=True, help="Show detailed validation results")
 def validate(input_file, output_dir, verbose):
     """🔍 Validate analysis output accuracy and consistency.
-    
+
     Performs comprehensive validation of analysis results including
     mathematical accuracy, data consistency, and cross-validation.
-    
+
     Examples:
       gova validate outputs/compound_analysis_20231201_120000.json
       gova validate reports/protocol_comparison.json --verbose
     """
     click.echo(f"🔍 Validating analysis output: {input_file}")
-    
+
     try:
         from governance_token_analyzer.cli.validate import validate_analysis_output
-        
+
         # Run validation
         result = validate_analysis_output(input_file, output_dir, verbose)
-        
+
         if result["overall_valid"]:
             click.echo("✅ Validation passed!")
         else:
             click.echo("❌ Validation issues found")
-            
+
         click.echo(f"📊 Validation score: {result['validation_score']:.1f}%")
-        
+
         if verbose:
             click.echo(f"📁 Detailed report: {result['report_file']}")
-            
+
     except ImportError:
         click.echo("❌ Validation module not available", err=True)
         sys.exit(1)
     except Exception as e:
         click.echo(f"❌ Validation failed: {e}", err=True)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     cli()
