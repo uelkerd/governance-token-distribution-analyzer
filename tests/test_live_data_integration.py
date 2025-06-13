@@ -75,8 +75,8 @@ class TestLiveDataIntegration:
             try:
                 proposals = api_client.get_governance_proposals("compound", limit=1, use_real_data=False)
                 assert isinstance(proposals, list)
-            except Exception as e:
-                logger.warning(f"Graph API test failed: {e}")
+            except Exception as exception:
+                logger.warning(f"Graph API test failed: {exception}")
         else:
             logger.warning("No Graph API key found, skipping Graph client tests")
 

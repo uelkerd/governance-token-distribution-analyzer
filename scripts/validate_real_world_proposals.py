@@ -228,8 +228,8 @@ def _execute_protocol_script(protocol: str, project_root: Path) -> Dict[str, Any
             return None
 
         return {"script_execution": "success", "stdout": result.stdout}
-    except Exception as e:
-        logger.warning(f"Failed to execute script: {e}")
+    except Exception as exception:
+        logger.warning(f"Failed to execute script: {exception}")
         return None
 
 
@@ -268,8 +268,8 @@ def _find_analysis_files(protocol: str, data_dir: str) -> Dict[str, Any]:
                     json_data = json.load(f)
                     logger.info(f"Successfully parsed JSON from {latest_file}")
                     return json_data
-            except (json.JSONDecodeError, IOError) as e:
-                logger.warning(f"Failed to parse JSON from {latest_file}: {e}")
+            except (json.JSONDecodeError, IOError) as exception:
+                logger.warning(f"Failed to parse JSON from {latest_file}: {exception}")
                 continue
 
     return {"error": f"No valid analysis files found for {protocol}"}

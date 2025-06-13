@@ -24,15 +24,15 @@ try:
     )
     from governance_token_analyzer.core.api_client import APIClient
     from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
-except ImportError as e:
-    logger.error(f"Import error: {str(e)}")
+except ImportError as exception:
+    logger.error(f"Import error: {str(exception)}")
     # Fall back to relative imports if package is not installed
     try:
         from .core.advanced_metrics import calculate_all_concentration_metrics
         from .core.api_client import APIClient
         from .core.data_simulator import TokenDistributionSimulator
-    except ImportError as e:
-        logger.error(f"Relative import error: {str(e)}")
+    except ImportError as exception:
+        logger.error(f"Relative import error: {str(exception)}")
         sys.exit(1)
 
 
@@ -150,9 +150,9 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
         return results
 
-    except Exception as e:
-        logger.error(f"Analysis failed: {e}")
-        return {"error": str(e), "protocol": token_name}
+    except Exception as exception:
+        logger.error(f"Analysis failed: {exception}")
+        return {"error": str(exception), "protocol": token_name}
 
 
 def compare_tokens(tokens: List[str], limit: int = 100, output_format: str = "json") -> Dict[str, Dict[str, Any]]:
