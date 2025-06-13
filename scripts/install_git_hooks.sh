@@ -32,7 +32,7 @@ if [ -n "$historical_files" ]; then
 fi
 
 # Count the number of lines being changed
-lines_changed=$(git diff --cached --stat | tail -n 1 | cut -d' ' -f5)
+lines_changed=$(git diff --cached --numstat | awk '{added += $1; deleted += $2} END {print added + deleted}')
 if [ -n "$lines_changed" ] && [ "$lines_changed" -gt 500 ]; then
   echo "WARNING: You are committing $lines_changed lines of code."
   echo "Consider breaking this into smaller, more focused commits."
