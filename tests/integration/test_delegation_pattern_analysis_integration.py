@@ -101,9 +101,7 @@ class TestDelegationPatternAnalysisIntegration:
                 )
             elif i == 2:
                 # Change a delegation in snapshot 2
-                snapshot_data["data"]["governance_data"]["delegations"][0][
-                    "delegatee"
-                ] = "0xholder1"
+                snapshot_data["data"]["governance_data"]["delegations"][0]["delegatee"] = "0xholder1"
 
             snapshots.append(snapshot_data)
 
@@ -167,9 +165,7 @@ class TestDelegationPatternAnalysisIntegration:
 
         # Create delegation graph
         governance_data = sample_delegation_data["governance_data"]
-        graph = analyzer._create_delegation_graph(
-            governance_data["delegations"], governance_data["token_holders"]
-        )
+        graph = analyzer._create_delegation_graph(governance_data["delegations"], governance_data["token_holders"])
 
         # Verify graph properties
         assert isinstance(graph, nx.DiGraph)
@@ -191,14 +187,10 @@ class TestDelegationPatternAnalysisIntegration:
 
         # Create delegation graph
         governance_data = sample_delegation_data["governance_data"]
-        graph = analyzer._create_delegation_graph(
-            governance_data["delegations"], governance_data["token_holders"]
-        )
+        graph = analyzer._create_delegation_graph(governance_data["delegations"], governance_data["token_holders"])
 
         # Identify key delegatees
-        key_delegatees = analyzer._identify_key_delegatees(
-            graph, governance_data["token_holders"]
-        )
+        key_delegatees = analyzer._identify_key_delegatees(graph, governance_data["token_holders"])
 
         # Verify key delegatees
         assert len(key_delegatees) > 0
@@ -232,9 +224,7 @@ class TestDelegationPatternAnalysisIntegration:
     def test_circular_delegations(self):
         """Test that circular delegations can be detected."""
         # Create token holders
-        token_holders = [
-            {"address": f"0xcircle{i}", "balance": 10000} for i in range(5)
-        ]
+        token_holders = [{"address": f"0xcircle{i}", "balance": 10000} for i in range(5)]
 
         # Create circular delegations
         delegations = [
@@ -260,9 +250,7 @@ class TestDelegationPatternAnalysisIntegration:
         patterns = results["delegation_network"]["patterns"]
         circles = patterns["circular_delegations"]
 
-        assert (
-            len(circles) >= 2
-        )  # Should detect at least 2 circular delegation patterns
+        assert len(circles) >= 2  # Should detect at least 2 circular delegation patterns
 
     def test_with_data_manager_integration(self, sample_historical_data, tmp_path):
         """Test integration with the HistoricalDataManager."""
@@ -288,9 +276,7 @@ class TestDelegationPatternAnalysisIntegration:
         stored_snapshots = data_manager.get_snapshots(protocol)
 
         # Analyze historical delegation patterns
-        results = dpa.analyze_historical_delegation_patterns(
-            stored_snapshots, min_threshold=0.01, shift_threshold=0.05
-        )
+        results = dpa.analyze_historical_delegation_patterns(stored_snapshots, min_threshold=0.01, shift_threshold=0.05)
 
         # Verify results
         assert "comparison" in results

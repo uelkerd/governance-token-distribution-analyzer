@@ -29,12 +29,11 @@ try:
 except ImportError:
     # Adjust path for running directly
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from src.token_analysis import CompoundAnalyzer, TokenAnalyzer
+    from src.token_analysis import CompoundAnalyzer
     from src.uniswap_analysis import UniswapAnalyzer
     from src.aave_analysis import AaveAnalyzer
     from src.analyzer.advanced_metrics import calculate_all_concentration_metrics
     from src.analyzer.data_simulator import TokenDistributionSimulator
-    from src.analyzer.governance_metrics import GovernanceEffectivenessAnalyzer
     from src.generate_report import ReportGenerator
 
 
@@ -47,6 +46,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
     Returns:
         Dictionary with analysis results
+
     """
     logger.info(f"Analyzing {token_name} token distribution (top {limit} holders)")
 
@@ -82,6 +82,7 @@ def compare_tokens(tokens: List[str], limit: int = 100, output_format: str = "js
 
     Returns:
         Dictionary mapping token names to their analysis results
+
     """
     logger.info(f"Comparing token distributions for: {', '.join(tokens)}")
 
@@ -126,6 +127,7 @@ def generate_simulated_data(
 
     Returns:
         Dictionary with simulated token holder data
+
     """
     logger.info(f"Generating simulated {distribution_type} distribution with {num_holders} holders")
 
@@ -191,6 +193,7 @@ def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
 
     Returns:
         Path to the generated report
+
     """
     logger.info(f"Generating report for tokens: {', '.join(tokens)}")
 
@@ -317,7 +320,7 @@ def main():
         elif args.command == "report":
             report_path = generate_report(args.tokens, args.output_dir)
             print(f"\nReport generated: {report_path}")
-            print(f"Open this file in a web browser to view the report.")
+            print("Open this file in a web browser to view the report.")
 
     except Exception as e:
         logger.error(f"Error executing command: {str(e)}")

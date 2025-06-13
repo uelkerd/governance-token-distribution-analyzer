@@ -9,7 +9,7 @@ import concurrent.futures
 import logging
 import os
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -315,7 +315,7 @@ class TestLiveDataIntegration:
                     pytest.fail(f"Balance '{balance}' cannot be converted to a number")
             else:
                 assert isinstance(balance, (int, float))
-            
+
             assert len(holder["address"]) == 42  # Ethereum address length
             assert holder["address"].startswith("0x")
 
@@ -452,7 +452,7 @@ class TestLiveDataIntegration:
             # Test with invalid protocol
             with pytest.raises(ValueError):
                 api_client.get_token_holders("invalid_protocol", use_real_data=True)
-        except Exception as e:
+        except Exception:
             # If it doesn't raise as expected, at least check that it returns an empty list or None
             holders = api_client.get_token_holders("invalid_protocol", use_real_data=True)
             assert holders == [] or holders is None
@@ -470,7 +470,7 @@ class TestLiveDataIntegration:
             holders = api_client.get_token_holders("compound", use_real_data=True)
             assert isinstance(holders, list)
             assert len(holders) > 0
-            
+
             proposals = api_client.get_governance_proposals("compound", use_real_data=True)
             assert isinstance(proposals, list)
             assert len(proposals) > 0
@@ -492,7 +492,7 @@ class TestLiveDataIntegration:
 
         # Validate data structure
         assert protocol_data["protocol"] == "compound"
-        holders_key = "token_holders" if "token_holders" in protocol_data else "holders" 
+        holders_key = "token_holders" if "token_holders" in protocol_data else "holders"
         assert isinstance(protocol_data[holders_key], list)
         assert isinstance(protocol_data["proposals"], list)
         assert isinstance(protocol_data["participation_rate"], (int, float))
@@ -594,8 +594,14 @@ class TestLiveDataIntegration:
         if len(holders) > 1:
             # Check that holders are sorted by balance (descending)
             for i in range(len(holders) - 1):
-                balance1 = float(holders[i]["balance"]) if isinstance(holders[i]["balance"], str) else holders[i]["balance"]
-                balance2 = float(holders[i+1]["balance"]) if isinstance(holders[i+1]["balance"], str) else holders[i+1]["balance"]
+                balance1 = (
+                    float(holders[i]["balance"]) if isinstance(holders[i]["balance"], str) else holders[i]["balance"]
+                )
+                balance2 = (
+                    float(holders[i + 1]["balance"])
+                    if isinstance(holders[i + 1]["balance"], str)
+                    else holders[i + 1]["balance"]
+                )
                 assert balance1 >= balance2
 
     @pytest.mark.performance
@@ -623,29 +629,29 @@ class TestLiveDataIntegration:
 
 class TestErrorPropagation:
     """Test error propagation through the CLI."""
-    
+
     @pytest.fixture
     def mock_api_client(self):
         """Create a mock API client for testing."""
         with patch("governance_token_analyzer.core.api_client.APIClient") as mock:
             yield mock
-    
+
     @pytest.mark.integration
     def test_cli_error_propagation(self):
         """Test that API errors propagate to CLI output."""
         from governance_token_analyzer.cli import cli
-        
+
         # Create a runner for testing CLI commands
         runner = CliRunner()
-        
+
         # Test with error-simulating client
-        with patch('governance_token_analyzer.core.api_client.APIClient') as mock_api:
+        with patch("governance_token_analyzer.core.api_client.APIClient") as mock_api:
             # Configure mock to raise exception
             mock_api.return_value.get_token_holders.side_effect = ValueError("Simulated error")
-            
+
             # Run CLI command
             result = runner.invoke(cli, ["analyze", "--protocol", "compound"])
-            
+
             # Check that the error is propagated and CLI exits with error code
             assert result.exit_code != 0
             assert "error" in result.output.lower() or "exception" in result.output.lower()

@@ -38,6 +38,7 @@ def load_token_data(protocol: str) -> dict:
 
     Returns:
         Dictionary containing token analysis data
+
     """
     output_dir = Path(DEFAULT_OUTPUT_DIR)
     file_path = output_dir / f"{protocol}_analysis.json"
@@ -61,14 +62,12 @@ def create_pie_chart(data: dict, output_dir: Path):
     Args:
         data: Token analysis data
         output_dir: Directory to save the visualization
+
     """
     top_holders = data["top_holders"]
 
     # Extract top 5 holders plus "Others"
-    labels = [
-        f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}"
-        for h in top_holders[:5]
-    ]
+    labels = [f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}" for h in top_holders[:5]]
     sizes = [h["percentage"] for h in top_holders[:5]]
 
     # Add "Others" slice
@@ -114,6 +113,7 @@ def create_concentration_bar_chart(data: dict, output_dir: Path):
     Args:
         data: Token analysis data
         output_dir: Directory to save the visualization
+
     """
     top_percentages = data["concentration_metrics"]["top_holders_percentage"]
 
@@ -166,6 +166,7 @@ def visualize_holder_distribution(analysis_results, output_dir="plots"):
     Args:
         analysis_results: Token analysis results dictionary
         output_dir: Directory to save the plot
+
     """
     token_name = analysis_results["token"]
     holders = analysis_results["holders"]
@@ -199,9 +200,7 @@ def visualize_holder_distribution(analysis_results, output_dir="plots"):
     # Save the plot
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(
-        output_dir, f"{token_name.lower()}_distribution_{timestamp}.png"
-    )
+    filename = os.path.join(output_dir, f"{token_name.lower()}_distribution_{timestamp}.png")
     plt.savefig(filename)
     plt.close()
 
@@ -214,6 +213,7 @@ def visualize_concentration_metrics(analysis_results, output_dir="plots"):
     Args:
         analysis_results: Token analysis results dictionary
         output_dir: Directory to save the plot
+
     """
     token_name = analysis_results["token"]
     metrics = analysis_results["metrics"]
@@ -253,16 +253,14 @@ def visualize_historical_gini(token_name, historical_data, output_dir="plots"):
         token_name: Name of the token
         historical_data: List of historical data points
         output_dir: Directory to save the plot
+
     """
     if not historical_data:
         print(f"No historical data found for {token_name}")
         return
 
     # Extract dates and gini values
-    dates = [
-        datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-        for data in historical_data
-    ]
+    dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
     gini_values = [data["metrics"]["gini_coefficient"] for data in historical_data]
 
     # Create line chart
@@ -295,9 +293,7 @@ def visualize_historical_gini(token_name, historical_data, output_dir="plots"):
     # Save the plot
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(
-        output_dir, f"{token_name.lower()}_gini_trend_{timestamp}.png"
-    )
+    filename = os.path.join(output_dir, f"{token_name.lower()}_gini_trend_{timestamp}.png")
     plt.savefig(filename)
     plt.close()
 
@@ -311,16 +307,14 @@ def visualize_historical_herfindahl(token_name, historical_data, output_dir="plo
         token_name: Name of the token
         historical_data: List of historical data points
         output_dir: Directory to save the plot
+
     """
     if not historical_data:
         print(f"No historical data found for {token_name}")
         return
 
     # Extract dates and herfindahl values
-    dates = [
-        datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-        for data in historical_data
-    ]
+    dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
     hhi_values = [data["metrics"]["herfindahl_index"] for data in historical_data]
 
     # Create line chart
@@ -352,9 +346,7 @@ def visualize_historical_herfindahl(token_name, historical_data, output_dir="plo
     # Save the plot
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(
-        output_dir, f"{token_name.lower()}_herfindahl_trend_{timestamp}.png"
-    )
+    filename = os.path.join(output_dir, f"{token_name.lower()}_herfindahl_trend_{timestamp}.png")
     plt.savefig(filename)
     plt.close()
 
@@ -368,25 +360,17 @@ def visualize_historical_concentration(token_name, historical_data, output_dir="
         token_name: Name of the token
         historical_data: List of historical data points
         output_dir: Directory to save the plot
+
     """
     if not historical_data:
         print(f"No historical data found for {token_name}")
         return
 
     # Extract dates and concentration values
-    dates = [
-        datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-        for data in historical_data
-    ]
-    top5_values = [
-        data["metrics"]["concentration"]["top_5_pct"] for data in historical_data
-    ]
-    top10_values = [
-        data["metrics"]["concentration"]["top_10_pct"] for data in historical_data
-    ]
-    top20_values = [
-        data["metrics"]["concentration"]["top_20_pct"] for data in historical_data
-    ]
+    dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
+    top5_values = [data["metrics"]["concentration"]["top_5_pct"] for data in historical_data]
+    top10_values = [data["metrics"]["concentration"]["top_10_pct"] for data in historical_data]
+    top20_values = [data["metrics"]["concentration"]["top_20_pct"] for data in historical_data]
 
     # Create line chart
     plt.figure(figsize=(12, 6))
@@ -429,9 +413,7 @@ def visualize_historical_concentration(token_name, historical_data, output_dir="
     # Save the plot
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(
-        output_dir, f"{token_name.lower()}_concentration_trend_{timestamp}.png"
-    )
+    filename = os.path.join(output_dir, f"{token_name.lower()}_concentration_trend_{timestamp}.png")
     plt.savefig(filename)
     plt.close()
 
@@ -445,43 +427,31 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
         token_name: Name of the token
         historical_data: List of historical data points
         output_dir: Directory to save the plot
+
     """
     if not historical_data:
         print(f"No historical data found for {token_name}")
         return
 
     # Extract dates and metrics
-    dates = [
-        datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-        for data in historical_data
-    ]
+    dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
     gini_values = [data["metrics"]["gini_coefficient"] for data in historical_data]
-    hhi_values = [
-        data["metrics"]["herfindahl_index"] / 10000 for data in historical_data
-    ]  # Scale to 0-1
-    top5_values = [
-        data["metrics"]["concentration"]["top_5_pct"] / 100 for data in historical_data
-    ]  # Scale to 0-1
-    top10_values = [
-        data["metrics"]["concentration"]["top_10_pct"] / 100 for data in historical_data
-    ]  # Scale to 0-1
+    hhi_values = [data["metrics"]["herfindahl_index"] / 10000 for data in historical_data]  # Scale to 0-1
+    top5_values = [data["metrics"]["concentration"]["top_5_pct"] / 100 for data in historical_data]  # Scale to 0-1
+    top10_values = [data["metrics"]["concentration"]["top_10_pct"] / 100 for data in historical_data]  # Scale to 0-1
 
     # Create dashboard with 4 subplots
     fig, axs = plt.subplots(2, 2, figsize=(15, 10))
     fig.suptitle(f"{token_name} Token Governance Metrics Dashboard", fontsize=16)
 
     # Plot 1: Gini Coefficient
-    axs[0, 0].plot(
-        dates, gini_values, marker="o", linestyle="-", linewidth=2, color="blue"
-    )
+    axs[0, 0].plot(dates, gini_values, marker="o", linestyle="-", linewidth=2, color="blue")
     axs[0, 0].set_title("Gini Coefficient (Equality/Inequality)")
     axs[0, 0].set_ylim(0, 1)
     axs[0, 0].grid(True, linestyle="--", alpha=0.7)
 
     # Plot 2: Herfindahl Index
-    axs[0, 1].plot(
-        dates, hhi_values, marker="s", linestyle="-", linewidth=2, color="red"
-    )
+    axs[0, 1].plot(dates, hhi_values, marker="s", linestyle="-", linewidth=2, color="red")
     axs[0, 1].set_title("Herfindahl Index (Market Concentration)")
     axs[0, 1].set_ylim(0, 1)
     axs[0, 1].grid(True, linestyle="--", alpha=0.7)
@@ -541,16 +511,12 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
                 axs[i, j].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
                 axs[i, j].xaxis.set_major_locator(mdates.MonthLocator(interval=6))
 
-    plt.tight_layout(
-        rect=[0, 0, 1, 0.95]
-    )  # Adjust layout to make room for the suptitle
+    plt.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust layout to make room for the suptitle
 
     # Save the plot
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(
-        output_dir, f"{token_name.lower()}_metrics_dashboard_{timestamp}.png"
-    )
+    filename = os.path.join(output_dir, f"{token_name.lower()}_metrics_dashboard_{timestamp}.png")
     plt.savefig(filename)
     plt.close()
 
@@ -564,6 +530,7 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
         tokens: List of token names
         historical_data_dict: Dictionary mapping token names to their historical data
         output_dir: Directory to save the plots
+
     """
     if not tokens or not historical_data_dict:
         print("No data available for comparative analysis")
@@ -579,16 +546,9 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [
-                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-                for data in historical_data
-            ]
-            gini_values = [
-                data["metrics"]["gini_coefficient"] for data in historical_data
-            ]
-            plt.plot(
-                dates, gini_values, marker="o", linestyle="-", linewidth=2, label=token
-            )
+            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
+            gini_values = [data["metrics"]["gini_coefficient"] for data in historical_data]
+            plt.plot(dates, gini_values, marker="o", linestyle="-", linewidth=2, label=token)
 
     plt.title("Gini Coefficient Comparison Across Tokens")
     plt.ylabel("Gini Coefficient")
@@ -612,17 +572,9 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [
-                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-                for data in historical_data
-            ]
-            top5_values = [
-                data["metrics"]["concentration"]["top_5_pct"]
-                for data in historical_data
-            ]
-            plt.plot(
-                dates, top5_values, marker="o", linestyle="-", linewidth=2, label=token
-            )
+            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
+            top5_values = [data["metrics"]["concentration"]["top_5_pct"] for data in historical_data]
+            plt.plot(dates, top5_values, marker="o", linestyle="-", linewidth=2, label=token)
 
     plt.title("Top 5 Holders Concentration Comparison")
     plt.ylabel("Percentage of Total Supply")
@@ -646,16 +598,9 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [
-                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-                for data in historical_data
-            ]
-            hhi_values = [
-                data["metrics"]["herfindahl_index"] for data in historical_data
-            ]
-            plt.plot(
-                dates, hhi_values, marker="o", linestyle="-", linewidth=2, label=token
-            )
+            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
+            hhi_values = [data["metrics"]["herfindahl_index"] for data in historical_data]
+            plt.plot(dates, hhi_values, marker="o", linestyle="-", linewidth=2, label=token)
 
     plt.title("Herfindahl Index Comparison Across Tokens")
     plt.ylabel("Herfindahl Index")
@@ -681,16 +626,9 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [
-                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-                for data in historical_data
-            ]
-            gini_values = [
-                data["metrics"]["gini_coefficient"] for data in historical_data
-            ]
-            axs[0, 0].plot(
-                dates, gini_values, marker="o", linestyle="-", linewidth=2, label=token
-            )
+            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
+            gini_values = [data["metrics"]["gini_coefficient"] for data in historical_data]
+            axs[0, 0].plot(dates, gini_values, marker="o", linestyle="-", linewidth=2, label=token)
 
     axs[0, 0].set_title("Gini Coefficient")
     axs[0, 0].set_ylim(0, 1)
@@ -701,16 +639,9 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [
-                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-                for data in historical_data
-            ]
-            hhi_values = [
-                data["metrics"]["herfindahl_index"] / 10000 for data in historical_data
-            ]  # Scale to 0-1
-            axs[0, 1].plot(
-                dates, hhi_values, marker="s", linestyle="-", linewidth=2, label=token
-            )
+            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
+            hhi_values = [data["metrics"]["herfindahl_index"] / 10000 for data in historical_data]  # Scale to 0-1
+            axs[0, 1].plot(dates, hhi_values, marker="s", linestyle="-", linewidth=2, label=token)
 
     axs[0, 1].set_title("Herfindahl Index (scaled)")
     axs[0, 1].set_ylim(0, 1)
@@ -721,17 +652,11 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
     for token in tokens:
         if token in historical_data_dict and historical_data_dict[token]:
             historical_data = historical_data_dict[token]
-            dates = [
-                datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d")
-                for data in historical_data
-            ]
+            dates = [datetime.strptime(data["timestamp"].split("T")[0], "%Y-%m-%d") for data in historical_data]
             top5_values = [
-                data["metrics"]["concentration"]["top_5_pct"] / 100
-                for data in historical_data
+                data["metrics"]["concentration"]["top_5_pct"] / 100 for data in historical_data
             ]  # Scale to 0-1
-            axs[1, 0].plot(
-                dates, top5_values, marker="^", linestyle="-", linewidth=2, label=token
-            )
+            axs[1, 0].plot(dates, top5_values, marker="^", linestyle="-", linewidth=2, label=token)
 
     axs[1, 0].set_title("Top 5 Holders Concentration (scaled)")
     axs[1, 0].set_ylim(0, 1)
@@ -750,10 +675,8 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
             latest_data = historical_data[-1]
             latest_metrics[token] = {
                 "gini": latest_data["metrics"]["gini_coefficient"],
-                "hhi": latest_data["metrics"]["herfindahl_index"]
-                / 10000,  # Scale to 0-1
-                "top5": latest_data["metrics"]["concentration"]["top_5_pct"]
-                / 100,  # Scale to 0-1
+                "hhi": latest_data["metrics"]["herfindahl_index"] / 10000,  # Scale to 0-1
+                "top5": latest_data["metrics"]["concentration"]["top_5_pct"] / 100,  # Scale to 0-1
             }
 
     # Plot the bars

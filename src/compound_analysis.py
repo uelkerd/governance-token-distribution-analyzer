@@ -9,7 +9,6 @@ import sys
 import os
 import json
 import logging
-from pathlib import Path
 from datetime import datetime
 
 # Add the src directory to the Python path
@@ -17,10 +16,9 @@ src_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(src_dir))
 
 from src.analyzer.token_analysis import (
-    analyze_compound_token,
     TokenDistributionAnalyzer,
 )
-from src.analyzer.config import Config, DEFAULT_OUTPUT_DIR
+from src.analyzer.config import Config
 from src.analyzer.api import EtherscanAPI
 
 # Configure logging
@@ -44,6 +42,7 @@ class CompoundAnalyzer:
         Args:
             api_client: An instance of EtherscanAPI or compatible client
             config: Configuration object
+
         """
         self.config = config or Config()
         self.api_client = api_client or EtherscanAPI(self.config.get_api_key())
@@ -57,6 +56,7 @@ class CompoundAnalyzer:
 
         Returns:
             List of token holders with their balances
+
         """
         logger.info(f"Retrieving top {limit} COMP token holders")
         return self.api_client.get_token_holders(self.COMP_CONTRACT_ADDRESS, limit)
@@ -69,6 +69,7 @@ class CompoundAnalyzer:
 
         Returns:
             Dictionary containing distribution metrics
+
         """
         logger.info(f"Analyzing COMP token distribution for top {limit} holders")
         holders_response = self.get_token_holders(limit)
@@ -148,6 +149,7 @@ class CompoundAnalyzer:
         Args:
             results: Analysis results dictionary
             filename: Optional filename, defaults to comp_analysis_{timestamp}.json
+
         """
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -182,7 +184,7 @@ def main():
         analyzer.save_analysis_results(results, "comp_analysis_latest.json")
 
         # Print the results
-        print(f"\nCOMP Token Distribution Analysis:")
+        print("\nCOMP Token Distribution Analysis:")
         print(f"Gini Coefficient: {results['metrics']['gini_coefficient']:.4f}")
         print(f"Herfindahl Index: {results['metrics']['herfindahl_index']:.4f}")
         print(f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%")

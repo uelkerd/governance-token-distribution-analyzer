@@ -4,9 +4,7 @@ This module provides tools to analyze the effectiveness of DAO governance
 and correlate token distribution patterns with governance outcomes.
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 import logging
 from datetime import datetime
 
@@ -35,6 +33,7 @@ class GovernanceEffectivenessAnalyzer:
 
         Returns:
             Dictionary with participation metrics
+
         """
         if not proposal_votes:
             return {
@@ -77,6 +76,7 @@ class GovernanceEffectivenessAnalyzer:
 
         Returns:
             Dictionary with proposal success metrics
+
         """
         if not proposals:
             return {"proposal_success_rate": 0.0, "proposal_implementation_rate": 0.0}
@@ -114,6 +114,7 @@ class GovernanceEffectivenessAnalyzer:
 
         Returns:
             Dictionary with all governance effectiveness metrics
+
         """
         if not proposals:
             return {
@@ -177,6 +178,7 @@ class ParticipationAnalyzer:
 
         Returns:
             Dictionary containing the participation analysis results
+
         """
         try:
             # Calculate basic participation metrics
@@ -278,6 +280,7 @@ class ParticipationAnalyzer:
 
         Returns:
             Dictionary containing voter engagement trend metrics
+
         """
         if not proposals:
             return {"trend": "stable", "trend_data": [], "change_percentage": 0.0}
@@ -352,6 +355,7 @@ class ParticipationAnalyzer:
 
         Returns:
             Dictionary containing voter overlap analysis
+
         """
         if not proposals or len(proposals) < 2:
             return {"average_overlap": 0.0, "max_overlap": 0.0, "min_overlap": 0.0}

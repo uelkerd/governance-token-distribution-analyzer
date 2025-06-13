@@ -1,19 +1,16 @@
-"""
-Governance Participation Analysis Page
+"""Governance Participation Analysis Page
 
 This page provides visualizations and metrics for governance participation analysis.
 """
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import os
 import sys
 import json
 from pathlib import Path
-from datetime import datetime
 
 # Add the src directory to the Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,11 +19,8 @@ src_dir = os.path.dirname(dashboard_dir)
 sys.path.insert(0, os.path.dirname(src_dir))
 
 from src.analyzer.config import DEFAULT_OUTPUT_DIR
-from src.analyzer.governance_metrics import ParticipationAnalyzer
 
-st.set_page_config(
-    page_title="Governance Participation Analysis", page_icon="🗳️", layout="wide"
-)
+st.set_page_config(page_title="Governance Participation Analysis", page_icon="🗳️", layout="wide")
 
 st.title("Governance Participation Analysis")
 st.sidebar.markdown("# Governance Participation")
@@ -82,9 +76,7 @@ if data and "governance_metrics" in data:
         st.caption("Average turnout per proposal")
 
     # Main content area
-    tab1, tab2, tab3 = st.tabs(
-        ["Proposal Analysis", "Voter Analysis", "Participation Trends"]
-    )
+    tab1, tab2, tab3 = st.tabs(["Proposal Analysis", "Voter Analysis", "Participation Trends"])
 
     with tab1:
         st.subheader("Governance Proposal Analysis")
@@ -95,14 +87,9 @@ if data and "governance_metrics" in data:
 
             # Format the columns
             if "participation_rate" in proposal_data.columns:
-                proposal_data["participation_rate"] = proposal_data[
-                    "participation_rate"
-                ].apply(lambda x: f"{x:.2f}%")
+                proposal_data["participation_rate"] = proposal_data["participation_rate"].apply(lambda x: f"{x:.2f}%")
 
-            if (
-                "votes_for" in proposal_data.columns
-                and "votes_against" in proposal_data.columns
-            ):
+            if "votes_for" in proposal_data.columns and "votes_against" in proposal_data.columns:
                 proposal_data["support_rate"] = proposal_data.apply(
                     lambda row: f"{float(row['votes_for']) / (float(row['votes_for']) + float(row['votes_against'])) * 100:.2f}%"
                     if float(row["votes_for"]) + float(row["votes_against"]) > 0
@@ -162,12 +149,8 @@ if data and "governance_metrics" in data:
                 viz_data["votes_against"] = pd.to_numeric(viz_data["votes_against"])
 
                 # Calculate total votes and support rate
-                viz_data["total_votes"] = (
-                    viz_data["votes_for"] + viz_data["votes_against"]
-                )
-                viz_data["support_rate"] = (
-                    viz_data["votes_for"] / viz_data["total_votes"] * 100
-                )
+                viz_data["total_votes"] = viz_data["votes_for"] + viz_data["votes_against"]
+                viz_data["support_rate"] = viz_data["votes_for"] / viz_data["total_votes"] * 100
 
                 # Create stacked bar chart
                 fig = go.Figure()
@@ -247,23 +230,18 @@ if data and "governance_metrics" in data:
 
             # Format the columns
             if "voting_power" in top_voters_df.columns:
-                top_voters_df["voting_power"] = top_voters_df["voting_power"].apply(
-                    lambda x: f"{x:,.2f}"
-                )
+                top_voters_df["voting_power"] = top_voters_df["voting_power"].apply(lambda x: f"{x:,.2f}")
 
             if "voting_power_percentage" in top_voters_df.columns:
-                top_voters_df["voting_power_percentage"] = top_voters_df[
-                    "voting_power_percentage"
-                ].apply(lambda x: f"{x:.2f}%")
+                top_voters_df["voting_power_percentage"] = top_voters_df["voting_power_percentage"].apply(
+                    lambda x: f"{x:.2f}%"
+                )
 
             # Display the top voters table
             st.dataframe(top_voters_df, use_container_width=True)
 
             # Create bar chart of top voters
-            if (
-                "address" in top_voters_df.columns
-                and "voting_power_percentage" in top_voters_df.columns
-            ):
+            if "address" in top_voters_df.columns and "voting_power_percentage" in top_voters_df.columns:
                 # Convert percentage strings back to numbers for visualization
                 viz_data = pd.DataFrame(gov_metrics["top_voters"])
 
@@ -271,9 +249,7 @@ if data and "governance_metrics" in data:
                 viz_data = viz_data.head(10)
 
                 # Create short address labels
-                viz_data["short_address"] = viz_data["address"].apply(
-                    lambda x: f"{x[:6]}...{x[-4:]}"
-                )
+                viz_data["short_address"] = viz_data["address"].apply(lambda x: f"{x[:6]}...{x[-4:]}")
 
                 fig = px.bar(
                     viz_data,
@@ -299,9 +275,7 @@ if data and "governance_metrics" in data:
 
             # Ensure timestamp is in datetime format
             if "timestamp" in historical_data.columns:
-                historical_data["timestamp"] = pd.to_datetime(
-                    historical_data["timestamp"]
-                )
+                historical_data["timestamp"] = pd.to_datetime(historical_data["timestamp"])
 
             # Create line chart of participation over time
             fig = px.line(
@@ -332,6 +306,4 @@ if data and "governance_metrics" in data:
             st.info("Historical participation data not available for this protocol.")
 else:
     st.error(f"Unable to load governance metrics for {protocol}")
-    st.info(
-        "Please make sure you've run the governance participation analysis for this protocol first."
-    )
+    st.info("Please make sure you've run the governance participation analysis for this protocol first.")

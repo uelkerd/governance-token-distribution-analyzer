@@ -1,5 +1,4 @@
-"""
-Governance Token Distribution Analyzer - Dashboard
+"""Governance Token Distribution Analyzer - Dashboard
 
 This Streamlit application provides interactive visualizations of governance token
 distribution data, participation metrics, voting patterns, and cross-protocol comparisons.
@@ -10,7 +9,6 @@ import sys
 import json
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
@@ -21,9 +19,6 @@ src_dir = os.path.dirname(current_dir)
 sys.path.insert(0, os.path.dirname(src_dir))
 
 from src.analyzer.config import DEFAULT_OUTPUT_DIR
-from src.analyzer.token_analysis import ConcentrationAnalyzer
-from src.analyzer.governance_metrics import ParticipationAnalyzer
-from src.analyzer.advanced_metrics import VotingBlockAnalyzer, DelegationAnalyzer
 
 # Set page configuration
 st.set_page_config(
@@ -95,12 +90,8 @@ if page == "Token Distribution":
             st.subheader("Concentration Metrics")
             if "concentration_metrics" in data:
                 metrics = data["concentration_metrics"]
-                st.metric(
-                    "Gini Coefficient", f"{metrics.get('gini_coefficient', 'N/A'):.4f}"
-                )
-                st.metric(
-                    "Herfindahl Index", f"{metrics.get('herfindahl_index', 'N/A'):.4f}"
-                )
+                st.metric("Gini Coefficient", f"{metrics.get('gini_coefficient', 'N/A'):.4f}")
+                st.metric("Herfindahl Index", f"{metrics.get('herfindahl_index', 'N/A'):.4f}")
 
                 # Show CR metrics in expandable section
                 with st.expander("Concentration Ratios"):
@@ -120,10 +111,7 @@ if page == "Token Distribution":
                 holders = data["top_holders"][:top_n]
                 others_pct = 100 - sum(h["percentage"] for h in holders)
 
-                labels = [
-                    f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}"
-                    for h in holders
-                ]
+                labels = [f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}" for h in holders]
                 values = [h["percentage"] for h in holders]
 
                 if others_pct > 0:
@@ -216,10 +204,7 @@ elif page == "Governance Participation":
             segments = gov_metrics["voter_segments"]
 
             fig = px.pie(
-                values=[
-                    segments.get(k, 0)
-                    for k in ["highly_active", "active", "occasional", "inactive"]
-                ],
+                values=[segments.get(k, 0) for k in ["highly_active", "active", "occasional", "inactive"]],
                 names=["Highly Active", "Active", "Occasional", "Inactive"],
                 title="Voter Activity Segmentation",
             )
@@ -238,9 +223,7 @@ elif page == "Delegation Patterns":
 
 elif page == "Historical Analysis":
     st.header("Historical Data Analysis")
-    st.info(
-        "Time series analysis of token distribution and governance metrics will be implemented here."
-    )
+    st.info("Time series analysis of token distribution and governance metrics will be implemented here.")
 
 elif page == "Cross-Protocol Comparison":
     st.header("Cross-Protocol Comparison")

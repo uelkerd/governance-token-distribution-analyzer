@@ -40,9 +40,7 @@ def data_manager(temp_data_dir):
 def sample_data(data_manager):
     """Generate sample historical data for testing."""
     for protocol in ["compound", "uniswap", "aave"]:
-        historical_data.simulate_historical_data(
-            protocol, num_snapshots=5, interval_days=7, data_manager=data_manager
-        )
+        historical_data.simulate_historical_data(protocol, num_snapshots=5, interval_days=7, data_manager=data_manager)
     return data_manager.data_dir
 
 
@@ -106,9 +104,7 @@ class TestCliIntegration:
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
         # Check that output files were created
-        expected_output = os.path.join(
-            temp_output_dir, "protocol_comparison_gini_coefficient.png"
-        )
+        expected_output = os.path.join(temp_output_dir, "protocol_comparison_gini_coefficient.png")
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
 
@@ -172,9 +168,7 @@ class TestCliIntegration:
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
         # Check that output files were created
-        expected_output = os.path.join(
-            temp_output_dir, "compound_gini_coefficient_historical.json"
-        )
+        expected_output = os.path.join(temp_output_dir, "compound_gini_coefficient_historical.json")
         assert os.path.exists(expected_output)
         assert os.path.getsize(expected_output) > 0
 

@@ -1,5 +1,4 @@
-"""
-Token Distribution Analysis Page
+"""Token Distribution Analysis Page
 
 This page provides visualizations and metrics for token distribution analysis.
 """
@@ -21,11 +20,8 @@ src_dir = os.path.dirname(dashboard_dir)
 sys.path.insert(0, os.path.dirname(src_dir))
 
 from src.analyzer.config import DEFAULT_OUTPUT_DIR
-from src.analyzer.token_analysis import ConcentrationAnalyzer
 
-st.set_page_config(
-    page_title="Token Distribution Analysis", page_icon="📊", layout="wide"
-)
+st.set_page_config(page_title="Token Distribution Analysis", page_icon="📊", layout="wide")
 
 st.title("Token Distribution Analysis")
 st.sidebar.markdown("# Token Distribution")
@@ -61,15 +57,11 @@ if data:
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.metric(
-                "Gini Coefficient", f"{metrics.get('gini_coefficient', 'N/A'):.4f}"
-            )
+            st.metric("Gini Coefficient", f"{metrics.get('gini_coefficient', 'N/A'):.4f}")
             st.caption("0 = perfect equality, 1 = perfect inequality")
 
         with col2:
-            st.metric(
-                "Herfindahl Index", f"{metrics.get('herfindahl_index', 'N/A'):.4f}"
-            )
+            st.metric("Herfindahl Index", f"{metrics.get('herfindahl_index', 'N/A'):.4f}")
             st.caption("Measures market concentration")
 
         with col3:
@@ -78,41 +70,30 @@ if data:
             st.caption("Entities needed for 51% control")
 
         with col4:
-            if (
-                "top_holders_percentage" in metrics
-                and "10" in metrics["top_holders_percentage"]
-            ):
+            if "top_holders_percentage" in metrics and "10" in metrics["top_holders_percentage"]:
                 cr10 = metrics["top_holders_percentage"]["10"]
                 st.metric("Top 10 Concentration", f"{cr10:.2f}%")
                 st.caption("% held by top 10 addresses")
 
     # Main content area
-    tab1, tab2, tab3 = st.tabs(
-        ["Holder Analysis", "Concentration Metrics", "Visualization"]
-    )
+    tab1, tab2, tab3 = st.tabs(["Holder Analysis", "Concentration Metrics", "Visualization"])
 
     with tab1:
         st.subheader("Top Token Holders")
 
         # Display top holders table
         if "top_holders" in data:
-            top_n = st.slider(
-                "Number of top holders to display", 5, 50, 20, key="top_holders_slider"
-            )
+            top_n = st.slider("Number of top holders to display", 5, 50, 20, key="top_holders_slider")
 
             # Create DataFrame from top holders
             holders_df = pd.DataFrame(data["top_holders"][:top_n])
 
             # Format the data
             if "percentage" in holders_df.columns:
-                holders_df["percentage"] = holders_df["percentage"].apply(
-                    lambda x: f"{x:.2f}%"
-                )
+                holders_df["percentage"] = holders_df["percentage"].apply(lambda x: f"{x:.2f}%")
 
             if "balance" in holders_df.columns:
-                holders_df["balance"] = holders_df["balance"].apply(
-                    lambda x: f"{x:,.2f}"
-                )
+                holders_df["balance"] = holders_df["balance"].apply(lambda x: f"{x:,.2f}")
 
             st.dataframe(holders_df, use_container_width=True)
 
@@ -183,10 +164,7 @@ if data:
                     st.dataframe(cr_df, hide_index=True, use_container_width=True)
 
         # If there are palma ratio or other advanced metrics
-        if (
-            "concentration_metrics" in data
-            and "palma_ratio" in data["concentration_metrics"]
-        ):
+        if "concentration_metrics" in data and "palma_ratio" in data["concentration_metrics"]:
             st.markdown("### Advanced Inequality Metrics")
             advanced_df = pd.DataFrame(
                 {
@@ -218,17 +196,12 @@ if data:
         if viz_type == "Pie Chart":
             # Pie chart for token distribution
             if "top_holders" in data:
-                top_n = st.slider(
-                    "Number of top holders in chart", 5, 20, 10, key="pie_chart_slider"
-                )
+                top_n = st.slider("Number of top holders in chart", 5, 20, 10, key="pie_chart_slider")
 
                 holders = data["top_holders"][:top_n]
                 others_pct = 100 - sum(h["percentage"] for h in holders)
 
-                labels = [
-                    f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}"
-                    for h in holders
-                ]
+                labels = [f"#{h['rank']}: {h['address'][:6]}...{h['address'][-4:]}" for h in holders]
                 values = [h["percentage"] for h in holders]
 
                 if others_pct > 0:
@@ -273,10 +246,7 @@ if data:
                 )
 
                 # Calculate and highlight the Gini coefficient area
-                if (
-                    "concentration_metrics" in data
-                    and "gini_coefficient" in data["concentration_metrics"]
-                ):
+                if "concentration_metrics" in data and "gini_coefficient" in data["concentration_metrics"]:
                     gini = data["concentration_metrics"]["gini_coefficient"]
 
                     # Add shading for Gini coefficient
@@ -304,10 +274,7 @@ if data:
 
         elif viz_type == "Concentration Bars":
             # Bar chart for concentration ratios
-            if (
-                "concentration_metrics" in data
-                and "top_holders_percentage" in data["concentration_metrics"]
-            ):
+            if "concentration_metrics" in data and "top_holders_percentage" in data["concentration_metrics"]:
                 cr_data = data["concentration_metrics"]["top_holders_percentage"]
 
                 # Sort by holder count

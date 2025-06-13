@@ -1,5 +1,4 @@
-"""
-Configuration module for the Governance Token Distribution Analyzer.
+"""Configuration module for the Governance Token Distribution Analyzer.
 
 This module handles loading environment variables and configuration settings.
 """

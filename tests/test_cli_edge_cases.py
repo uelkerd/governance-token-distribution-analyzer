@@ -22,6 +22,7 @@ from governance_token_analyzer.cli.main import cli
 # Define project root for CLI execution
 project_root = Path(__file__).parent.parent
 
+
 # Make cli_runner and temp_dir fixtures available to all test classes
 @pytest.fixture
 def cli_runner():
@@ -435,37 +436,37 @@ class TestCLIEdgeCases:
     def test_concurrent_cli_operations(self, temp_dir):
         """Test concurrent CLI operations."""
         import subprocess
-        
+
         def run_cli_process(protocol):
             """Run CLI in a separate process with isolated environments."""
             output_dir = os.path.join(temp_dir, protocol)
             os.makedirs(output_dir, exist_ok=True)
-            
+
             # Use the actual installed CLI entry point from a simplified approach
             # that works better with how the module is structured
             result = subprocess.run(
                 [
-                    sys.executable, 
+                    sys.executable,
                     "-c",
-                    f"from governance_token_analyzer.cli.main import cli; cli(['analyze', '--protocol', '{protocol}', '--output-dir', '{output_dir}'])"
+                    f"from governance_token_analyzer.cli.main import cli; cli(['analyze', '--protocol', '{protocol}', '--output-dir', '{output_dir}'])",
                 ],
                 capture_output=True,
-                text=True
+                text=True,
             )
             return result
-            
+
         # Run analyses sequentially (simulating concurrent operations)
         protocols = ["compound", "uniswap", "aave"]
         results = []
-        
+
         for protocol in protocols:
             result = run_cli_process(protocol)
             results.append(result)
-            
+
         # All should succeed
         for result in results:
             assert result.returncode == 0, f"CLI process failed with: {result.stderr}"
-            
+
         # Verify output files were created
         for protocol in protocols:
             output_dir = os.path.join(temp_dir, protocol)
@@ -590,7 +591,11 @@ class TestValidationFrameworkEdgeCases:
         )
 
         # Should handle missing data gracefully - script now returns success (0) when no specific validation is requested
-        assert result.returncode == 0 or "no data" in result.stdout.lower() or "data directory found" in result.stdout.lower()
+        assert (
+            result.returncode == 0
+            or "no data" in result.stdout.lower()
+            or "data directory found" in result.stdout.lower()
+        )
 
     def test_validation_with_network_connectivity_issues(self, temp_validation_dir):
         """Test validation with network connectivity issues."""

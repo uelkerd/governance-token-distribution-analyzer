@@ -44,14 +44,10 @@ class Config:
         # API Endpoints
         self.etherscan_base_url = "https://api.etherscan.io/api"
         self.infura_base_url = (
-            f"https://mainnet.infura.io/v3/{self.infura_project_id}"
-            if self.infura_project_id
-            else ""
+            f"https://mainnet.infura.io/v3/{self.infura_project_id}" if self.infura_project_id else ""
         )
         self.alchemy_base_url = (
-            f"https://eth-mainnet.g.alchemy.com/v2/{self.alchemy_api_key}"
-            if self.alchemy_api_key
-            else ""
+            f"https://eth-mainnet.g.alchemy.com/v2/{self.alchemy_api_key}" if self.alchemy_api_key else ""
         )
         self.graph_base_url = "https://api.thegraph.com/subgraphs/name"
 
@@ -111,11 +107,7 @@ PROTOCOLS = {
 
 # API Endpoints
 ETHERSCAN_BASE_URL = "https://api.etherscan.io/api"
-INFURA_BASE_URL = (
-    f"https://mainnet.infura.io/v3/{INFURA_PROJECT_ID}" if INFURA_PROJECT_ID else ""
-)
+INFURA_BASE_URL = f"https://mainnet.infura.io/v3/{INFURA_PROJECT_ID}" if INFURA_PROJECT_ID else ""
 
 # Default settings
-DEFAULT_OUTPUT_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/sample_outputs"
-)
+DEFAULT_OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/sample_outputs")
