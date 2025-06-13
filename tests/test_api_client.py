@@ -72,7 +72,7 @@ def test_get_governance_votes(api_client):
     assert comp_votes[0]["protocol"] == "compound"
     assert "voter" in comp_votes[0]
     assert "vote_choice" in comp_votes[0]
-    assert "vote_power" in comp_votes[0]
+    assert "voting_power" in comp_votes[0]
 
     # Test with invalid protocol
     with pytest.raises(ValueError):
@@ -87,7 +87,7 @@ def test_get_protocol_data(api_client):
     assert "token_holders" in comp_data
     assert "proposals" in comp_data
     assert "votes" in comp_data
-    assert "timestamp" in comp_data
+    assert "last_updated" in comp_data
 
     # Test with invalid protocol
     with pytest.raises(ValueError):
