@@ -1,5 +1,4 @@
-"""Main CLI entrypoint for the governance token analyzer.
-"""
+"""Main CLI entrypoint for the governance token analyzer."""
 
 import json
 import os
@@ -27,9 +26,7 @@ def cli():
     default="data/historical",
     help="Directory with historical data",
 )
-@click.option(
-    "--output-dir", type=str, default="plots", help="Directory to save output"
-)
+@click.option("--output-dir", type=str, default="plots", help="Directory to save output")
 @click.option("--format", type=str, default="png", help="Output format")
 def historical_analysis(protocol, metric, data_dir, output_dir, format):
     """Analyze historical data for a protocol."""
@@ -53,9 +50,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format):
     required=True,
     help="Comma-separated list of protocols to compare",
 )
-@click.option(
-    "--metric", type=str, default="gini_coefficient", help="Metric to compare"
-)
+@click.option("--metric", type=str, default="gini_coefficient", help="Metric to compare")
 @click.option("--historical", is_flag=True, help="Use historical data")
 @click.option(
     "--data-dir",
@@ -63,9 +58,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format):
     default="data/historical",
     help="Directory with historical data",
 )
-@click.option(
-    "--output-dir", type=str, default="plots", help="Directory to save output"
-)
+@click.option("--output-dir", type=str, default="plots", help="Directory to save output")
 @click.option("--format", type=str, default="png", help="Output format")
 def compare_protocols_cmd(protocols, metric, historical, data_dir, output_dir, format):
     """Compare protocols based on historical data."""
@@ -89,18 +82,14 @@ def compare_protocols_cmd(protocols, metric, historical, data_dir, output_dir, f
     required=True,
     help="Protocol to analyze (compound, uniswap, aave)",
 )
-@click.option(
-    "--include-historical", is_flag=True, help="Include historical data in report"
-)
+@click.option("--include-historical", is_flag=True, help="Include historical data in report")
 @click.option(
     "--data-dir",
     type=str,
     default="data/historical",
     help="Directory with historical data",
 )
-@click.option(
-    "--output-dir", type=str, default="reports", help="Directory to save report"
-)
+@click.option("--output-dir", type=str, default="reports", help="Directory to save report")
 @click.option("--format", type=str, default="html", help="Report format")
 def generate_report_cmd(protocol, include_historical, data_dir, output_dir, format):
     """Generate a report for a protocol."""
@@ -151,9 +140,7 @@ def generate_report_cmd(protocol, include_historical, data_dir, output_dir, form
     default="data/historical",
     help="Directory with historical data",
 )
-@click.option(
-    "--output-dir", type=str, default="exports", help="Directory to save export"
-)
+@click.option("--output-dir", type=str, default="exports", help="Directory to save export")
 @click.option("--format", type=str, default="json", help="Export format")
 def export_historical_data(protocol, metric, data_dir, output_dir, format):
     """Export historical data for a protocol."""
@@ -186,13 +173,9 @@ def export_historical_data(protocol, metric, data_dir, output_dir, format):
     required=True,
     help="Protocol to analyze (compound, uniswap, aave)",
 )
-@click.option(
-    "--snapshots", type=int, default=12, help="Number of snapshots to simulate"
-)
+@click.option("--snapshots", type=int, default=12, help="Number of snapshots to simulate")
 @click.option("--interval", type=int, default=30, help="Days between snapshots")
-@click.option(
-    "--data-dir", type=str, default="data/historical", help="Directory to store data"
-)
+@click.option("--data-dir", type=str, default="data/historical", help="Directory to store data")
 @click.option(
     "--output-dir",
     type=str,
@@ -216,7 +199,5 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
         seed=42,  # Use fixed seed for reproducibility
     )
 
-    click.echo(
-        f"Generated {len(generated_snapshots)} historical snapshots for {protocol}"
-    )
+    click.echo(f"Generated {len(generated_snapshots)} historical snapshots for {protocol}")
     return data_dir

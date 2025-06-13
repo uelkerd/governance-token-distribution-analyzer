@@ -30,9 +30,7 @@ class TestProtocolIntegration:
         aave_holders = sample_protocol_data["aave"]["token_holders"]
 
         # Verify each protocol's data structure can be converted to a common format
-        compound_df = data_processor.standardize_holder_data(
-            compound_holders, "compound"
-        )
+        compound_df = data_processor.standardize_holder_data(compound_holders, "compound")
         uniswap_df = data_processor.standardize_holder_data(uniswap_holders, "uniswap")
         aave_df = data_processor.standardize_holder_data(aave_holders, "aave")
 
@@ -43,13 +41,9 @@ class TestProtocolIntegration:
             (uniswap_df, "uniswap"),
             (aave_df, "aave"),
         ]:
-            assert isinstance(
-                df, pd.DataFrame
-            ), f"{protocol} data should be converted to DataFrame"
+            assert isinstance(df, pd.DataFrame), f"{protocol} data should be converted to DataFrame"
             for col in expected_columns:
-                assert (
-                    col in df.columns
-                ), f"{protocol} data missing expected column: {col}"
+                assert col in df.columns, f"{protocol} data missing expected column: {col}"
 
     def test_cross_protocol_metrics_calculation(self, sample_protocol_data):
         """Test that metrics can be calculated across different protocols."""
@@ -57,9 +51,7 @@ class TestProtocolIntegration:
         protocol_dfs = {}
         for protocol, data in sample_protocol_data.items():
             holders = data["token_holders"]
-            protocol_dfs[protocol] = data_processor.standardize_holder_data(
-                holders, protocol
-            )
+            protocol_dfs[protocol] = data_processor.standardize_holder_data(holders, protocol)
 
         # Calculate Gini coefficient for each protocol
         gini_results = {}
@@ -68,9 +60,7 @@ class TestProtocolIntegration:
 
         # Verify results are within expected range (0-1 for Gini coefficient)
         for protocol, gini in gini_results.items():
-            assert (
-                0 <= gini <= 1
-            ), f"Gini coefficient for {protocol} outside valid range: {gini}"
+            assert 0 <= gini <= 1, f"Gini coefficient for {protocol} outside valid range: {gini}"
 
     def test_protocol_data_to_visualization(self, sample_protocol_data):
         """Test that protocol data can be visualized through the visualization module."""
@@ -78,9 +68,7 @@ class TestProtocolIntegration:
         protocol_dfs = {}
         for protocol, data in sample_protocol_data.items():
             holders = data["token_holders"]
-            protocol_dfs[protocol] = data_processor.standardize_holder_data(
-                holders, protocol
-            )
+            protocol_dfs[protocol] = data_processor.standardize_holder_data(holders, protocol)
 
         # Generate a comparison chart
         chart = charts.create_distribution_comparison(
@@ -99,9 +87,7 @@ class TestProtocolIntegration:
         processed_data = {}
         for protocol, data in sample_protocol_data.items():
             processed_data[protocol] = {
-                "holders_df": data_processor.standardize_holder_data(
-                    data["token_holders"], protocol
-                ),
+                "holders_df": data_processor.standardize_holder_data(data["token_holders"], protocol),
                 "governance_data": data.get("governance_data", {}),
             }
 
@@ -109,12 +95,8 @@ class TestProtocolIntegration:
         analysis_results = {}
         for protocol, data in processed_data.items():
             analysis_results[protocol] = {
-                "gini": metrics.calculate_gini_coefficient(
-                    data["holders_df"]["balance"]
-                ),
-                "concentration_ratio": metrics.calculate_concentration_ratio(
-                    data["holders_df"], 10
-                ),
+                "gini": metrics.calculate_gini_coefficient(data["holders_df"]["balance"]),
+                "concentration_ratio": metrics.calculate_concentration_ratio(data["holders_df"], 10),
                 "participation_rate": metrics.calculate_participation_rate(
                     data["governance_data"].get("votes", []),
                     data["governance_data"].get("total_holders", 1000),
@@ -124,18 +106,10 @@ class TestProtocolIntegration:
         # Verify results structure
         for protocol, results in analysis_results.items():
             assert "gini" in results, f"{protocol} results missing Gini coefficient"
-            assert (
-                "concentration_ratio" in results
-            ), f"{protocol} results missing concentration ratio"
-            assert (
-                "participation_rate" in results
-            ), f"{protocol} results missing participation rate"
+            assert "concentration_ratio" in results, f"{protocol} results missing concentration ratio"
+            assert "participation_rate" in results, f"{protocol} results missing participation rate"
 
         # Create comparative visualization
-        comparison_chart = charts.create_metrics_comparison(
-            analysis_results, "Protocol Governance Comparison"
-        )
+        comparison_chart = charts.create_metrics_comparison(analysis_results, "Protocol Governance Comparison")
 
-        assert (
-            comparison_chart is not None
-        ), "Comparison chart should be created successfully"
+        assert comparison_chart is not None, "Comparison chart should be created successfully"

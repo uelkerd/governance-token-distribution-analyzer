@@ -132,9 +132,7 @@ def analyze_governance_participation(
             voter_frequency = votes_df["voter"].value_counts()
             voter_metrics["single_vote_count"] = (voter_frequency == 1).sum()
             voter_metrics["multi_vote_count"] = (voter_frequency > 1).sum()
-            voter_metrics["avg_votes_per_voter"] = (
-                votes_df["voter"].value_counts().mean()
-            )
+            voter_metrics["avg_votes_per_voter"] = votes_df["voter"].value_counts().mean()
 
             # Calculate voter participation rate
             total_holders = len(token_holders)
@@ -156,9 +154,7 @@ def analyze_governance_participation(
                 "participation_metrics": {
                     "total_votes": total_votes,
                     "overall_participation_rate": overall_participation,
-                    "avg_votes_per_proposal": total_votes / proposal_count
-                    if proposal_count > 0
-                    else 0,
+                    "avg_votes_per_proposal": total_votes / proposal_count if proposal_count > 0 else 0,
                 },
                 "voter_metrics": voter_metrics,
                 "proposal_metrics": proposal_metrics,
@@ -171,9 +167,7 @@ def analyze_governance_participation(
         return results
 
     except Exception as e:
-        logger.error(
-            f"Error analyzing governance participation for {protocol_name}: {str(e)}"
-        )
+        logger.error(f"Error analyzing governance participation for {protocol_name}: {str(e)}")
         return {
             "protocol": protocol_name,
             "error": f"Analysis error: {str(e)}",
@@ -181,9 +175,7 @@ def analyze_governance_participation(
         }
 
 
-@measure_api_call(
-    protocol="<protocol_name>", method="analyze_participation_by_holder_size"
-)
+@measure_api_call(protocol="<protocol_name>", method="analyze_participation_by_holder_size")
 def analyze_participation_by_holder_size(
     governance_data: Dict[str, Any],
     token_holders: pd.DataFrame,
@@ -202,14 +194,8 @@ def analyze_participation_by_holder_size(
     """
     logger.info(f"Analyzing participation by holder size for {protocol_name}")
 
-    if (
-        not governance_data
-        or not isinstance(governance_data, dict)
-        or token_holders.empty
-    ):
-        logger.warning(
-            f"Insufficient data for holder size analysis for {protocol_name}"
-        )
+    if not governance_data or not isinstance(governance_data, dict) or token_holders.empty:
+        logger.warning(f"Insufficient data for holder size analysis for {protocol_name}")
         return {
             "protocol": protocol_name,
             "error": "Insufficient data for analysis",
@@ -238,15 +224,11 @@ def analyze_participation_by_holder_size(
 
         # Categorize token holders by size
         token_holders["address_lower"] = token_holders["address"].str.lower()
-        token_holders["participated"] = token_holders["address_lower"].isin(
-            voter_addresses
-        )
+        token_holders["participated"] = token_holders["address_lower"].isin(voter_addresses)
 
         # Define holder categories
         large_holders = token_holders[token_holders["percentage"] >= 1.0]
-        medium_holders = token_holders[
-            (token_holders["percentage"] < 1.0) & (token_holders["percentage"] >= 0.1)
-        ]
+        medium_holders = token_holders[(token_holders["percentage"] < 1.0) & (token_holders["percentage"] >= 0.1)]
         small_holders = token_holders[token_holders["percentage"] < 0.1]
 
         # Calculate participation rates by category
@@ -275,15 +257,11 @@ def analyze_participation_by_holder_size(
             },
         }
 
-        logger.info(
-            f"Participation by holder size analysis completed for {protocol_name}"
-        )
+        logger.info(f"Participation by holder size analysis completed for {protocol_name}")
         return results
 
     except Exception as e:
-        logger.error(
-            f"Error analyzing participation by holder size for {protocol_name}: {str(e)}"
-        )
+        logger.error(f"Error analyzing participation by holder size for {protocol_name}: {str(e)}")
         return {
             "protocol": protocol_name,
             "error": f"Analysis error: {str(e)}",
@@ -318,13 +296,9 @@ def compare_participation_metrics(
             "protocol": protocol,
             "proposal_count": metrics.get("proposal_count", 0),
             "total_votes": participation_metrics.get("total_votes", 0),
-            "participation_rate": participation_metrics.get(
-                "overall_participation_rate", 0
-            ),
+            "participation_rate": participation_metrics.get("overall_participation_rate", 0),
             "unique_voter_count": voter_metrics.get("unique_voter_count", 0),
-            "voter_participation_rate": voter_metrics.get(
-                "voter_participation_rate", 0
-            ),
+            "voter_participation_rate": voter_metrics.get("voter_participation_rate", 0),
         }
         comparison_data.append(row)
 

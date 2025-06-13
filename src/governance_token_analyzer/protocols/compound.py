@@ -15,9 +15,7 @@ api_client = APIClient()
 DEFAULT_USE_REAL_DATA = bool(config.etherscan_api_key)
 
 
-def get_token_holders(
-    limit: int = 100, use_real_data: bool = None
-) -> List[Dict[str, Any]]:
+def get_token_holders(limit: int = 100, use_real_data: bool = None) -> List[Dict[str, Any]]:
     """Get list of top COMP token holders.
 
     Args:
@@ -35,9 +33,7 @@ def get_token_holders(
     return api_client.get_token_holders("compound", limit, use_real_data)
 
 
-def get_governance_proposals(
-    limit: int = 10, use_real_data: bool = None
-) -> List[Dict[str, Any]]:
+def get_governance_proposals(limit: int = 10, use_real_data: bool = None) -> List[Dict[str, Any]]:
     """Get list of Compound governance proposals.
 
     Args:
@@ -55,9 +51,7 @@ def get_governance_proposals(
     return api_client.get_governance_proposals("compound", limit, use_real_data)
 
 
-def get_governance_votes(
-    proposal_id: int, use_real_data: bool = None
-) -> List[Dict[str, Any]]:
+def get_governance_votes(proposal_id: int, use_real_data: bool = None) -> List[Dict[str, Any]]:
     """Get list of votes for a specific proposal.
 
     Args:
@@ -115,15 +109,9 @@ def calculate_voting_power_distribution() -> Dict[str, float]:
     total_supply = sum(holder["balance"] for holder in holders)
 
     # Calculate percentage held by top holders
-    top_10_percentage = (
-        sum(holder["balance"] for holder in holders[:10]) / total_supply * 100
-    )
-    top_20_percentage = (
-        sum(holder["balance"] for holder in holders[:20]) / total_supply * 100
-    )
-    top_50_percentage = (
-        sum(holder["balance"] for holder in holders[:50]) / total_supply * 100
-    )
+    top_10_percentage = sum(holder["balance"] for holder in holders[:10]) / total_supply * 100
+    top_20_percentage = sum(holder["balance"] for holder in holders[:20]) / total_supply * 100
+    top_50_percentage = sum(holder["balance"] for holder in holders[:50]) / total_supply * 100
 
     # Calculate delegated voting power
     total_delegated = sum(holder.get("delegated_power", 0) for holder in holders)

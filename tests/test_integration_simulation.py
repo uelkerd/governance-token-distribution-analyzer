@@ -99,9 +99,7 @@ def test_community_distribution(simulator):
     # Verify distribution has recognizable pattern
     top_holder_percentage = float(holders[0]["TokenHolderPercentage"])
     bottom_holder_percentage = float(holders[-1]["TokenHolderPercentage"])
-    assert (
-        top_holder_percentage > bottom_holder_percentage
-    )  # Should still have some inequality
+    assert top_holder_percentage > bottom_holder_percentage  # Should still have some inequality
 
 
 def test_distribution_patterns(simulator):

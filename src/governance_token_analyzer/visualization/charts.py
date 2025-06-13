@@ -179,17 +179,13 @@ def create_whale_influence_chart(
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7))
 
     # Plot whale percentage of holders
-    whale_percentages = [
-        whale_data[protocol].get("whale_percentage", 0) for protocol in protocols
-    ]
+    whale_percentages = [whale_data[protocol].get("whale_percentage", 0) for protocol in protocols]
     ax1.bar(protocols, whale_percentages)
     ax1.set_ylabel("Percentage of Holders (%)")
     ax1.set_title("Whales as Percentage of Total Holders")
 
     # Plot whale holdings percentage
-    holdings_percentages = [
-        whale_data[protocol].get("holdings_percentage", 0) for protocol in protocols
-    ]
+    holdings_percentages = [whale_data[protocol].get("holdings_percentage", 0) for protocol in protocols]
     ax2.bar(protocols, holdings_percentages)
     ax2.set_ylabel("Percentage of Total Supply (%)")
     ax2.set_title("Whale Holdings as Percentage of Total Supply")
@@ -306,9 +302,7 @@ def create_delegation_network_visualization(
                 short_addr = f"{node[:6]}...{node[-4:]}"
                 labels[node] = short_addr
 
-        nx.draw_networkx_labels(
-            delegation_graph, pos, labels=labels, font_size=10, font_weight="bold"
-        )
+        nx.draw_networkx_labels(delegation_graph, pos, labels=labels, font_size=10, font_weight="bold")
 
         # Add legend
         legend_elements = [
@@ -360,9 +354,7 @@ def create_delegation_network_visualization(
 
     except Exception as e:
         logger.error(f"Failed to create delegation network visualization: {e}")
-        raise VisualizationError(
-            f"Failed to create delegation network visualization: {e}"
-        )
+        raise VisualizationError(f"Failed to create delegation network visualization: {e}")
 
 
 def create_delegation_metrics_chart(
@@ -389,8 +381,7 @@ def create_delegation_metrics_chart(
         display_metrics = {
             "Delegation Rate (%)": metrics.get("delegation_rate", 0),
             "Delegator %": metrics.get("delegator_percentage", 0),
-            "Delegation Concentration": metrics.get("delegation_concentration", 0)
-            * 100,
+            "Delegation Concentration": metrics.get("delegation_concentration", 0) * 100,
         }
 
         # Create bar chart
@@ -426,9 +417,7 @@ def create_delegation_metrics_chart(
         avg_delegation = metrics.get("avg_delegation_amount", 0)
 
         metrics_text = (
-            f"Delegators: {delegator_count}\n"
-            f"Delegatees: {delegatee_count}\n"
-            f"Avg. Delegation: {avg_delegation:.2f}"
+            f"Delegators: {delegator_count}\nDelegatees: {delegatee_count}\nAvg. Delegation: {avg_delegation:.2f}"
         )
 
         # Add text box

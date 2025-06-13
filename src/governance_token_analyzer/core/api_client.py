@@ -249,9 +249,7 @@ class APIClient:
                 endpoint = endpoint_template.format(api_key=self.graph_api_key)
                 self.graph_clients[protocol] = TheGraphAPI(endpoint)
 
-    def get_token_holders(
-        self, protocol: str, limit: int = 100, use_real_data: bool = True
-    ) -> List[Dict[str, Any]]:
+    def get_token_holders(self, protocol: str, limit: int = 100, use_real_data: bool = True) -> List[Dict[str, Any]]:
         """Get token holders for a specific protocol.
 
         Args:
@@ -263,9 +261,7 @@ class APIClient:
             List of token holder dictionaries
 
         """
-        logger.info(
-            f"Fetching token holders for {protocol} (limit: {limit}, real_data: {use_real_data})"
-        )
+        logger.info(f"Fetching token holders for {protocol} (limit: {limit}, real_data: {use_real_data})")
 
         if protocol not in PROTOCOL_INFO:
             raise ValueError(f"Unsupported protocol: {protocol}")
@@ -278,20 +274,14 @@ class APIClient:
         if use_real_data:
             try:
                 # Use the new fallback system that prioritizes Alchemy
-                holders = self._fetch_token_holders_with_fallback(
-                    protocol, token_address, limit
-                )
+                holders = self._fetch_token_holders_with_fallback(protocol, token_address, limit)
 
                 # Validate the data quality
                 if holders and len(holders) > 0:
-                    logger.info(
-                        f"✅ Successfully fetched {len(holders)} real token holders for {protocol}"
-                    )
+                    logger.info(f"✅ Successfully fetched {len(holders)} real token holders for {protocol}")
                     return holders
                 else:
-                    logger.warning(
-                        f"⚠️  No real data available for {protocol}, falling back to simulation"
-                    )
+                    logger.warning(f"⚠️  No real data available for {protocol}, falling back to simulation")
 
             except Exception as e:
                 logger.warning(f"❌ Real data fetch failed for {protocol}: {e}")
@@ -358,9 +348,7 @@ class APIClient:
             logger.error(f"Error fetching governance votes for {protocol}: {e}")
             return []
 
-    def get_protocol_data(
-        self, protocol: str, use_real_data: bool = False
-    ) -> Dict[str, Any]:
+    def get_protocol_data(self, protocol: str, use_real_data: bool = False) -> Dict[str, Any]:
         """Get comprehensive protocol data including token holders, proposals, and governance metrics.
 
         Args:
@@ -387,13 +375,9 @@ class APIClient:
             # Calculate metrics
             total_supply = protocol_info.get("total_supply", 0)
             if holders:
-                total_tokens_held = sum(
-                    float(holder.get("balance", 0)) for holder in holders
-                )
+                total_tokens_held = sum(float(holder.get("balance", 0)) for holder in holders)
                 holder_concentration = (
-                    sum(float(holder.get("balance", 0)) for holder in holders[:10])
-                    / total_tokens_held
-                    * 100
+                    sum(float(holder.get("balance", 0)) for holder in holders[:10]) / total_tokens_held * 100
                     if total_tokens_held > 0
                     else 0
                 )
@@ -453,9 +437,7 @@ class APIClient:
         # For now, return a relative measure
         return min(avg_participation / 1000000, 100.0)  # Normalize to reasonable range
 
-    def _generate_sample_holder_data(
-        self, protocol: str, count: int
-    ) -> List[Dict[str, Any]]:
+    def _generate_sample_holder_data(self, protocol: str, count: int) -> List[Dict[str, Any]]:
         """Generate sample token holder data for testing.
 
         Args:
@@ -482,9 +464,7 @@ class APIClient:
         random.seed(params["seed"])
 
         # Generate a power-law distribution of token balances with protocol-specific alpha
-        balances = self._generate_power_law_distribution(
-            count, total_supply, params["alpha"]
-        )
+        balances = self._generate_power_law_distribution(count, total_supply, params["alpha"])
 
         # Create sample addresses
         holders = []
@@ -514,9 +494,7 @@ class APIClient:
 
         return holders
 
-    def _generate_power_law_distribution(
-        self, count: int, total: float, alpha: float = 1.5
-    ) -> List[float]:
+    def _generate_power_law_distribution(self, count: int, total: float, alpha: float = 1.5) -> List[float]:
         """Generate a power-law distribution of values.
 
         Args:
@@ -537,9 +515,7 @@ class APIClient:
 
         return normalized
 
-    def _generate_sample_proposal_data(
-        self, protocol: str, count: int
-    ) -> List[Dict[str, Any]]:
+    def _generate_sample_proposal_data(self, protocol: str, count: int) -> List[Dict[str, Any]]:
         """Generate sample governance proposal data for testing.
 
         Args:
@@ -644,11 +620,7 @@ class APIClient:
                     "id": proposal_id,
                     "title": title,
                     "description": description,
-                    "proposer": random.choice(
-                        info.get(
-                            "whale_addresses", [f"0x{random.getrandbits(160):040x}"]
-                        )
-                    ),
+                    "proposer": random.choice(info.get("whale_addresses", [f"0x{random.getrandbits(160):040x}"])),
                     "created_at": created_date.isoformat(),
                     "end_date": end_date.isoformat(),
                     "state": state,
@@ -657,16 +629,13 @@ class APIClient:
                     "abstain_votes": abstain_votes,
                     "total_votes": total_votes,
                     "participation_rate": participation_rate,
-                    "quorum_reached": total_votes
-                    > (info["total_supply"] * 0.04),  # 4% quorum
+                    "quorum_reached": total_votes > (info["total_supply"] * 0.04),  # 4% quorum
                 }
             )
 
         return proposals
 
-    def _generate_sample_vote_data(
-        self, protocol: str, proposal_id: int
-    ) -> List[Dict[str, Any]]:
+    def _generate_sample_vote_data(self, protocol: str, proposal_id: int) -> List[Dict[str, Any]]:
         """Generate sample governance vote data for testing.
 
         Args:
@@ -715,18 +684,14 @@ class APIClient:
                     "vote_choice": vote_choice,
                     "vote_power": vote_power,
                     "vote_weight": vote_power / info["total_supply"],
-                    "voted_at": (
-                        datetime.now() - timedelta(days=random.randint(1, 14))
-                    ).isoformat(),
+                    "voted_at": (datetime.now() - timedelta(days=random.randint(1, 14))).isoformat(),
                     "tx_hash": f"0x{random.getrandbits(256):064x}",
                 }
             )
 
         return votes
 
-    def _fetch_token_holders_with_fallback(
-        self, protocol: str, token_address: str, limit: int
-    ) -> List[Dict[str, Any]]:
+    def _fetch_token_holders_with_fallback(self, protocol: str, token_address: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch token holders with multiple API fallbacks for better reliability.
         Prioritizes Alchemy (most generous free tier) -> The Graph -> Moralis -> Etherscan.
 
@@ -748,9 +713,7 @@ class APIClient:
             ("Moralis", self._fetch_token_holders_moralis),
             (
                 "Etherscan",
-                lambda addr, lim: self.get_etherscan_token_holders(addr, 1, lim)[
-                    "result"
-                ],
+                lambda addr, lim: self.get_etherscan_token_holders(addr, 1, lim)["result"],
             ),
         ]
 
@@ -760,9 +723,7 @@ class APIClient:
                 holders = api_method(token_address, limit)
 
                 if holders and len(holders) > 0:
-                    logger.info(
-                        f"✅ Successfully fetched {len(holders)} holders from {api_name}"
-                    )
+                    logger.info(f"✅ Successfully fetched {len(holders)} holders from {api_name}")
                     return holders
                 else:
                     logger.warning(f"⚠️  {api_name} returned no holders")
@@ -775,9 +736,7 @@ class APIClient:
         logger.info("🔄 All APIs failed, using protocol-specific simulation")
         return self._generate_simulated_holders(token_address, 1, limit)["result"]
 
-    def _fetch_governance_proposals(
-        self, protocol: str, limit: int
-    ) -> List[Dict[str, Any]]:
+    def _fetch_governance_proposals(self, protocol: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch real governance proposals data from The Graph API.
 
         Args:
@@ -790,18 +749,14 @@ class APIClient:
         """
         try:
             if protocol not in self.graph_clients:
-                logger.warning(
-                    f"No Graph client available for {protocol}, using sample data"
-                )
+                logger.warning(f"No Graph client available for {protocol}, using sample data")
                 return self._generate_sample_proposal_data(protocol, limit)
 
             graph_client = self.graph_clients[protocol]
             query = GOVERNANCE_QUERIES.get(protocol)
 
             if not query:
-                logger.warning(
-                    f"No GraphQL query defined for {protocol}, using sample data"
-                )
+                logger.warning(f"No GraphQL query defined for {protocol}, using sample data")
                 return self._generate_sample_proposal_data(protocol, limit)
 
             logger.info(f"Fetching {protocol} governance proposals from The Graph")
@@ -837,9 +792,7 @@ class APIClient:
                 )
 
             if proposals:
-                logger.info(
-                    f"Successfully fetched {len(proposals)} proposals from The Graph"
-                )
+                logger.info(f"Successfully fetched {len(proposals)} proposals from The Graph")
                 return proposals
             else:
                 logger.warning(f"No proposals found for {protocol}, using sample data")
@@ -850,9 +803,7 @@ class APIClient:
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_proposal_data(protocol, limit)
 
-    def _fetch_governance_votes(
-        self, protocol: str, proposal_id: int
-    ) -> List[Dict[str, Any]]:
+    def _fetch_governance_votes(self, protocol: str, proposal_id: int) -> List[Dict[str, Any]]:
         """Fetch real governance votes data from The Graph API.
 
         Args:
@@ -865,18 +816,14 @@ class APIClient:
         """
         try:
             if protocol not in self.graph_clients:
-                logger.warning(
-                    f"No Graph client available for {protocol}, using sample data"
-                )
+                logger.warning(f"No Graph client available for {protocol}, using sample data")
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
             graph_client = self.graph_clients[protocol]
             query = VOTE_QUERIES.get(protocol)
 
             if not query:
-                logger.warning(
-                    f"No vote query defined for {protocol}, using sample data"
-                )
+                logger.warning(f"No vote query defined for {protocol}, using sample data")
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
             logger.info(f"Fetching votes for proposal {proposal_id} from The Graph")
@@ -885,9 +832,7 @@ class APIClient:
             response = graph_client.execute_query(query, variables)
 
             if "errors" in response:
-                logger.error(
-                    f"GraphQL errors for {protocol} votes: {response['errors']}"
-                )
+                logger.error(f"GraphQL errors for {protocol} votes: {response['errors']}")
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
             votes_data = response.get("data", {}).get("votes", [])
@@ -912,9 +857,7 @@ class APIClient:
                 logger.info(f"Successfully fetched {len(votes)} votes from The Graph")
                 return votes
             else:
-                logger.warning(
-                    f"No votes found for proposal {proposal_id}, using sample data"
-                )
+                logger.warning(f"No votes found for proposal {proposal_id}, using sample data")
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
         except Exception as e:
@@ -976,9 +919,7 @@ class APIClient:
 
         return self._make_request(params)
 
-    def get_etherscan_token_holders(
-        self, token_address: str, page: int = 1, offset: int = 100
-    ) -> Dict[str, Any]:
+    def get_etherscan_token_holders(self, token_address: str, page: int = 1, offset: int = 100) -> Dict[str, Any]:
         """Get a list of token holders from Etherscan.
 
         Note: This requires a paid Etherscan API key for the tokenholderslist endpoint.
@@ -1013,17 +954,13 @@ class APIClient:
             logger.warning(f"Token holder list endpoint failed: {str(e)}")
 
         # Fallback to simulated data if the API call doesn't work
-        logger.info(
-            "Using simulated token holder data (API requires paid tier for actual data)"
-        )
+        logger.info("Using simulated token holder data (API requires paid tier for actual data)")
 
         # Generate simulated holder data for testing
         simulated_data = self._generate_simulated_holders(token_address, page, offset)
         return simulated_data
 
-    def _generate_simulated_holders(
-        self, token_address: str, page: int, offset: int
-    ) -> Dict[str, Any]:
+    def _generate_simulated_holders(self, token_address: str, page: int, offset: int) -> Dict[str, Any]:
         """Generate simulated token holder data for testing purposes.
 
         Args:
@@ -1153,9 +1090,7 @@ class APIClient:
 
         return self._make_request(params)
 
-    def _fetch_token_holders_alchemy(
-        self, token_address: str, limit: int
-    ) -> List[Dict[str, Any]]:
+    def _fetch_token_holders_alchemy(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch token holders using Alchemy API (300M compute units/month free - most generous!).
 
         Args:
@@ -1186,24 +1121,18 @@ class APIClient:
             response.raise_for_status()
 
             metadata = response.json()
-            logger.info(
-                f"Token metadata: {metadata.get('result', {}).get('name', 'Unknown')}"
-            )
+            logger.info(f"Token metadata: {metadata.get('result', {}).get('name', 'Unknown')}")
 
             # For now, since getOwnersForToken might not be available in free tier,
             # let's use a different approach or fall back gracefully
-            logger.warning(
-                "Alchemy token holders endpoint requires paid tier, falling back"
-            )
+            logger.warning("Alchemy token holders endpoint requires paid tier, falling back")
             raise ValueError("Alchemy token holders requires paid tier")
 
         except Exception as e:
             logger.error(f"Alchemy API error: {e}")
             raise
 
-    def _fetch_token_holders_graph(
-        self, token_address: str, limit: int
-    ) -> List[Dict[str, Any]]:
+    def _fetch_token_holders_graph(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch token holders using The Graph Protocol (generous query limits).
 
         Args:
@@ -1281,9 +1210,7 @@ class APIClient:
             logger.error(f"The Graph API error: {e}")
             raise
 
-    def _fetch_token_holders_moralis(
-        self, token_address: str, limit: int
-    ) -> List[Dict[str, Any]]:
+    def _fetch_token_holders_moralis(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch token holders using Moralis API (40k requests/month free).
 
         Args:
@@ -1365,13 +1292,9 @@ class TheGraphAPI:
         self.session = requests.Session()
 
         # Set up request headers
-        self.session.headers.update(
-            {"Content-Type": "application/json", "User-Agent": "gta/1.0.0"}
-        )
+        self.session.headers.update({"Content-Type": "application/json", "User-Agent": "gta/1.0.0"})
 
-    def execute_query(
-        self, query: str, variables: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def execute_query(self, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Execute a GraphQL query against the subgraph.
 
         Args:
@@ -1394,18 +1317,14 @@ class TheGraphAPI:
             max_retries = 3
             for attempt in range(max_retries):
                 try:
-                    response = self.session.post(
-                        self.subgraph_url, json=payload, timeout=30
-                    )
+                    response = self.session.post(self.subgraph_url, json=payload, timeout=30)
                     response.raise_for_status()
 
                     result = response.json()
 
                     # Check for GraphQL errors
                     if "errors" in result:
-                        logger.warning(
-                            f"GraphQL errors in response: {result['errors']}"
-                        )
+                        logger.warning(f"GraphQL errors in response: {result['errors']}")
 
                     return result
 
@@ -1415,9 +1334,7 @@ class TheGraphAPI:
                 ) as e:
                     if attempt < max_retries - 1:
                         wait_time = 2**attempt  # Exponential backoff
-                        logger.warning(
-                            f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {e}"
-                        )
+                        logger.warning(f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {e}")
                         time.sleep(wait_time)
                         continue
                     else:
