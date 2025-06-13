@@ -498,16 +498,14 @@ class TestCLIEdgeCases:
         # Run analyses concurrently using ThreadPoolExecutor
         protocols = ["compound", "uniswap", "aave"]
         results = {}
-        
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            future_to_protocol = {
-                executor.submit(run_cli_process, protocol): protocol for protocol in protocols
-            }
-            
+            future_to_protocol = {executor.submit(run_cli_process, protocol): protocol for protocol in protocols}
+
             for future in concurrent.futures.as_completed(future_to_protocol):
                 protocol, result = future.result()
                 results[protocol] = result
-        
+
         # All should succeed
         for protocol, result in results.items():
             assert result.returncode == 0, f"CLI process for {protocol} failed with: {result.stderr}"
