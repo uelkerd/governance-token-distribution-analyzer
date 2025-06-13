@@ -223,7 +223,9 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
                             logger.info(f"Successfully parsed JSON from {latest_file}")
                             return json_data
                     except (json.JSONDecodeError, IOError) as exception:
-                        logger.warning(f"Failed to parse JSON from {latest_file}: {exception}")
+                        logger.warning(
+                            f"Failed to parse JSON from {latest_file}: {exception}"
+                        )
                         continue
 
         # If JSON parsing failed, return the raw output
