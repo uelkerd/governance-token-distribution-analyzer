@@ -8,9 +8,10 @@ A tool for analyzing governance token distribution and governance participation 
 [![codecov](https://codecov.io/gh/uelkerd/governance-token-distribution-analyzer/branch/main/graph/badge.svg)](https://codecov.io/gh/uelkerd/governance-token-distribution-analyzer)
 
 --
+
+
 [![CodeScene Average Code Health](https://codescene.io/projects/67798/status-badges/average-code-health)](https://codescene.io/projects/67798)
 [![CodeScene Hotspot Code Health](https://codescene.io/projects/67798/status-badges/hotspot-code-health)](https://codescene.io/projects/67798)
-[![CodeScene Missed Goals](https://codescene.io/projects/67798/status-badges/missed-goals)](https://codescene.io/projects/67798)
 [![CodeScene System Mastery](https://codescene.io/projects/67798/status-badges/system-mastery)](https://codescene.io/projects/67798)
 
 [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/67798)
