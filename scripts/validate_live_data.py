@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from governance_token_analyzer.core.api_client import APIClient
 from governance_token_analyzer.core.config import Config
+from governance_token_analyzer.core.exceptions import NetworkError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -29,7 +30,6 @@ class NetworkError(Exception):
     """Custom exception for network-related errors."""
 
     pass
-
 
 class LiveDataValidator:
     """Validates live data integration functionality."""
@@ -116,7 +116,6 @@ class LiveDataValidator:
             self.results["errors"].append(f"Network error for {protocol}: {str(net_err)}")
             self.results["token_holders"][protocol] = {"success": False, "error": str(net_err)}
             raise NetworkError(f"Network error: {net_err}")
-
         except Exception as exception:
             error_msg = f"Error fetching token holders for {protocol}: {exception}"
             logger.error(error_msg)
