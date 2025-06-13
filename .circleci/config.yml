@@ -1,31 +1,627 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/configuration-reference
+# CircleCI Configuration for Governance Token Analyzer
+# This configuration translates the comprehensive GitHub Actions pipeline
+# to CircleCI format with equivalent functionality and job orchestration
+
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/jobs-steps/#jobs-overview & https://circleci.com/docs/configuration-reference/#jobs
-jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/executor-intro/ & https://circleci.com/docs/configuration-reference/#executor-job
+# Orbs provide reusable packages of CircleCI configuration
+orbs:
+  python: circleci/python@2.1.1
+  codecov: codecov/codecov@3.2.4
+
+# Parameters allow us to create reusable job templates
+# This enables matrix-like builds across different Python versions
+parameters:
+  python-versions:
+    type: string
+    default: "3.8,3.9,3.10,3.12"
+
+# Define reusable executors for different Python versions
+executors:
+  python-38:
     docker:
-      # Specify the version you desire here
-      # See: https://circleci.com/developer/images/image/cimg/base
-      - image: cimg/base:current
+      - image: cimg/python:3.8
+    working_directory: ~/governance-token-analyzer
+    
+  python-39:
+    docker:
+      - image: cimg/python:3.9
+    working_directory: ~/governance-token-analyzer
+    
+  python-310:
+    docker:
+      - image: cimg/python:3.10
+    working_directory: ~/governance-token-analyzer
+    
+  python-312:
+    docker:
+      - image: cimg/python:3.12
+    working_directory: ~/governance-token-analyzer
 
-    # Add steps to the job
-    # See: https://circleci.com/docs/jobs-steps/#steps-overview & https://circleci.com/docs/configuration-reference/#steps
+# Job definitions - each job represents a stage in our CI pipeline
+jobs:
+  # Security scanning job - equivalent to security-scan in GitHub Actions
+  security-scan:
+    executor: python-310  # Use Python 3.10 for security scanning
     steps:
-      # Checkout the code as the first step.
       - checkout
+      
+      # Install TruffleHog for secret detection
+      # Note: TruffleHog installation differs from GitHub Actions orb usage
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: Install TruffleHog
+          command: |
+            curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /tmp
+            sudo mv /tmp/trufflehog /usr/local/bin/
+      
+      - run:
+          name: Run TruffleHog secret detection
+          command: |
+            # Run TruffleHog with similar parameters to GitHub Actions version
+            trufflehog git file://. --branch=main --only-verified --debug
+      
+      # Set up Python security scanning tools
+      - run:
+          name: Install security scanning dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install safety pip-audit
+      
+      - run:
+          name: Scan dependencies for vulnerabilities
+          command: |
+            # Check for known security vulnerabilities
+            # Allow warnings to not fail the build (similar to GitHub Actions)
+            safety check --json || echo "Safety check completed with warnings"
+            pip-audit --format=json || echo "Pip-audit completed with warnings"
 
-# Orchestrate jobs using workflows
-# See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
+  # Code quality job - formatting, linting, and type checking
+  code-quality:
+    executor: python-310
+    steps:
+      - checkout
+      
+      # Restore pip cache to speed up dependency installation
+      - restore_cache:
+          keys:
+            - pip-cache-v1-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-{{ .Branch }}-
+            - pip-cache-v1-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      # Save pip cache for future builds
+      - save_cache:
+          key: pip-cache-v1-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Check code formatting with Ruff
+          command: |
+            ruff format --check src/governance_token_analyzer/ tests/
+      
+      - run:
+          name: Lint with Ruff
+          command: |
+            ruff check src/governance_token_analyzer/ tests/ --no-fix
+      
+      - run:
+          name: Type check with mypy
+          command: |
+            mypy --ignore-missing-imports src/governance_token_analyzer/
+
+  # Unit tests job template - we'll create multiple versions for different Python versions
+  unit-tests-python-38:
+    executor: python-38
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-cache-v1-38-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-38-{{ .Branch }}-
+            - pip-cache-v1-38-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-38-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Run unit tests
+          command: |
+            pytest tests/ -v --ignore=tests/integration/ --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
+      
+      # Store test results for CircleCI's test insights
+      - store_test_results:
+          path: test-results
+      
+      # Upload coverage to Codecov
+      - codecov/upload:
+          file: ./coverage.xml
+          flags: "unittests,python38"
+
+  unit-tests-python-39:
+    executor: python-39
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-cache-v1-39-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-39-{{ .Branch }}-
+            - pip-cache-v1-39-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-39-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Run unit tests
+          command: |
+            pytest tests/ -v --ignore=tests/integration/ --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
+      
+      - store_test_results:
+          path: test-results
+      
+      - codecov/upload:
+          file: ./coverage.xml
+          flags: "unittests,python39"
+
+  unit-tests-python-310:
+    executor: python-310
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-cache-v1-310-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-310-{{ .Branch }}-
+            - pip-cache-v1-310-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-310-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Run unit tests
+          command: |
+            pytest tests/ -v --ignore=tests/integration/ --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
+      
+      - store_test_results:
+          path: test-results
+      
+      - codecov/upload:
+          file: ./coverage.xml
+          flags: "unittests,python310"
+
+  unit-tests-python-312:
+    executor: python-312
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-cache-v1-312-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-312-{{ .Branch }}-
+            - pip-cache-v1-312-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-312-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Run unit tests
+          command: |
+            pytest tests/ -v --ignore=tests/integration/ --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
+      
+      - store_test_results:
+          path: test-results
+      
+      - codecov/upload:
+          file: ./coverage.xml
+          flags: "unittests,python312"
+
+  # Integration tests - similar structure to unit tests but for integration tests
+  integration-tests-python-38:
+    executor: python-38
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-cache-v1-38-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-38-{{ .Branch }}-
+            - pip-cache-v1-38-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-38-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Run integration tests
+          command: |
+            pytest tests/integration/ -v --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
+      
+      - store_test_results:
+          path: test-results
+      
+      - codecov/upload:
+          file: ./coverage.xml
+          flags: "integration,python38"
+      
+      # Store test artifacts (equivalent to upload-artifact in GitHub Actions)
+      - store_artifacts:
+          path: tests/integration/test_data/
+          destination: test-artifacts-38/test_data
+      
+      - store_artifacts:
+          path: plots/
+          destination: test-artifacts-38/plots
+      
+      - store_artifacts:
+          path: data/historical/
+          destination: test-artifacts-38/historical
+
+  integration-tests-python-39:
+    executor: python-39
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-cache-v1-39-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-39-{{ .Branch }}-
+            - pip-cache-v1-39-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-39-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Run integration tests
+          command: |
+            pytest tests/integration/ -v --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
+      
+      - store_test_results:
+          path: test-results
+      
+      - codecov/upload:
+          file: ./coverage.xml
+          flags: "integration,python39"
+      
+      - store_artifacts:
+          path: tests/integration/test_data/
+          destination: test-artifacts-39/test_data
+      
+      - store_artifacts:
+          path: plots/
+          destination: test-artifacts-39/plots
+      
+      - store_artifacts:
+          path: data/historical/
+          destination: test-artifacts-39/historical
+
+  integration-tests-python-310:
+    executor: python-310
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-cache-v1-310-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-310-{{ .Branch }}-
+            - pip-cache-v1-310-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-310-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Run integration tests
+          command: |
+            pytest tests/integration/ -v --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
+      
+      - store_test_results:
+          path: test-results
+      
+      - codecov/upload:
+          file: ./coverage.xml
+          flags: "integration,python310"
+      
+      - store_artifacts:
+          path: tests/integration/test_data/
+          destination: test-artifacts-310/test_data
+      
+      - store_artifacts:
+          path: plots/
+          destination: test-artifacts-310/plots
+      
+      - store_artifacts:
+          path: data/historical/
+          destination: test-artifacts-310/historical
+
+  integration-tests-python-312:
+    executor: python-312
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-cache-v1-312-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-312-{{ .Branch }}-
+            - pip-cache-v1-312-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-312-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Run integration tests
+          command: |
+            pytest tests/integration/ -v --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
+      
+      - store_test_results:
+          path: test-results
+      
+      - codecov/upload:
+          file: ./coverage.xml
+          flags: "integration,python312"
+      
+      - store_artifacts:
+          path: tests/integration/test_data/
+          destination: test-artifacts-312/test_data
+      
+      - store_artifacts:
+          path: plots/
+          destination: test-artifacts-312/plots
+      
+      - store_artifacts:
+          path: data/historical/
+          destination: test-artifacts-312/historical
+
+  # CLI tests - test the command-line interface functionality
+  cli-tests:
+    executor: python-310  # Use Python 3.10 for CLI testing
+    steps:
+      - checkout
+      
+      - restore_cache:
+          keys:
+            - pip-cache-v1-310-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+            - pip-cache-v1-310-{{ .Branch }}-
+            - pip-cache-v1-310-
+      
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+      
+      - save_cache:
+          key: pip-cache-v1-310-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/pip
+      
+      - run:
+          name: Test CLI installation and basic commands
+          command: |
+            # Test that CLI is installed and accessible
+            echo "Testing CLI help..."
+            gta --help
+            
+            # Test simulate historical data command
+            echo "Testing simulate-historical command..."
+            gta simulate-historical --protocol compound --snapshots 3 --output-dir data/historical
+            
+            # Test generate report command  
+            echo "Testing generate-report command..."
+            gta generate-report --protocol compound --output-dir reports --format html
+            
+            # Test export historical data
+            echo "Testing export-historical-data command..."
+            gta export-historical-data --protocol compound --output-dir exports --format json
+            
+            echo "✅ All CLI commands completed successfully"
+      
+      # Store CLI test artifacts
+      - store_artifacts:
+          path: data/historical/
+          destination: cli-test-data
+      
+      - store_artifacts:
+          path: reports/
+          destination: cli-test-reports
+      
+      - store_artifacts:
+          path: exports/
+          destination: cli-test-exports
+
+  # Final verification job - ensures all critical jobs passed
+  verify-success:
+    executor: python-310
+    steps:
+      - run:
+          name: Verify all jobs completed successfully
+          command: |
+            echo "✅ All CI pipeline jobs completed successfully!"
+            echo "Security scanning, code quality, unit tests, integration tests, and CLI tests all passed."
+            echo "The governance token analyzer is ready for deployment."
+
+# Workflow orchestration - defines how jobs are executed and their dependencies
 workflows:
-  say-hello-workflow: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  version: 2
+  
+  # Main CI pipeline workflow
+  governance-token-analyzer-ci:
     jobs:
-      - say-hello
+      # Security and code quality jobs run in parallel (no dependencies)
+      - security-scan:
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/ # Run on pull request branches
+      
+      - code-quality:
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      # Unit tests run in parallel across Python versions after code quality passes
+      - unit-tests-python-38:
+          requires:
+            - code-quality
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      - unit-tests-python-39:
+          requires:
+            - code-quality
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      - unit-tests-python-310:
+          requires:
+            - code-quality
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      - unit-tests-python-312:
+          requires:
+            - code-quality
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      # Integration tests run in parallel after unit tests complete
+      - integration-tests-python-38:
+          requires:
+            - unit-tests-python-38
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      - integration-tests-python-39:
+          requires:
+            - unit-tests-python-39
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      - integration-tests-python-310:
+          requires:
+            - unit-tests-python-310
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      - integration-tests-python-312:
+          requires:
+            - unit-tests-python-312
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      # CLI tests run after code quality (similar to GitHub Actions dependency)
+      - cli-tests:
+          requires:
+            - code-quality
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\/.*/
+      
+      # Final verification runs after all other jobs complete
+      - verify-success:
+          requires:
+            - security-scan
+            - code-quality
+            - unit-tests-python-38
+            - unit-tests-python-39
+            - unit-tests-python-310
+            - unit-tests-python-312
+            - integration-tests-python-38
+            - integration-tests-python-39
+            - integration-tests-python-310
+            - integration-tests-python-312
+            - cli-tests
+          filters:
+            branches:
+              only:
+                - main
+                - /pull\.*/
