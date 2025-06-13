@@ -276,10 +276,10 @@ def _find_analysis_files(protocol: str, data_dir: str) -> Dict[str, Any]:
 def check_for_corrupted_files(data_dir: str) -> bool:
     """
     Check if there are any corrupted JSON files in the data directory.
-    
+
     Args:
         data_dir: Directory to check for corrupted files
-    
+
     Returns:
         True if corrupted files are found, False otherwise
     """
@@ -287,11 +287,11 @@ def check_for_corrupted_files(data_dir: str) -> bool:
     if not data_path.exists():
         logger.error(f"Data directory not found: {data_dir}")
         return True
-    
+
     # Check for JSON files in the directory and its subdirectories
     json_files = list(data_path.glob("**/*.json"))
     corrupted_files = []
-    
+
     for file_path in json_files:
         try:
             with open(file_path, "r") as f:
@@ -299,7 +299,7 @@ def check_for_corrupted_files(data_dir: str) -> bool:
         except json.JSONDecodeError:
             logger.error(f"Corrupted JSON file found: {file_path}")
             corrupted_files.append(file_path)
-    
+
     return len(corrupted_files) > 0
 
 
@@ -406,7 +406,7 @@ def main():
     data_dir = Path(args.data_dir)
     if not data_dir.exists():
         os.makedirs(data_dir, exist_ok=True)
-    
+
     logger.info(f"Data directory found: {data_dir}")
 
     # Check for corrupted files before proceeding
@@ -447,9 +447,7 @@ def main():
         logger.info(f"Validation result: {'SUCCESS' if result.get('success', False) else 'FAILURE'}")
         logger.info(f"Details: {result}")
     else:
-        logger.info(
-            "No specific validation requested. Use --protocol and --proposal-id or --all to run validation."
-        )
+        logger.info("No specific validation requested. Use --protocol and --proposal-id or --all to run validation.")
         sys.exit(0)
 
 
