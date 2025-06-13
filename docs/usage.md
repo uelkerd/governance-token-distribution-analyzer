@@ -27,14 +27,14 @@ Use this script to verify your environment and API setup before running full ana
 
 ## Command Line Interface
 
-The package provides a command-line tool `gta` for analyzing governance token distributions.
+The package provides a command-line tool `gova` for analyzing governance token distributions.
 
 ### General Help
 
 To see all available commands:
 
 ```bash
-gta --help
+gova --help
 ```
 
 ### Analyzing a Single Token
@@ -42,7 +42,7 @@ gta --help
 To analyze the distribution of a single token:
 
 ```bash
-gta analyze compound --limit 100
+gova analyze compound --limit 100
 ```
 
 Parameters:
@@ -68,7 +68,7 @@ Concentration:
 To compare distributions across multiple tokens:
 
 ```bash
-gta compare compound uniswap aave --limit 100 --format report
+gova compare compound uniswap aave --limit 100 --format report
 ```
 
 Parameters:
@@ -83,7 +83,7 @@ When using the `report` format, an HTML report will be generated with visualizat
 To simulate different token distribution patterns:
 
 ```bash
-gta simulate power_law --holders 100 --output simulation.json
+gova simulate power_law --holders 100 --output simulation.json
 ```
 
 Parameters:
@@ -96,7 +96,7 @@ Parameters:
 To generate a comprehensive HTML report:
 
 ```bash
-gta report compound uniswap aave --output-dir reports
+gova report compound uniswap aave --output-dir reports
 ```
 
 Parameters:

@@ -64,7 +64,7 @@ To verify that the installation was successful:
 
 1. Run the CLI tool:
    ```bash
-   gta --help
+   gova --help
    ```
 
 2. Run the tests:

@@ -66,7 +66,7 @@ This tool helps researchers, investors, and protocol designers understand the de
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/governance-token-distribution-analyzer.git
+git clone https://github.com/uelkerd/governance-token-distribution-analyzer.git
 cd governance-token-distribution-analyzer
 ```
 
