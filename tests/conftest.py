@@ -19,9 +19,9 @@ def pytest_configure(config):
 def pytest_runtest_setup(item):
     """Skip tests based on environment variables."""
     # Skip live data tests if SKIP_LIVE_TESTS is set to true
-    if os.environ.get("SKIP_LIVE_TESTS", "").lower() == "true":
-        if "test_live_data_integration" in item.nodeid or "TestLiveDataIntegration" in item.nodeid:
-            pytest.skip("Skipping live data tests as per environment configuration")
+    if os.environ.get("SKIP_LIVE_TESTS", "").lower() == "true" and ("test_live_data_integration" in item.nodeid or "TestLiveDataIntegration" in item.nodeid):
+        pytest.skip("Skipping live data tests as per environment configuration")
+
 
     # Skip performance tests in CI/CD environment
     if os.environ.get("TEST_MODE", "").lower() == "ci":
