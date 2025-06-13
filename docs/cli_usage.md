@@ -27,14 +27,14 @@ Use this script to verify your environment and API setup before running CLI anal
 
 ## Installation
 
-After installing the package, the `gta` command should be available in your environment:
+After installing the package, the `gova` command should be available in your environment:
 
 ```bash
 # Install the package
 pip install -e .
 
 # Verify installation
-gta --help
+gova --help
 ```
 
 ## Basic Commands
@@ -51,16 +51,16 @@ The CLI provides several commands for different analysis tasks:
 To see all available commands:
 
 ```bash
-gta --help
+gova --help
 ```
 
 To get help for a specific command:
 
 ```bash
-gta analyze --help
-gta compare --help
-gta simulate --help
-gta report --help
+gova analyze --help
+gova compare --help
+gova simulate --help
+gova report --help
 ```
 
 ## Command Details
@@ -70,7 +70,7 @@ gta report --help
 The `analyze` command examines the distribution of a single token and calculates various concentration metrics.
 
 ```bash
-gta analyze [token] [options]
+gova analyze [token] [options]
 ```
 
 Arguments:
@@ -83,13 +83,13 @@ Examples:
 
 ```bash
 # Analyze Compound token distribution (top 100 holders)
-gta analyze compound
+gova analyze compound
 
 # Analyze Uniswap token distribution with top 200 holders
-gta analyze uniswap --limit 200
+gova analyze uniswap --limit 200
 
 # Analyze Aave token distribution
-gta analyze aave
+gova analyze aave
 ```
 
 Output example:
@@ -112,7 +112,7 @@ Concentration:
 The `compare` command analyzes multiple tokens and compares their distribution patterns.
 
 ```bash
-gta compare [tokens...] [options]
+gova compare [tokens...] [options]
 ```
 
 Arguments:
@@ -126,13 +126,13 @@ Examples:
 
 ```bash
 # Compare Compound and Uniswap
-gta compare compound uniswap
+gova compare compound uniswap
 
 # Compare all three tokens with top 50 holders and generate a report
-gta compare compound uniswap aave --limit 50 --format report
+gova compare compound uniswap aave --limit 50 --format report
 
 # Compare just Compound and Aave with JSON output
-gta compare compound aave --format json
+gova compare compound aave --format json
 ```
 
 When using the `report` format, an HTML report will be generated with visualizations.
@@ -142,7 +142,7 @@ When using the `report` format, an HTML report will be generated with visualizat
 The `simulate` command generates simulated token distribution data for testing and educational purposes.
 
 ```bash
-gta simulate [distribution_type] [options]
+gova simulate [distribution_type] [options]
 ```
 
 Arguments:
@@ -156,13 +156,13 @@ Examples:
 
 ```bash
 # Generate power law distribution with 100 holders
-gta simulate power_law
+gova simulate power_law
 
 # Generate protocol-dominated distribution with 200 holders
-gta simulate protocol_dominated --holders 200
+gova simulate protocol_dominated --holders 200
 
 # Generate community distribution and save to a specific file
-gta simulate community --output community_simulation.json
+gova simulate community --output community_simulation.json
 ```
 
 The simulated data will include token holder addresses, quantities, percentages, and concentration metrics.
@@ -172,7 +172,7 @@ The simulated data will include token holder addresses, quantities, percentages,
 The `report` command generates comprehensive HTML reports with visualizations and analyses.
 
 ```bash
-gta report [tokens...] [options]
+gova report [tokens...] [options]
 ```
 
 Arguments:
@@ -185,13 +185,13 @@ Examples:
 
 ```bash
 # Generate a report for Compound
-gta report compound
+gova report compound
 
 # Generate a comparative report for all three tokens
-gta report compound uniswap aave
+gova report compound uniswap aave
 
 # Save the report to a specific directory
-gta report compound uniswap --output-dir ~/my_reports
+gova report compound uniswap --output-dir ~/my_reports
 ```
 
 The report includes:
@@ -215,10 +215,10 @@ You can redirect the output to a file:
 
 ```bash
 # Save analysis results to a file
-gta analyze compound > compound_analysis.txt
+gova analyze compound > compound_analysis.txt
 
 # Save comparison results to a file
-gta compare compound uniswap > comparison.txt
+gova compare compound uniswap > comparison.txt
 ```
 
 ## Common Workflows
@@ -229,13 +229,13 @@ To perform a comprehensive analysis of a token:
 
 ```bash
 # Step 1: Analyze the token distribution
-gta analyze compound
+gova analyze compound
 
 # Step 2: Generate a detailed report
-gta report compound
+gova report compound
 
 # Step 3: Simulate different distribution scenarios
-gta simulate power_law --output compound_alternative.json
+gova simulate power_law --output compound_alternative.json
 ```
 
 ### Multi-Protocol Comparison
@@ -244,10 +244,10 @@ To compare multiple protocols:
 
 ```bash
 # Step 1: Compare the tokens
-gta compare compound uniswap aave
+gova compare compound uniswap aave
 
 # Step 2: Generate a comparative report
-gta report compound uniswap aave
+gova report compound uniswap aave
 ```
 
 ## Troubleshooting
