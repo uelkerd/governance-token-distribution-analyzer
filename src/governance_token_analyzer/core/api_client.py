@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""API Client for Governance Token Distribution Analyzer
+"""API Client for Governance Token Distribution Analyzer.
 
 This module provides a unified interface for fetching governance token data
 from various blockchain APIs including Etherscan, The Graph, and Alchemy.
