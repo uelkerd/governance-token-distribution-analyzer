@@ -13,9 +13,7 @@ import pandas as pd
 import requests
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Load environment variables
@@ -58,9 +56,7 @@ def main():
             logger.info(f"ETH Balance: {balance_eth:.2f} ETH")
 
             # Create a simple DataFrame
-            df = pd.DataFrame(
-                {"Entity": ["Ethereum Foundation"], "ETH Balance": [balance_eth]}
-            )
+            df = pd.DataFrame({"Entity": ["Ethereum Foundation"], "ETH Balance": [balance_eth]})
 
             logger.info("DataFrame created successfully:")
             logger.info(f"\n{df}")
@@ -73,18 +69,14 @@ def main():
             plt.tight_layout()
 
             # Save the plot
-            output_dir = os.path.join(
-                os.path.dirname(__file__), "..", "data", "sample_outputs"
-            )
+            output_dir = os.path.join(os.path.dirname(__file__), "..", "data", "sample_outputs")
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, "eth_balance.png")
             plt.savefig(output_path)
 
             logger.info(f"Plot saved to {output_path}")
 
-            logger.info(
-                "All tests passed successfully! Your environment is set up correctly."
-            )
+            logger.info("All tests passed successfully! Your environment is set up correctly.")
         else:
             logger.error(f"API Error: {data['message']}")
 

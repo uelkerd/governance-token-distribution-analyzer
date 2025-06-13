@@ -39,9 +39,7 @@ def convert_historical_data(token, input_file, output_file=None):
                     "top_5_pct": old_data["top_5_pct"][i],
                     "top_10_pct": old_data["top_10_pct"][i],
                     "top_20_pct": old_data["top_20_pct"][i],
-                    "top_50_pct": old_data.get(
-                        "top_50_pct", [0] * len(old_data["dates"])
-                    )[i],
+                    "top_50_pct": old_data.get("top_50_pct", [0] * len(old_data["dates"]))[i],
                 },
             },
         }
