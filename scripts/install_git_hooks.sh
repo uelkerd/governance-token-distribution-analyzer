@@ -64,7 +64,12 @@ if [ "$current_branch" = "main" ]; then
 fi
 
 # Count total lines being pushed
-lines_changed=$(git diff --stat origin/$current_branch | tail -n 1 | cut -d' ' -f5)
+if git ls-remote --exit-code origin "$current_branch" > /dev/null 2>&1; then
+  lines_changed=$(git diff --stat origin/$current_branch | tail -n 1 | cut -d' ' -f5)
+else
+  echo "WARNING: Remote branch origin/$current_branch does not exist. Skipping line count check."
+  lines_changed=0
+fi
 if [ -n "$lines_changed" ] && [ "$lines_changed" -gt 1000 ]; then
   echo "WARNING: You are pushing $lines_changed lines of code."
   echo "This is a large change that may be difficult to review."
