@@ -273,6 +273,36 @@ def _find_analysis_files(protocol: str, data_dir: str) -> Dict[str, Any]:
     return {"error": f"No valid analysis files found for {protocol}"}
 
 
+def check_for_corrupted_files(data_dir: str) -> bool:
+    """
+    Check if there are any corrupted JSON files in the data directory.
+    
+    Args:
+        data_dir: Directory to check for corrupted files
+    
+    Returns:
+        True if corrupted files are found, False otherwise
+    """
+    data_path = Path(data_dir)
+    if not data_path.exists():
+        logger.error(f"Data directory not found: {data_dir}")
+        return True
+    
+    # Check for JSON files in the directory and its subdirectories
+    json_files = list(data_path.glob("**/*.json"))
+    corrupted_files = []
+    
+    for file_path in json_files:
+        try:
+            with open(file_path, "r") as f:
+                json.load(f)
+        except json.JSONDecodeError:
+            logger.error(f"Corrupted JSON file found: {file_path}")
+            corrupted_files.append(file_path)
+    
+    return len(corrupted_files) > 0
+
+
 def validate_proposal(protocol: str, proposal_id: int, data_dir: str = "data") -> Dict[str, Any]:
     """
     Validate a specific governance proposal.
@@ -372,6 +402,18 @@ def main():
     parser.add_argument("--data-dir", type=str, default="data", help="Directory containing proposal data")
     args = parser.parse_args()
 
+    # Check if data directory exists
+    data_dir = Path(args.data_dir)
+    if not data_dir.exists():
+        os.makedirs(data_dir, exist_ok=True)
+    
+    logger.info(f"Data directory found: {data_dir}")
+
+    # Check for corrupted files before proceeding
+    if check_for_corrupted_files(args.data_dir):
+        logger.error("Corrupted data files found. Validation aborted.")
+        sys.exit(1)
+
     if args.all:
         results = {}
         for protocol, proposals in PROPOSALS.items():
@@ -405,18 +447,10 @@ def main():
         logger.info(f"Validation result: {'SUCCESS' if result.get('success', False) else 'FAILURE'}")
         logger.info(f"Details: {result}")
     else:
-        # If no specific arguments provided, check for data directory and report status
-        data_dir = args.data_dir
-        if os.path.exists(data_dir):
-            logger.info(f"Data directory found: {data_dir}")
-            logger.info("No specific validation requested. Use --protocol and --proposal-id or --all to run validation.")
-            # Exit with success as the script ran correctly
-            sys.exit(0)
-        else:
-            logger.error(f"Data directory not found: {data_dir}")
-            logger.info("Please provide a valid data directory with --data-dir or create the default 'data' directory.")
-            # Exit with error code 1 to indicate the data directory issue
-            sys.exit(1)
+        logger.info(
+            "No specific validation requested. Use --protocol and --proposal-id or --all to run validation."
+        )
+        sys.exit(0)
 
 
 if __name__ == "__main__":
