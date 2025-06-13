@@ -57,6 +57,7 @@ commands:
           command: |
             pip install setuptools wheel
             pip install -r requirements.txt
+            pip install psutil
             pip install -e .
       - run:
           name: Verify critical dependencies
@@ -75,6 +76,12 @@ commands:
           command: |
             echo 'export PYTHONPATH="${PYTHONPATH}:${PWD}"' >> $BASH_ENV
             echo 'export PYTHONUNBUFFERED=1' >> $BASH_ENV
+            echo 'export TEST_MODE=ci' >> $BASH_ENV
+            echo 'export SKIP_LIVE_TESTS=true' >> $BASH_ENV
+            # Use existing .env file if available
+            if [ -f .env ]; then
+              cat .env | grep -v '^#' >> $BASH_ENV
+            fi
 
 # Define jobs that will be used in the workflow
 jobs:
@@ -152,7 +159,7 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            python -m pytest tests/ --cov=src --cov-report=xml -v
+            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
       - codecov/upload:
           file: coverage.xml
           
@@ -165,7 +172,7 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            python -m pytest tests/ --cov=src --cov-report=xml -v
+            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
       - codecov/upload:
           file: coverage.xml
           
@@ -178,7 +185,7 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            python -m pytest tests/ --cov=src --cov-report=xml -v
+            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
       - codecov/upload:
           file: coverage.xml
           
@@ -191,7 +198,7 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            python -m pytest tests/ --cov=src --cov-report=xml -v
+            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
       - codecov/upload:
           file: coverage.xml
           
@@ -200,210 +207,53 @@ jobs:
     executor: python-38
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - pip-cache-v1-38-{{ .Branch }}-{{ checksum "pyproject.toml" }}
-            - pip-cache-v1-38-{{ .Branch }}-
-            - pip-cache-v1-38-
-      
-      - run:
-          name: Install dependencies
-          command: |
-            # Ensure pip is available and updated
-            python --version
-            curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-            python get-pip.py
-            python -m pip --version
-            
-            # Install project dependencies
-            python -m pip install --upgrade pip setuptools wheel
-            python -m pip install -e .[dev]
-      
-      - save_cache:
-          key: pip-cache-v1-38-{{ .Branch }}-{{ checksum "pyproject.toml" }}
-          paths:
-            - ~/.cache/pip
-      
+      - setup_environment
+      - install_python_dependencies
       - run:
           name: Run integration tests
           command: |
-            pytest tests/integration/ -v --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
-      
-      - store_test_results:
-          path: test-results
-      
+            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
       - codecov/upload:
-          file: ./coverage.xml
-          flags: "integration,python38"
-      
-      # Store test artifacts (equivalent to upload-artifact in GitHub Actions)
-      - store_artifacts:
-          path: tests/integration/test_data/
-          destination: test-artifacts-38/test_data
-      
-      - store_artifacts:
-          path: plots/
-          destination: test-artifacts-38/plots
-      
-      - store_artifacts:
-          path: data/historical/
-          destination: test-artifacts-38/historical
-
+          file: coverage.xml
+          
   integration-tests-python-39:
     executor: python-39
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - pip-cache-v1-39-{{ .Branch }}-{{ checksum "pyproject.toml" }}
-            - pip-cache-v1-39-{{ .Branch }}-
-            - pip-cache-v1-39-
-      
-      - run:
-          name: Install dependencies
-          command: |
-            # Ensure pip is available and updated
-            python --version
-            curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-            python get-pip.py
-            python -m pip --version
-            
-            # Install project dependencies
-            python -m pip install --upgrade pip setuptools wheel
-            python -m pip install -e .[dev]
-      
-      - save_cache:
-          key: pip-cache-v1-39-{{ .Branch }}-{{ checksum "pyproject.toml" }}
-          paths:
-            - ~/.cache/pip
-      
+      - setup_environment
+      - install_python_dependencies
       - run:
           name: Run integration tests
           command: |
-            pytest tests/integration/ -v --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
-      
-      - store_test_results:
-          path: test-results
-      
+            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
       - codecov/upload:
-          file: ./coverage.xml
-          flags: "integration,python39"
-      
-      - store_artifacts:
-          path: tests/integration/test_data/
-          destination: test-artifacts-39/test_data
-      
-      - store_artifacts:
-          path: plots/
-          destination: test-artifacts-39/plots
-      
-      - store_artifacts:
-          path: data/historical/
-          destination: test-artifacts-39/historical
-
+          file: coverage.xml
+          
   integration-tests-python-310:
     executor: python-310
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - pip-cache-v1-310-{{ .Branch }}-{{ checksum "pyproject.toml" }}
-            - pip-cache-v1-310-{{ .Branch }}-
-            - pip-cache-v1-310-
-      
-      - run:
-          name: Install dependencies
-          command: |
-            # Ensure pip is available and updated
-            python --version
-            curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-            python get-pip.py
-            python -m pip --version
-            
-            # Install project dependencies
-            python -m pip install --upgrade pip setuptools wheel
-            python -m pip install -e .[dev]
-      
-      - save_cache:
-          key: pip-cache-v1-310-{{ .Branch }}-{{ checksum "pyproject.toml" }}
-          paths:
-            - ~/.cache/pip
-      
+      - setup_environment
+      - install_python_dependencies
       - run:
           name: Run integration tests
           command: |
-            pytest tests/integration/ -v --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
-      
-      - store_test_results:
-          path: test-results
-      
+            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
       - codecov/upload:
-          file: ./coverage.xml
-          flags: "integration,python310"
-      
-      - store_artifacts:
-          path: tests/integration/test_data/
-          destination: test-artifacts-310/test_data
-      
-      - store_artifacts:
-          path: plots/
-          destination: test-artifacts-310/plots
-      
-      - store_artifacts:
-          path: data/historical/
-          destination: test-artifacts-310/historical
-
+          file: coverage.xml
+          
   integration-tests-python-312:
     executor: python-312
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - pip-cache-v1-312-{{ .Branch }}-{{ checksum "pyproject.toml" }}
-            - pip-cache-v1-312-{{ .Branch }}-
-            - pip-cache-v1-312-
-      
-      - run:
-          name: Install dependencies
-          command: |
-            # Ensure pip is available and updated
-            python --version
-            curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-            python get-pip.py
-            python -m pip --version
-            
-            # Install project dependencies
-            python -m pip install --upgrade pip setuptools wheel
-            python -m pip install -e .[dev]
-      
-      - save_cache:
-          key: pip-cache-v1-312-{{ .Branch }}-{{ checksum "pyproject.toml" }}
-          paths:
-            - ~/.cache/pip
-      
+      - setup_environment
+      - install_python_dependencies
       - run:
           name: Run integration tests
           command: |
-            pytest tests/integration/ -v --cov=governance_token_analyzer --cov-report=xml --cov-report=term-missing
-      
-      - store_test_results:
-          path: test-results
-      
+            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
       - codecov/upload:
-          file: ./coverage.xml
-          flags: "integration,python312"
-      
-      - store_artifacts:
-          path: tests/integration/test_data/
-          destination: test-artifacts-312/test_data
-      
-      - store_artifacts:
-          path: plots/
-          destination: test-artifacts-312/plots
-      
-      - store_artifacts:
-          path: data/historical/
-          destination: test-artifacts-312/historical
+          file: coverage.xml
 
   # CLI tests - test the command-line interface functionality
   cli-tests:

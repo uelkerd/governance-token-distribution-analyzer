@@ -788,7 +788,19 @@ class APIClient:
 
                 if holders and len(holders) > 0:
                     logger.info(f"✅ Successfully fetched {len(holders)} holders from {api_name}")
-                    return holders
+                    
+                    # Ensure consistent balance format for all holders
+                    normalized_holders = []
+                    for holder in holders:
+                        if "balance" in holder:
+                            # Convert all balances to string format to avoid int precision issues
+                            holder_copy = holder.copy()
+                            holder_copy["balance"] = str(holder["balance"]) if holder["balance"] is not None else "0"
+                            normalized_holders.append(holder_copy)
+                        else:
+                            normalized_holders.append(holder)
+                    
+                    return normalized_holders
                 else:
                     logger.warning(f"⚠️  {api_name} returned no holders")
 
@@ -797,7 +809,14 @@ class APIClient:
 
         # Final fallback to simulation
         logger.info("🔄 All APIs failed, using protocol-specific simulation")
-        return self._generate_simulated_holders(token_address, 1, limit)["result"]
+        holders = self._generate_simulated_holders(token_address, 1, limit)["result"]
+        
+        # Ensure consistent balance format
+        for holder in holders:
+            if "balance" in holder:
+                holder["balance"] = str(holder["balance"]) if holder["balance"] is not None else "0"
+                
+        return holders
 
     def _fetch_governance_proposals(self, protocol: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch real governance proposals data from The Graph API.
@@ -1138,6 +1157,7 @@ class APIClient:
             # Determine holder type and allocate tokens
             quantity, pct = self._calculate_holder_allocation(i, whale_count, institution_count, total_supply, params)
 
+            # Ensure balance is stored as string to avoid precision issues
             holders.append(
                 {
                     "protocol": protocol,
@@ -1149,9 +1169,6 @@ class APIClient:
                     "TokenHolderPercentage": str(pct),
                 }
             )
-
-            if len(holders) >= offset:
-                break
 
         return holders
 
