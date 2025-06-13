@@ -12,12 +12,14 @@ import logging
 import json
 from datetime import datetime
 from typing import Dict, List, Any
+import requests
 
 # Add the src directory to the path so we can import our modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from governance_token_analyzer.core.api_client import APIClient
 from governance_token_analyzer.core.config import Config
+from governance_token_analyzer.core.exceptions import NetworkError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -104,6 +106,11 @@ class LiveDataValidator:
             logger.info(f"✓ Successfully fetched {len(holders)} token holders for {protocol}")
             return True
 
+        except (requests.ConnectionError, requests.Timeout, OSError) as net_err:
+            logger.error(f"Network error: {net_err}")
+            self.results["errors"].append(f"Network error for {protocol}: {str(net_err)}")
+            self.results["token_holders"][protocol] = {"success": False, "error": str(net_err)}
+            raise NetworkError(f"Network error: {net_err}")
         except Exception as exception:
             error_msg = f"Error fetching token holders for {protocol}: {exception}"
             logger.error(error_msg)
@@ -194,6 +201,9 @@ def main():
         else:
             sys.exit(1)  # Some failures
 
+    except NetworkError as net_err:
+        logger.error(f"Network error occurred: {net_err}")
+        sys.exit(1)
     except KeyboardInterrupt:
         logger.info("\nValidation interrupted by user")
         sys.exit(1)

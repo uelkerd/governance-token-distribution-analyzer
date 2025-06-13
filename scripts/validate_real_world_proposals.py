@@ -26,10 +26,7 @@ logs_dir.mkdir(exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
-    handlers=[
-        logging.FileHandler(logs_dir / "validation.log"),
-        logging.StreamHandler(sys.stdout),
-    ],
+    handlers=[logging.FileHandler(logs_dir / "validation.log"), logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
 
@@ -161,13 +158,14 @@ def run_cli_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
         return {"error": str(exception)}
 
 
-def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
+def run_python_analysis(protocol: str, limit: int = 100, data_dir: str = "data") -> Dict[str, Any]:
     """
     Run analysis using Python script directly.
 
     Args:
         protocol: The protocol name (compound, uniswap, aave)
         limit: Number of token holders to analyze
+        data_dir: Directory to read/write proposal data
 
     Returns:
         Dictionary containing analysis results
@@ -175,64 +173,13 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
     logger.info(f"Running Python analysis for {protocol} with limit {limit}")
 
     try:
-        # Map protocol to analysis script
-        script_map = {
-            "compound": "compound_analysis.py",
-            "uniswap": "uniswap_analysis.py",
-            "aave": "aave_analysis.py",
-        }
+        # Try to execute the protocol-specific script if available
+        script_result = _execute_protocol_script(protocol, project_root)
+        if script_result:
+            return script_result
 
-        if protocol not in script_map:
-            return {"error": f"No analysis script found for protocol: {protocol}"}
-
-        script_path = project_root / "src" / script_map[protocol]
-
-        if not script_path.exists():
-            return {"error": f"Analysis script not found: {script_path}"}
-
-        # Run the analysis script
-        cmd = [sys.executable, str(script_path)]
-
-        result = subprocess.run(cmd, cwd=project_root, capture_output=True, text=True, timeout=60)
-
-        # Always try to find and parse the generated JSON file first
-        data_dir = project_root / "data"
-        if data_dir.exists():
-            # Look for the latest analysis file for this protocol
-            # Map protocol names to the actual file prefixes used
-            file_prefix_map = {"compound": "comp", "uniswap": "uni", "aave": "aave"}
-
-            file_prefix = file_prefix_map.get(protocol, protocol)
-
-            patterns = [
-                f"{file_prefix}_analysis_latest.json",
-                f"{file_prefix}_analysis_*.json",
-                f"{protocol}_analysis_latest.json",
-                f"{protocol}_analysis_*.json",
-            ]
-
-            for pattern in patterns:
-                analysis_files = list(data_dir.glob(pattern))
-                if analysis_files:
-                    latest_file = max(analysis_files, key=lambda f: f.stat().st_mtime)
-                    try:
-                        with open(latest_file, "r") as f:
-                            json_data = json.load(f)
-                            logger.info(f"Successfully parsed JSON from {latest_file}")
-                            return json_data
-                    except (json.JSONDecodeError, IOError) as exception:
-                        logger.warning(f"Failed to parse JSON from {latest_file}: {exception}")
-                        continue
-
-        # If JSON parsing failed, return the raw output
-        if result.returncode == 0:
-            return {"raw_output": result.stdout, "stderr": result.stderr}
-        else:
-            logger.error(f"Python analysis failed: {result.stderr}")
-            return {
-                "error": f"Analysis failed: {result.stderr}",
-                "stdout": result.stdout,
-            }
+        # If script execution failed or script doesn't exist, look for analysis files
+        return _find_analysis_files(protocol, data_dir)
 
     except subprocess.TimeoutExpired:
         logger.error(f"Python analysis for {protocol} timed out")
@@ -242,13 +189,89 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
         return {"error": str(exception)}
 
 
-def validate_proposal(protocol: str, proposal: Dict[str, Any]) -> Dict[str, Any]:
+def _execute_protocol_script(protocol: str, project_root: Path) -> Optional[Dict[str, Any]]:
+    """
+    Execute the protocol-specific Python script.
+
+    Args:
+        protocol: The protocol name
+        project_root: Path to project root
+
+    Returns:
+        Analysis results if successful, None if script execution failed or script doesn't exist
+    """
+    script_map = {"compound": "compound_analysis.py", "uniswap": "uniswap_analysis.py", "aave": "aave_analysis.py"}
+    if protocol not in script_map:
+        return None
+
+    script_path = project_root / "src" / script_map[protocol]
+    if not script_path.exists():
+        return None
+
+    cmd = [sys.executable, str(script_path)]
+    result = subprocess.run(cmd, cwd=project_root, capture_output=True, text=True, timeout=60)
+
+    if result.returncode == 0:
+        return {"raw_output": result.stdout, "stderr": result.stderr}
+    else:
+        logger.error(f"Python analysis failed: {result.stderr}")
+        return {"error": f"Analysis failed: {result.stderr}", "stdout": result.stdout}
+
+
+def _find_analysis_files(protocol: str, data_dir: str) -> Dict[str, Any]:
+    """
+    Find and load analysis files for a protocol.
+
+    Args:
+        protocol: The protocol name
+        data_dir: Directory to search for analysis files
+
+    Returns:
+        Analysis data if found, error dictionary if not found or parsing failed
+    """
+    data_dir_path = project_root / data_dir
+    if not data_dir_path.exists():
+        return {"error": f"Data directory not found: {data_dir}"}
+
+    # Define file patterns to search for, in order of preference
+    file_prefix_map = {"compound": "comp", "uniswap": "uni", "aave": "aave"}
+    file_prefix = file_prefix_map.get(protocol, protocol)
+    patterns = [
+        f"{file_prefix}_analysis_latest.json",
+        f"{protocol}_analysis_latest.json",
+        f"{file_prefix}_analysis_*.json",
+        f"{protocol}_analysis_*.json",
+    ]
+
+    # Try each pattern in order
+    for pattern in patterns:
+        analysis_files = list(data_dir_path.glob(pattern))
+        if not analysis_files:
+            continue
+
+        # Get the most recent file
+        latest_file = max(analysis_files, key=lambda f: f.stat().st_mtime)
+        try:
+            with open(latest_file, "r") as f:
+                json_data = json.load(f)
+                logger.info(f"Successfully parsed JSON from {latest_file}")
+                return json_data
+        except (json.JSONDecodeError, IOError) as exception:
+            logger.error(f"Failed to parse JSON from {latest_file}: {exception}")
+            continue  # Try next pattern instead of exiting
+
+    # If we got here, no valid files were found
+    return {"error": f"No valid analysis files found for {protocol} in {data_dir}"}
+
+
+def validate_proposal(protocol: str, proposal: Dict[str, Any], data_dir: str = "data") -> Dict[str, Any]:
     """
     Validate a single governance proposal by analyzing its token distribution.
 
     Args:
         protocol: The protocol name (compound, uniswap, aave)
         proposal: Proposal information dictionary
+        data_dir: Directory to read/write proposal data
 
     Returns:
         Dictionary containing validation results
@@ -260,7 +283,7 @@ def validate_proposal(protocol: str, proposal: Dict[str, Any]) -> Dict[str, Any]
 
     if "error" in analysis_result:
         logger.warning(f"CLI analysis failed, trying Python script: {analysis_result['error']}")
-        analysis_result = run_python_analysis(protocol)
+        analysis_result = run_python_analysis(protocol, data_dir=data_dir)
 
     # Compile validation results
     validation_result = {
@@ -295,17 +318,18 @@ def validate_proposal(protocol: str, proposal: Dict[str, Any]) -> Dict[str, Any]
     return validation_result
 
 
-def save_validation_results(results: Dict[str, Any], output_file: Optional[str] = None):
+def save_validation_results(results: Dict[str, Any], output_file: Optional[str] = None, data_dir: Optional[str] = None):
     """Save validation results to a JSON file."""
     if output_file is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_file = f"proposal_validation_{timestamp}.json"
 
     # Ensure data directory exists
-    data_dir = project_root / "data"
-    data_dir.mkdir(exist_ok=True)
-
-    output_path = data_dir / output_file
+    if data_dir is None:
+        data_dir = "data"
+    data_dir_path = project_root / data_dir
+    data_dir_path.mkdir(exist_ok=True)
+    output_path = data_dir_path / output_file
 
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2, default=str)
@@ -326,13 +350,14 @@ Examples:
         """,
     )
     parser.add_argument(
-        "--protocol",
-        choices=list(PROPOSALS.keys()),
-        help="Protocol to validate (if not specified, validates all)",
+        "--protocol", choices=list(PROPOSALS.keys()), help="Protocol to validate (if not specified, validates all)"
     )
     parser.add_argument("--proposal-id", type=int, help="Specific proposal ID to validate")
     parser.add_argument("--output", help="Output file name for results (default: auto-generated)")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+    parser.add_argument(
+        "--data-dir", type=str, default="data", help="Directory to read/write proposal data (default: 'data')"
+    )
 
     args = parser.parse_args()
 
@@ -366,14 +391,14 @@ Examples:
             if args.proposal_id and proposal["id"] != args.proposal_id:
                 continue
 
-            result = validate_proposal(protocol, proposal)
+            result = validate_proposal(protocol, proposal, data_dir=args.data_dir)
             protocol_results.append(result)
             all_results["validation_metadata"]["total_proposals"] += 1
 
         all_results["results"][protocol] = protocol_results
 
     # Save results
-    output_path = save_validation_results(all_results, args.output)
+    output_path = save_validation_results(all_results, args.output, args.data_dir)
 
     # Print summary
     logger.info(f"\n=== VALIDATION SUMMARY ===")
