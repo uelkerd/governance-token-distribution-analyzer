@@ -192,7 +192,15 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
+            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml --cov-report=html --junit-xml=test-results.xml
+      - store_test_results:
+          path: test-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: coverage-report-python-38
+      - store_artifacts:
+          path: coverage.xml
+          destination: coverage-xml-python-38
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN
@@ -206,7 +214,15 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
+            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml --cov-report=html --junit-xml=test-results.xml
+      - store_test_results:
+          path: test-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: coverage-report-python-39
+      - store_artifacts:
+          path: coverage.xml
+          destination: coverage-xml-python-39
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN
@@ -220,7 +236,15 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
+            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml --cov-report=html --junit-xml=test-results.xml
+      - store_test_results:
+          path: test-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: coverage-report-python-310
+      - store_artifacts:
+          path: coverage.xml
+          destination: coverage-xml-python-310
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN
@@ -234,7 +258,15 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml
+            python -m pytest tests/ -v -k "not test_live_data_integration and not TestLiveDataIntegration" -m "not integration and not performance" --cov=src --cov-report=xml --cov-report=html --junit-xml=test-results.xml
+      - store_test_results:
+          path: test-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: coverage-report-python-312
+      - store_artifacts:
+          path: coverage.xml
+          destination: coverage-xml-python-312
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN
@@ -249,7 +281,15 @@ jobs:
       - run:
           name: Run integration tests
           command: |
-            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
+            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=html --junit-xml=integration-results.xml --cov-report=term-missing
+      - store_test_results:
+          path: integration-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: integration-coverage-python-38
+      - store_artifacts:
+          path: integration-results.xml
+          destination: integration-results-python-38
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN
@@ -306,7 +346,15 @@ jobs:
       - run:
           name: Run CLI tests
           command: |
-            python -m pytest tests/test_cli*.py -v
+            python -m pytest tests/test_cli*.py -v --junit-xml=cli-results.xml --cov=src --cov-report=xml --cov-report=html
+      - store_test_results:
+          path: cli-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: cli-coverage-html
+      - store_artifacts:
+          path: cli-results.xml
+          destination: cli-test-results
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN
