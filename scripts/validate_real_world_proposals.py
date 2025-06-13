@@ -273,7 +273,7 @@ def _find_analysis_files(protocol: str, data_dir: str) -> Dict[str, Any]:
     return {"error": f"No valid analysis files found for {protocol}"}
 
 
-def check_for_corrupted_files(data_dir: str) -> bool:
+def check_for_corrupted_files(data_dir: Path) -> bool:
     """
     Check if there are any corrupted JSON files in the data directory.
 
