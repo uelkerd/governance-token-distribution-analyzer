@@ -64,7 +64,7 @@ To verify that the installation was successful:
 
 1. Run the CLI tool:
    ```bash
-   token-analyzer --help
+   gta --help
    ```
 
 2. Run the tests:

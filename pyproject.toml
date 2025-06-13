@@ -36,7 +36,7 @@ dev = [
 ]
 
 [project.scripts]
-token-analyzer = "governance_token_analyzer.cli:cli"
+gta = "governance_token_analyzer.cli:cli"
 
 [project.urls]
 "Homepage" = "https://github.com/your-username/governance-token-distribution-analyzer"

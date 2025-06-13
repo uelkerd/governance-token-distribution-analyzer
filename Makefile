@@ -60,15 +60,15 @@ build:
 
 # Run CLI tool (requires installation)
 run:
-	token-analyzer --help
+	gta --help
 
 # Simulate distribution with the CLI tool
 simulate:
-	token-analyzer simulate power_law --holders 100
+	gta simulate power_law --holders 100
 
 # Analyze token distribution with the CLI tool
 analyze:
-	token-analyzer analyze compound --limit 100
+	gta analyze compound --limit 100
 
 # Generate documentation using MkDocs
 docs:
@@ -96,19 +96,19 @@ end-to-end-test:
 
 # Simulate historical data for a protocol
 historical-data:
-	token-analyzer historical simulate --protocol compound --num-snapshots 12 --interval-days 30
+	gta historical simulate --protocol compound --num-snapshots 12 --interval-days 30
 
 # Generate a historical data report
 historical-report:
-	token-analyzer historical generate-report --protocol compound --output-format html
+	gta historical generate-report --protocol compound --output-format html
 
 # Compare multiple protocols
 protocol-comparison:
-	token-analyzer historical compare-protocols --protocols compound,uniswap,aave --metric gini_coefficient
+	gta historical compare-protocols --protocols compound,uniswap,aave --metric gini_coefficient
 
 # Generate a comparison report
 comparison-report:
-	token-analyzer historical generate-comparison-report --protocols compound,uniswap,aave
+	gta historical generate-comparison-report --protocols compound,uniswap,aave
 
 # Run visualization and reporting integration tests
 visualization-test:

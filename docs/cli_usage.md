@@ -2,16 +2,39 @@
 
 The Governance Token Distribution Analyzer provides a command-line interface (CLI) for analyzing token distributions. This guide explains how to use the CLI commands and provides examples for common use cases.
 
+## Live Data vs. Fallback/Simulated Data (CLI)
+
+When running CLI commands, the analyzer will attempt to fetch live data from available providers (Etherscan, The Graph, Alchemy, Infura). If any required API key is missing, or a provider is rate-limited/unavailable, the CLI will log a warning and automatically fall back to simulated or cached data. This ensures CLI commands remain robust and usable even in restricted environments.
+
+All errors and warnings are logged to the console. Review the output to determine if live or fallback data was used for your analysis.
+
+## Live Data Validation Script
+
+A standalone script is provided to validate that live API integrations are working correctly:
+
+```bash
+python scripts/validate_live_data.py
+```
+
+This script will:
+- Check for available API keys (Etherscan, The Graph, Alchemy, Infura)
+- Attempt to fetch live token holder data for Compound, Uniswap, and Aave
+- Validate the structure and quality of returned data
+- Log all errors and warnings, and print a summary of validation results
+- Exit with a nonzero code if any critical errors are detected
+
+Use this script to verify your environment and API setup before running CLI analyses or deploying.
+
 ## Installation
 
-After installing the package, the `token-analyzer` command should be available in your environment:
+After installing the package, the `gta` command should be available in your environment:
 
 ```bash
 # Install the package
 pip install -e .
 
 # Verify installation
-token-analyzer --help
+gta --help
 ```
 
 ## Basic Commands
@@ -28,16 +51,16 @@ The CLI provides several commands for different analysis tasks:
 To see all available commands:
 
 ```bash
-token-analyzer --help
+gta --help
 ```
 
 To get help for a specific command:
 
 ```bash
-token-analyzer analyze --help
-token-analyzer compare --help
-token-analyzer simulate --help
-token-analyzer report --help
+gta analyze --help
+gta compare --help
+gta simulate --help
+gta report --help
 ```
 
 ## Command Details
@@ -47,7 +70,7 @@ token-analyzer report --help
 The `analyze` command examines the distribution of a single token and calculates various concentration metrics.
 
 ```bash
-token-analyzer analyze [token] [options]
+gta analyze [token] [options]
 ```
 
 Arguments:
@@ -60,13 +83,13 @@ Examples:
 
 ```bash
 # Analyze Compound token distribution (top 100 holders)
-token-analyzer analyze compound
+gta analyze compound
 
 # Analyze Uniswap token distribution with top 200 holders
-token-analyzer analyze uniswap --limit 200
+gta analyze uniswap --limit 200
 
 # Analyze Aave token distribution
-token-analyzer analyze aave
+gta analyze aave
 ```
 
 Output example:
@@ -89,7 +112,7 @@ Concentration:
 The `compare` command analyzes multiple tokens and compares their distribution patterns.
 
 ```bash
-token-analyzer compare [tokens...] [options]
+gta compare [tokens...] [options]
 ```
 
 Arguments:
@@ -103,13 +126,13 @@ Examples:
 
 ```bash
 # Compare Compound and Uniswap
-token-analyzer compare compound uniswap
+gta compare compound uniswap
 
 # Compare all three tokens with top 50 holders and generate a report
-token-analyzer compare compound uniswap aave --limit 50 --format report
+gta compare compound uniswap aave --limit 50 --format report
 
 # Compare just Compound and Aave with JSON output
-token-analyzer compare compound aave --format json
+gta compare compound aave --format json
 ```
 
 When using the `report` format, an HTML report will be generated with visualizations.
@@ -119,7 +142,7 @@ When using the `report` format, an HTML report will be generated with visualizat
 The `simulate` command generates simulated token distribution data for testing and educational purposes.
 
 ```bash
-token-analyzer simulate [distribution_type] [options]
+gta simulate [distribution_type] [options]
 ```
 
 Arguments:
@@ -133,13 +156,13 @@ Examples:
 
 ```bash
 # Generate power law distribution with 100 holders
-token-analyzer simulate power_law
+gta simulate power_law
 
 # Generate protocol-dominated distribution with 200 holders
-token-analyzer simulate protocol_dominated --holders 200
+gta simulate protocol_dominated --holders 200
 
 # Generate community distribution and save to a specific file
-token-analyzer simulate community --output community_simulation.json
+gta simulate community --output community_simulation.json
 ```
 
 The simulated data will include token holder addresses, quantities, percentages, and concentration metrics.
@@ -149,7 +172,7 @@ The simulated data will include token holder addresses, quantities, percentages,
 The `report` command generates comprehensive HTML reports with visualizations and analyses.
 
 ```bash
-token-analyzer report [tokens...] [options]
+gta report [tokens...] [options]
 ```
 
 Arguments:
@@ -162,13 +185,13 @@ Examples:
 
 ```bash
 # Generate a report for Compound
-token-analyzer report compound
+gta report compound
 
 # Generate a comparative report for all three tokens
-token-analyzer report compound uniswap aave
+gta report compound uniswap aave
 
 # Save the report to a specific directory
-token-analyzer report compound uniswap --output-dir ~/my_reports
+gta report compound uniswap --output-dir ~/my_reports
 ```
 
 The report includes:
@@ -192,10 +215,10 @@ You can redirect the output to a file:
 
 ```bash
 # Save analysis results to a file
-token-analyzer analyze compound > compound_analysis.txt
+gta analyze compound > compound_analysis.txt
 
 # Save comparison results to a file
-token-analyzer compare compound uniswap > comparison.txt
+gta compare compound uniswap > comparison.txt
 ```
 
 ## Common Workflows
@@ -206,13 +229,13 @@ To perform a comprehensive analysis of a token:
 
 ```bash
 # Step 1: Analyze the token distribution
-token-analyzer analyze compound
+gta analyze compound
 
 # Step 2: Generate a detailed report
-token-analyzer report compound
+gta report compound
 
 # Step 3: Simulate different distribution scenarios
-token-analyzer simulate power_law --output compound_alternative.json
+gta simulate power_law --output compound_alternative.json
 ```
 
 ### Multi-Protocol Comparison
@@ -221,10 +244,10 @@ To compare multiple protocols:
 
 ```bash
 # Step 1: Compare the tokens
-token-analyzer compare compound uniswap aave
+gta compare compound uniswap aave
 
 # Step 2: Generate a comparative report
-token-analyzer report compound uniswap aave
+gta report compound uniswap aave
 ```
 
 ## Troubleshooting

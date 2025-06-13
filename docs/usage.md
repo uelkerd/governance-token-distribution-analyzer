@@ -2,16 +2,39 @@
 
 This guide explains how to use the Governance Token Distribution Analyzer.
 
+## Live Data vs. Fallback/Simulated Data
+
+The analyzer is designed to fetch live blockchain data from multiple providers (Etherscan, The Graph, Alchemy, Infura). If a required API key is missing, a provider is rate-limited, or an endpoint is unavailable, the system will automatically log a warning and fall back to simulated or cached data. This ensures that analysis can proceed even in the absence of live data, though results may be less current.
+
+All errors and warnings are logged with context. You can review logs to understand which data sources were used and whether any fallbacks occurred.
+
+## Live Data Validation Script
+
+A standalone script is provided to validate that live API integrations are working correctly:
+
+```bash
+python scripts/validate_live_data.py
+```
+
+This script will:
+- Check for available API keys (Etherscan, The Graph, Alchemy, Infura)
+- Attempt to fetch live token holder data for Compound, Uniswap, and Aave
+- Validate the structure and quality of returned data
+- Log all errors and warnings, and print a summary of validation results
+- Exit with a nonzero code if any critical errors are detected
+
+Use this script to verify your environment and API setup before running full analyses or deploying.
+
 ## Command Line Interface
 
-The package provides a command-line tool `token-analyzer` for analyzing governance token distributions.
+The package provides a command-line tool `gta` for analyzing governance token distributions.
 
 ### General Help
 
 To see all available commands:
 
 ```bash
-token-analyzer --help
+gta --help
 ```
 
 ### Analyzing a Single Token
@@ -19,7 +42,7 @@ token-analyzer --help
 To analyze the distribution of a single token:
 
 ```bash
-token-analyzer analyze compound --limit 100
+gta analyze compound --limit 100
 ```
 
 Parameters:
@@ -45,7 +68,7 @@ Concentration:
 To compare distributions across multiple tokens:
 
 ```bash
-token-analyzer compare compound uniswap aave --limit 100 --format report
+gta compare compound uniswap aave --limit 100 --format report
 ```
 
 Parameters:
@@ -60,7 +83,7 @@ When using the `report` format, an HTML report will be generated with visualizat
 To simulate different token distribution patterns:
 
 ```bash
-token-analyzer simulate power_law --holders 100 --output simulation.json
+gta simulate power_law --holders 100 --output simulation.json
 ```
 
 Parameters:
@@ -73,7 +96,7 @@ Parameters:
 To generate a comprehensive HTML report:
 
 ```bash
-token-analyzer report compound uniswap aave --output-dir reports
+gta report compound uniswap aave --output-dir reports
 ```
 
 Parameters:
