@@ -23,7 +23,7 @@ dotenv.load_dotenv()
 
 
 def main():
-    """Main function to run the hello world script."""
+    """Execute the hello world test script."""
     logger.info("Starting Hello World test script")
 
     # Test API connection with Etherscan

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Compound Token Analysis Proof of Concept
+"""Compound Token Analysis Proof of Concept.
 
 This script demonstrates the analysis of the Compound (COMP) governance token distribution.
 It retrieves data from Etherscan and calculates basic concentration metrics.
@@ -40,8 +39,7 @@ class CompoundAnalyzer:
     COMP_CONTRACT_ADDRESS = "0xc00e94cb662c3520282e6f5717214004a7f26888"
 
     def __init__(self, api_client=None, config=None):
-        """
-        Initialize the Compound analyzer with API client and configuration.
+        """Initialize the Compound analyzer with API client and configuration.
 
         Args:
             api_client: An instance of EtherscanAPI or compatible client
@@ -52,8 +50,7 @@ class CompoundAnalyzer:
         self.analyzer = TokenDistributionAnalyzer(self.api_client, self.config)
 
     def get_token_holders(self, limit=100):
-        """
-        Get Compound token holders.
+        """Get Compound token holders.
 
         Args:
             limit: Maximum number of holders to retrieve
@@ -65,8 +62,7 @@ class CompoundAnalyzer:
         return self.api_client.get_token_holders(self.COMP_CONTRACT_ADDRESS, limit)
 
     def analyze_distribution(self, limit=100):
-        """
-        Analyze the distribution of COMP tokens.
+        """Analyze the distribution of COMP tokens.
 
         Args:
             limit: Maximum number of holders to analyze
@@ -155,8 +151,7 @@ class CompoundAnalyzer:
         return results
 
     def save_analysis_results(self, results, filename=None):
-        """
-        Save analysis results to a JSON file.
+        """Save analysis results to a JSON file.
 
         Args:
             results: Analysis results dictionary
@@ -178,7 +173,7 @@ class CompoundAnalyzer:
 
 
 def main():
-    """Main function to run the Compound token analysis."""
+    """Run the Compound token analysis proof of concept."""
     logger.info("Starting Compound token analysis proof of concept")
 
     try:

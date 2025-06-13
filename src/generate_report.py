@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Governance Token Distribution Report Generator
+"""Governance Token Distribution Report Generator.
 
 This script generates comprehensive reports on governance token distribution patterns
 including visualizations, metrics, and insights across multiple protocols.
@@ -39,8 +38,7 @@ class ReportGenerator:
     """Generates comprehensive reports on governance token distribution."""
 
     def __init__(self, output_dir: str = "reports"):
-        """
-        Initialize the report generator.
+        """Initialize the report generator.
 
         Args:
             output_dir: Directory to save generated reports
@@ -74,8 +72,7 @@ class ReportGenerator:
         )
 
     def load_protocol_data(self, protocols: List[str]) -> Dict[str, Dict]:
-        """
-        Load analysis data for multiple protocols.
+        """Load analysis data for multiple protocols.
 
         Args:
             protocols: List of protocol names to include in the report
@@ -106,8 +103,7 @@ class ReportGenerator:
     def generate_comparative_concentration_chart(
         self, protocol_data: Dict[str, Dict]
     ) -> str:
-        """
-        Generate a comparative chart of concentration metrics across protocols.
+        """Generate a comparative chart of concentration metrics across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -186,8 +182,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_distribution_comparison(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a comparison of token distribution patterns across protocols.
+        """Generate a comparison of token distribution patterns across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -270,8 +265,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_top_holders_bar_chart(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a bar chart comparing top holder percentages across protocols.
+        """Generate a bar chart comparing top holders across protocols.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -360,8 +354,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_html_report(self, protocol_data: Dict[str, Dict]) -> str:
-        """
-        Generate a comprehensive HTML report with all analysis results.
+        """Generate an HTML report with charts and analysis.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -581,8 +574,7 @@ class ReportGenerator:
         return str(report_path)
 
     def generate_full_report(self, protocols: List[str] = None) -> str:
-        """
-        Generate a full report including all protocols.
+        """Generate a full report including all protocols.
 
         Args:
             protocols: List of protocol names to include (default: all available)
@@ -607,7 +599,7 @@ class ReportGenerator:
 
 
 def main():
-    """Main function to run the report generator."""
+    """Execute the report generation process."""
     logger.info("Starting governance token distribution report generation")
 
     try:

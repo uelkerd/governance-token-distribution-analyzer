@@ -250,7 +250,7 @@ def parse_args():
 
 
 def main():
-    """Run historical token distribution analysis."""
+    """Execute historical token distribution analysis."""
     args = parse_args()
 
     # Parse dates

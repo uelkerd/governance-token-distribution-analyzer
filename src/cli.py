@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Governance Token Distribution Analyzer CLI
+"""Governance Token Distribution Analyzer CLI.
 
 This module provides a command-line interface for analyzing governance token
 distributions across multiple DeFi protocols.
@@ -42,8 +41,7 @@ except ImportError:
 
 
 def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
-    """
-    Analyze a specific token's distribution.
+    """Analyze a specific token's distribution.
 
     Args:
         token_name: Name of the token to analyze (compound, uniswap, aave)
@@ -81,8 +79,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 def compare_tokens(
     tokens: List[str], limit: int = 100, output_format: str = "json"
 ) -> Dict[str, Dict[str, Any]]:
-    """
-    Compare distribution metrics across multiple tokens.
+    """Compare distribution metrics across multiple tokens.
 
     Args:
         tokens: List of token names to compare
@@ -126,8 +123,7 @@ def compare_tokens(
 def generate_simulated_data(
     distribution_type: str, num_holders: int = 100, output_file: Optional[str] = None
 ) -> Dict[str, Any]:
-    """
-    Generate simulated token distribution data for testing.
+    """Generate simulated token distribution data for testing.
 
     Args:
         distribution_type: Type of distribution ('power_law', 'protocol_dominated', 'community')
@@ -205,8 +201,7 @@ def generate_simulated_data(
 
 
 def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
-    """
-    Generate a comprehensive HTML report for token distribution analysis.
+    """Generate a comprehensive HTML report for token distribution analysis.
 
     Args:
         tokens: List of token names to include in the report
@@ -225,7 +220,7 @@ def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
 
 
 def main():
-    """Main CLI entry point."""
+    """Execute the CLI entry point."""
     parser = argparse.ArgumentParser(
         description="Governance Token Distribution Analyzer"
     )

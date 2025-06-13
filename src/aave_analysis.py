@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Aave Token Analysis
+"""Aave Token Analysis.
 
 This script analyzes the Aave (AAVE) governance token distribution.
 It retrieves data from Etherscan and calculates concentration metrics.
@@ -37,8 +36,7 @@ class AaveAnalyzer:
     AAVE_CONTRACT_ADDRESS = "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9"
 
     def __init__(self, api_client=None, config=None):
-        """
-        Initialize the Aave analyzer with API client and configuration.
+        """Initialize the Aave analyzer with API client and configuration.
 
         Args:
             api_client: An instance of EtherscanAPI or compatible client
@@ -49,8 +47,7 @@ class AaveAnalyzer:
         self.analyzer = TokenDistributionAnalyzer(self.api_client, self.config)
 
     def get_token_holders(self, limit=100):
-        """
-        Get Aave token holders.
+        """Get Aave token holders.
 
         Args:
             limit: Maximum number of holders to retrieve
@@ -62,8 +59,7 @@ class AaveAnalyzer:
         return self.api_client.get_token_holders(self.AAVE_CONTRACT_ADDRESS, limit)
 
     def analyze_distribution(self, limit=100):
-        """
-        Analyze the distribution of AAVE tokens.
+        """Analyze the distribution of AAVE tokens.
 
         Args:
             limit: Maximum number of holders to analyze
@@ -158,8 +154,7 @@ class AaveAnalyzer:
         return results
 
     def save_analysis_results(self, results, filename=None):
-        """
-        Save analysis results to a JSON file.
+        """Save analysis results to a JSON file.
 
         Args:
             results: Analysis results dictionary
@@ -181,7 +176,7 @@ class AaveAnalyzer:
 
 
 def main():
-    """Main function to run the Aave token analysis."""
+    """Run the Aave token analysis."""
     logger.info("Starting Aave token analysis")
 
     try:
