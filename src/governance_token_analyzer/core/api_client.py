@@ -771,8 +771,8 @@ class APIClient:
                     logger.warning(f"⚠️  {api_name} returned no holders")
 
             except Exception as e:
-                logger.warning(f"❌ {api_name} API failed: {e}")
-                continue
+            except Exception as exception:
+                logger.warning(f"❌ {api_name} API failed: {exception}")
 
         # Final fallback to simulation
         logger.info("🔄 All APIs failed, using protocol-specific simulation")
