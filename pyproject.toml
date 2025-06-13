@@ -43,7 +43,9 @@ dev = [
 ]
 
 [project.scripts]
-gta = "governance_token_analyzer.cli:cli"
+gova = "governance_token_analyzer.cli.main:cli"
+governance-analyzer = "governance_token_analyzer.cli.main:cli"
+gov-token-analyzer = "governance_token_analyzer.cli.main:cli"
 
 [project.urls]
 "Homepage" = "https://github.com/your-username/governance-token-distribution-analyzer"
