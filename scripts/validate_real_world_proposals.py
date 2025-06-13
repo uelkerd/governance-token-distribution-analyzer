@@ -180,10 +180,10 @@ def run_python_analysis(protocol: str, limit: int = 100, data_dir: str = "data")
         script_result = _execute_protocol_script(protocol, project_root)
         if script_result:
             return script_result
-        
+
         # If script execution failed or script doesn't exist, look for analysis files
         return _find_analysis_files(protocol, data_dir)
-        
+
     except Exception as exception:
         logger.error(f"Error running Python analysis: {str(exception)}")
         return {"error": str(exception)}
@@ -219,9 +219,7 @@ def _execute_protocol_script(protocol: str, project_root: Path) -> Dict[str, Any
         # Run the analysis script
         cmd = [sys.executable, str(script_path)]
 
-        result = subprocess.run(
-            cmd, cwd=project_root, capture_output=True, text=True, timeout=60
-        )
+        result = subprocess.run(cmd, cwd=project_root, capture_output=True, text=True, timeout=60)
 
         if result.returncode != 0:
             logger.warning(f"Script execution failed with code {result.returncode}")
@@ -396,7 +394,9 @@ def main():
                 total_count += 1
                 if result.get("success", False):
                     success_count += 1
-        logger.info(f"Validation success rate: {success_count}/{total_count} ({success_count/total_count*100:.1f}%)")
+        logger.info(
+            f"Validation success rate: {success_count}/{total_count} ({success_count / total_count * 100:.1f}%)"
+        )
 
     elif args.protocol and args.proposal_id:
         result = validate_proposal(args.protocol, args.proposal_id)

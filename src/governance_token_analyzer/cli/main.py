@@ -259,7 +259,7 @@ def analyze_cmd(protocol, format, output_dir, chart, metric, limit, no_charts):
         else:
             with open(output_file, "w") as f:
                 f.write(str(analysis_data))
-                
+
         output_files.append(output_file)
 
         if chart:
