@@ -113,11 +113,11 @@ class VotingBlockAnalyzer:
             self.address_similarity = similarity_matrix.fillna(0)
             return self.address_similarity
 
-        except Exception as e:
-            logger.error(f"Failed to calculate voting similarity: {e}")
+        except Exception as exception:
+            logger.error(f"Failed to calculate voting similarity: {exception}")
             raise HistoricalDataError(
-                f"Failed to calculate voting similarity: {e}"
-            ) from e
+                f"Failed to calculate voting similarity: {exception}"
+            ) from exception
 
     def get_voting_similarity(self) -> Optional[pd.DataFrame]:
         """Return the address similarity matrix.
@@ -184,9 +184,9 @@ class VotingBlockAnalyzer:
             )
             return voting_blocks
 
-        except Exception as e:
-            logger.error(f"Failed to identify voting blocks: {e}")
-            raise HistoricalDataError(f"Failed to identify voting blocks: {e}") from e
+        except Exception as exception:
+            logger.error(f"Failed to identify voting blocks: {exception}")
+            raise HistoricalDataError(f"Failed to identify voting blocks: {exception}") from exception
 
     def calculate_voting_power(
         self, token_balances: Dict[str, float]
@@ -411,9 +411,9 @@ class VotingBlockAnalyzer:
             )
             return fig
 
-        except Exception as e:
-            logger.error(f"Failed to visualize voting blocks: {e}")
-            raise HistoricalDataError(f"Failed to visualize voting blocks: {e}") from e
+        except Exception as exception:
+            logger.error(f"Failed to visualize voting blocks: {exception}")
+            raise HistoricalDataError(f"Failed to visualize voting blocks: {exception}") from exception
 
     def analyze_block_cohesion(self) -> Dict[str, float]:
         """Analyze the cohesion of each voting block.
@@ -453,9 +453,9 @@ class VotingBlockAnalyzer:
             logger.info(f"Analyzed cohesion for {len(cohesion_scores)} blocks")
             return cohesion_scores
 
-        except Exception as e:
-            logger.error(f"Failed to analyze block cohesion: {e}")
-            raise HistoricalDataError(f"Failed to analyze block cohesion: {e}") from e
+        except Exception as exception:
+            logger.error(f"Failed to analyze block cohesion: {exception}")
+            return {"error": str(exception)}
 
     def track_block_evolution(
         self, historical_snapshots: List[Dict[str, Any]]
@@ -496,9 +496,9 @@ class VotingBlockAnalyzer:
 
             return block_evolution
 
-        except Exception as e:
-            logger.error(f"Failed to track block evolution: {e}")
-            raise HistoricalDataError(f"Failed to track block evolution: {e}") from e
+        except Exception as exception:
+            logger.error(f"Failed to track block evolution: {exception}")
+            return {"error": str(exception)}
 
 
 def analyze_proposal_influence(
@@ -656,12 +656,12 @@ def analyze_proposal_influence(
         logger.info(f"Analyzed influence patterns for {len(results)} proposals")
         return results
 
-    except Exception as e:
-        if isinstance(e, KeyError):
-            logger.error(f"Error accessing data fields: {e}")
-            raise DataFormatError(f"Error accessing data fields: {e}") from e
-        logger.error(f"Failed to analyze proposal influence: {e}")
-        raise HistoricalDataError(f"Failed to analyze proposal influence: {e}") from e
+    except Exception as exception:
+        if isinstance(exception, KeyError):
+            logger.error(f"Error accessing data fields: {exception}")
+            raise DataFormatError(f"Error accessing data fields: {exception}") from exception
+        logger.error(f"Failed to analyze proposal influence: {exception}")
+        return {"error": str(exception)}
 
 
 def detect_voting_anomalies(
@@ -902,9 +902,9 @@ def detect_voting_anomalies(
         )
         return anomalies
 
-    except Exception as e:
-        if isinstance(e, KeyError):
-            logger.error(f"Error accessing data fields: {e}")
-            raise DataFormatError(f"Error accessing data fields: {e}") from e
-        logger.error(f"Failed to detect voting anomalies: {e}")
-        raise HistoricalDataError(f"Failed to detect voting anomalies: {e}") from e
+    except Exception as exception:
+        if isinstance(exception, KeyError):
+            logger.error(f"Error accessing data fields: {exception}")
+            raise DataFormatError(f"Error accessing data fields: {exception}") from exception
+        logger.error(f"Failed to detect voting anomalies: {exception}")
+        return {"anomalies": [], "error": str(exception)}

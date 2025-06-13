@@ -296,8 +296,8 @@ class APIClient:
                         f"⚠️  No real data available for {protocol}, falling back to simulation"
                     )
 
-            except Exception as e:
-                logger.warning(f"❌ Real data fetch failed for {protocol}: {e}")
+            except Exception as exception:
+                logger.warning(f"❌ Real data fetch failed for {protocol}: {exception}")
 
         # Fallback to protocol-specific simulation
         logger.info(f"🔄 Using protocol-specific simulation for {protocol}")
@@ -328,8 +328,8 @@ class APIClient:
                 # Generate sample data for testing
                 return self._generate_sample_proposal_data(protocol, limit)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance proposals for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
             return []
 
     def get_governance_votes(
@@ -357,8 +357,8 @@ class APIClient:
                 # Generate sample data for testing
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance votes for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance votes for {protocol}: {exception}")
             return []
 
     def get_protocol_data(
@@ -416,8 +416,8 @@ class APIClient:
                 "active_holder_count": len(holders),
             }
 
-        except Exception as e:
-            logger.error(f"Error fetching protocol data for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching protocol data for {protocol}: {exception}")
             return {}
 
     def _calculate_participation_rate(self, proposals: List[Dict[str, Any]]) -> float:
@@ -770,7 +770,6 @@ class APIClient:
                 else:
                     logger.warning(f"⚠️  {api_name} returned no holders")
 
-            except Exception as e:
             except Exception as exception:
                 logger.warning(f"❌ {api_name} API failed: {exception}")
 
@@ -848,8 +847,8 @@ class APIClient:
                 logger.warning(f"No proposals found for {protocol}, using sample data")
                 return self._generate_sample_proposal_data(protocol, limit)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance proposals for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_proposal_data(protocol, limit)
 
@@ -920,8 +919,8 @@ class APIClient:
                 )
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance votes for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance votes for {protocol}: {exception}")
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_vote_data(protocol, proposal_id)
 
@@ -957,8 +956,8 @@ class APIClient:
 
             return data
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request failed: {str(e)}")
+        except requests.exceptions.RequestException as exception:
+            logger.error(f"Request failed: {str(exception)}")
             raise
 
     def get_token_supply(self, token_address: str) -> Dict[str, Any]:
@@ -1012,8 +1011,8 @@ class APIClient:
             result = self._make_request(params)
             if "result" in result and not isinstance(result["result"], str):
                 return result
-        except Exception as e:
-            logger.warning(f"Token holder list endpoint failed: {str(e)}")
+        except Exception as exception:
+            logger.warning(f"Token holder list endpoint failed: {str(exception)}")
 
         # Fallback to simulated data if the API call doesn't work
         logger.info(
@@ -1349,8 +1348,8 @@ class APIClient:
 
             logger.warning("No token holders found via Moralis, using fallback")
             return self._generate_simulated_holders(token_address, 1, limit)["result"]
-        except Exception as e:
-            logger.error(f"Moralis API error: {e}")
+        except Exception as exception:
+            logger.error(f"Moralis API error: {exception}")
             return self._generate_simulated_holders(token_address, 1, limit)["result"]
 
 
@@ -1415,17 +1414,17 @@ class TheGraphAPI:
                 except (
                     requests.exceptions.Timeout,
                     requests.exceptions.ConnectionError,
-                ) as e:
+                ) as exception:
                     if attempt < max_retries - 1:
                         wait_time = 2**attempt  # Exponential backoff
                         logger.warning(
-                            f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {e}"
+                            f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {exception}"
                         )
                         time.sleep(wait_time)
                         continue
                     else:
                         raise
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"GraphQL query failed after {max_retries} attempts: {str(e)}")
+        except requests.exceptions.RequestException as exception:
+            logger.error(f"GraphQL query failed after {max_retries} attempts: {str(exception)}")
             raise
