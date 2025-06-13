@@ -732,7 +732,7 @@ class ReportGenerator:
             holders_display = f"{holders_count:,g}"
         else:
             holders_display = str(holders_count)
-        
+
         total_supply = report_data.get("total_supply", "N/A")
         if isinstance(total_supply, (int, float)):
             supply_display = f"{total_supply:,.2f} tokens"
