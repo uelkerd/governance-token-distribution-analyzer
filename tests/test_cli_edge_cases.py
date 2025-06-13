@@ -435,7 +435,6 @@ class TestCLIEdgeCases:
 
     def test_concurrent_cli_operations(self, temp_dir):
         """Test concurrent CLI operations."""
-        import subprocess
 
         def run_cli_process(protocol):
             """Run CLI in a separate process with isolated environments."""
@@ -452,7 +451,7 @@ class TestCLIEdgeCases:
                 ],
                 capture_output=True,
                 text=True,
-            )
+            check=True)
             return result
 
         # Run analyses sequentially (simulating concurrent operations)

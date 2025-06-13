@@ -751,7 +751,8 @@ class APIClient:
 
         return votes
 
-    def _normalize_holder_balances(self, holders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    @staticmethod
+    def _normalize_holder_balances(holders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Normalize holder balances to consistent string format and sort by balance.
 
         Args:
