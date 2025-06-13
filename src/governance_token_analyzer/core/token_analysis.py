@@ -35,9 +35,7 @@ class TokenDistributionAnalyzer:
         self.config = config or Config()
         self.etherscan_api = etherscan_api or APIClient()
 
-    def get_token_holders(
-        self, protocol_key: str, limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    def get_token_holders(self, protocol_key: str, limit: int = 100) -> List[Dict[str, Any]]:
         """Get the top token holders for a specific protocol.
 
         Args:
@@ -49,17 +47,13 @@ class TokenDistributionAnalyzer:
 
         """
         # Use the Config class first, fall back to the global variable
-        protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(
-            protocol_key
-        )
+        protocol = self.config.get_protocol_info(protocol_key) or PROTOCOLS.get(protocol_key)
         if not protocol:
             logger.error(f"Protocol '{protocol_key}' not found in configuration")
             return []
 
         token_address = protocol["token_address"]
-        logger.info(
-            f"Fetching top {limit} holders for {protocol['name']} ({protocol['symbol']})"
-        )
+        logger.info(f"Fetching top {limit} holders for {protocol['name']} ({protocol['symbol']})")
 
         # We may need to make multiple API calls to get all holders up to the limit
         page = 1
@@ -120,14 +114,9 @@ class TokenDistributionAnalyzer:
 
         # Calculate Gini coefficient using the formula
         indices = np.arange(1, n + 1)
-        return (
-            2 * np.sum(indices * balances_sorted) / (n * np.sum(balances_sorted))
-            - (n + 1) / n
-        )
+        return 2 * np.sum(indices * balances_sorted) / (n * np.sum(balances_sorted)) - (n + 1) / n
 
-    def calculate_herfindahl_index(
-        self, balances: List[float], total_supply: Optional[float] = None
-    ) -> float:
+    def calculate_herfindahl_index(self, balances: List[float], total_supply: Optional[float] = None) -> float:
         """Calculate the Herfindahl-Hirschman Index (HHI) for token balances.
 
         HHI is a measure of market concentration, calculated as the sum of
@@ -158,9 +147,7 @@ class TokenDistributionAnalyzer:
 
         return hhi
 
-    def calculate_concentration_metrics(
-        self, holders: List[Dict[str, Any]], total_supply: str
-    ) -> Dict[str, Any]:
+    def calculate_concentration_metrics(self, holders: List[Dict[str, Any]], total_supply: str) -> Dict[str, Any]:
         """Calculate concentration metrics for token holders.
 
         Args:
@@ -194,9 +181,7 @@ class TokenDistributionAnalyzer:
 
             # Calculate percentages of total supply
             if total_supply_float > 0:
-                percentages = [
-                    balance / total_supply_float * 100 for balance in balances
-                ]
+                percentages = [balance / total_supply_float * 100 for balance in balances]
             else:
                 logger.warning("Total supply is zero or negative")
                 percentages = [0] * len(balances)
@@ -259,9 +244,7 @@ def analyze_compound_token() -> Dict[str, Any]:
         # Get token supply
         supply_response = etherscan_api.get_token_supply(token_address)
         if "result" not in supply_response:
-            logger.error(
-                f"Failed to get token supply: {supply_response.get('error', 'Unknown error')}"
-            )
+            logger.error(f"Failed to get token supply: {supply_response.get('error', 'Unknown error')}")
             return {"error": "Failed to get token supply"}
 
         total_supply = supply_response["result"]
@@ -283,9 +266,7 @@ def analyze_compound_token() -> Dict[str, Any]:
         for i, holder in enumerate(top_holders, 1):
             address = holder.get("TokenHolderAddress", "N/A")
             quantity = holder.get("TokenHolderQuantity", "0")
-            percentage = (
-                float(quantity) / float(total_supply) * 100 if total_supply else 0
-            )
+            percentage = float(quantity) / float(total_supply) * 100 if total_supply else 0
             formatted_holders.append(
                 {
                     "rank": i,

@@ -104,9 +104,7 @@ class CompoundAnalyzer:
                             continue
                     else:
                         # If no numeric value found, skip this holder
-                        logger.warning(
-                            f"Could not extract balance from holder data: {holder}"
-                        )
+                        logger.warning(f"Could not extract balance from holder data: {holder}")
                         continue
 
                 balances.append(balance)
@@ -123,15 +121,9 @@ class CompoundAnalyzer:
         # Calculate percentage held by top holders
         total_supply = sum(balances)
         top_5_pct = sum(balances[:5]) / total_supply * 100 if len(balances) >= 5 else 0
-        top_10_pct = (
-            sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
-        )
-        top_20_pct = (
-            sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
-        )
-        top_50_pct = (
-            sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
-        )
+        top_10_pct = sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
+        top_20_pct = sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
+        top_50_pct = sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
 
         results = {
             "token": "COMP",
@@ -196,12 +188,8 @@ def main():
         print("\nCOMP Token Distribution Analysis:")
         print(f"Gini Coefficient: {results['metrics']['gini_coefficient']:.4f}")
         print(f"Herfindahl Index: {results['metrics']['herfindahl_index']:.4f}")
-        print(
-            f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%"
-        )
-        print(
-            f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%"
-        )
+        print(f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%")
+        print(f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%")
 
         return 0
 

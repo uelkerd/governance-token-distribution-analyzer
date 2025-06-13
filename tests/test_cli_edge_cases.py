@@ -52,7 +52,7 @@ class TestCLIEdgeCases:
             "ETHERSCAN_API_KEY": "test_etherscan_key",
             "ALCHEMY_API_KEY": "test_alchemy_key",
             "GRAPH_API_KEY": "test_graph_key",
-            "INFURA_API_KEY": "test_infura_key"
+            "INFURA_API_KEY": "test_infura_key",
         }
         for key, value in test_vars.items():
             monkeypatch.setenv(key, value)
@@ -76,11 +76,7 @@ class TestCLIEdgeCases:
         invalid_metrics = ["invalid_metric", "", "concentration_coefficient", "123"]
 
         for metric in invalid_metrics:
-            result = cli_runner.invoke(cli, [
-                "historical-analysis",
-                "--protocol", "compound",
-                "--metric", metric
-            ])
+            result = cli_runner.invoke(cli, ["historical-analysis", "--protocol", "compound", "--metric", metric])
 
             # Should handle invalid metrics gracefully with default metric
             assert result.exit_code == 0  # Should succeed with default metric
@@ -98,12 +94,18 @@ class TestCLIEdgeCases:
     def test_conflicting_arguments(self, cli_runner):
         """Test CLI with conflicting arguments."""
         # Test conflicting format options - Click will use the last one
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--format", "json",
-            "--format", "html"  # Last format should be used
-        ])
+        result = cli_runner.invoke(
+            cli,
+            [
+                "generate-report",
+                "--protocol",
+                "compound",
+                "--format",
+                "json",
+                "--format",
+                "html",  # Last format should be used
+            ],
+        )
 
         # Should handle by using the last specified format
         assert result.exit_code == 0
@@ -113,12 +115,9 @@ class TestCLIEdgeCases:
         invalid_numbers = ["-1", "abc"]  # Remove "0" as it might be handled differently
 
         for number in invalid_numbers:
-            result = cli_runner.invoke(cli, [
-                "simulate-historical",
-                "--protocol", "compound",
-                "--snapshots", number,
-                "--output-dir", temp_dir
-            ])
+            result = cli_runner.invoke(
+                cli, ["simulate-historical", "--protocol", "compound", "--snapshots", number, "--output-dir", temp_dir]
+            )
 
             # Should handle invalid numbers gracefully
             if number in ["-1", "abc"]:
@@ -132,11 +131,7 @@ class TestCLIEdgeCases:
         for key in ["ETHERSCAN_API_KEY", "ALCHEMY_API_KEY", "GRAPH_API_KEY", "INFURA_API_KEY"]:
             monkeypatch.delenv(key, raising=False)
 
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
         # Should still work with fallback data
         assert result.exit_code == 0
@@ -149,11 +144,7 @@ class TestCLIEdgeCases:
         monkeypatch.delenv("INFURA_API_KEY", raising=False)
         monkeypatch.setenv("ETHERSCAN_API_KEY", "test_key")
 
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
         # Should work with partial API keys
         assert result.exit_code == 0
@@ -165,11 +156,7 @@ class TestCLIEdgeCases:
         monkeypatch.setenv("ALCHEMY_API_KEY", "invalid_key")
         monkeypatch.setenv("GRAPH_API_KEY", "123")
 
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
         # Should handle invalid keys and fallback
         assert result.exit_code == 0
@@ -178,11 +165,7 @@ class TestCLIEdgeCases:
 
     def test_readonly_output_directory(self, cli_runner, readonly_dir):
         """Test CLI with read-only output directory."""
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", readonly_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", readonly_dir])
 
         # Should handle read-only directory gracefully
         assert result.exit_code != 0 or "permission" in result.output.lower()
@@ -191,11 +174,7 @@ class TestCLIEdgeCases:
         """Test CLI with non-existent output directory."""
         nonexistent_dir = os.path.join(temp_dir, "nonexistent", "deeply", "nested")
 
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", nonexistent_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", nonexistent_dir])
 
         # Should create directory or handle gracefully
         assert result.exit_code == 0
@@ -203,11 +182,7 @@ class TestCLIEdgeCases:
 
     def test_insufficient_disk_space_simulation(self, cli_runner, temp_dir):
         """Test CLI behavior when disk space is limited."""
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
         # Should complete successfully in normal conditions
         assert result.exit_code == 0
@@ -219,11 +194,7 @@ class TestCLIEdgeCases:
         for i in range(5):  # Reduced from 10 to avoid filesystem limits
             long_path = os.path.join(long_path, "very_long_directory_name")
 
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", long_path
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", long_path])
 
         # Should handle long paths appropriately
         assert result.exit_code == 0 or "path" in result.output.lower()
@@ -232,71 +203,59 @@ class TestCLIEdgeCases:
 
     def test_json_output_format_validation(self, cli_runner, temp_dir):
         """Test JSON output format validation."""
-        result = cli_runner.invoke(cli, [
-            "export-historical-data",
-            "--protocol", "compound",
-            "--format", "json",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli, ["export-historical-data", "--protocol", "compound", "--format", "json", "--output-dir", temp_dir]
+        )
 
         assert result.exit_code == 0
 
         # Validate JSON output exists and is valid
-        json_files = [f for f in os.listdir(temp_dir) if f.endswith('.json')]
+        json_files = [f for f in os.listdir(temp_dir) if f.endswith(".json")]
         assert len(json_files) > 0
 
         # Validate JSON content
-        with open(os.path.join(temp_dir, json_files[0]), 'r') as f:
+        with open(os.path.join(temp_dir, json_files[0]), "r") as f:
             data = json.load(f)
             assert isinstance(data, dict)
             assert "protocol" in data
 
     def test_csv_output_format_validation(self, cli_runner, temp_dir):
         """Test CSV output format validation."""
-        result = cli_runner.invoke(cli, [
-            "export-historical-data",
-            "--protocol", "compound",
-            "--format", "csv",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli, ["export-historical-data", "--protocol", "compound", "--format", "csv", "--output-dir", temp_dir]
+        )
 
         # CSV format not supported in export command, should use default JSON
         assert result.exit_code == 0
 
     def test_html_report_validation(self, cli_runner, temp_dir):
         """Test HTML report validation."""
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--format", "html",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli, ["generate-report", "--protocol", "compound", "--format", "html", "--output-dir", temp_dir]
+        )
 
         assert result.exit_code == 0
 
         # Validate HTML output exists
-        html_files = [f for f in os.listdir(temp_dir) if f.endswith('.html')]
+        html_files = [f for f in os.listdir(temp_dir) if f.endswith(".html")]
         assert len(html_files) > 0
 
         # Validate HTML content
-        with open(os.path.join(temp_dir, html_files[0]), 'r') as f:
+        with open(os.path.join(temp_dir, html_files[0]), "r") as f:
             content = f.read()
             assert "<!DOCTYPE html>" in content
             assert "<html>" in content
 
     def test_chart_generation_validation(self, cli_runner, temp_dir):
         """Test chart generation and validation."""
-        result = cli_runner.invoke(cli, [
-            "historical-analysis",
-            "--protocol", "compound",
-            "--format", "png",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli, ["historical-analysis", "--protocol", "compound", "--format", "png", "--output-dir", temp_dir]
+        )
 
         assert result.exit_code == 0
 
         # Validate chart output exists
-        chart_files = [f for f in os.listdir(temp_dir) if f.endswith('.png')]
+        chart_files = [f for f in os.listdir(temp_dir) if f.endswith(".png")]
         assert len(chart_files) > 0
 
     # COMPLETE WORKFLOW TESTS
@@ -304,50 +263,45 @@ class TestCLIEdgeCases:
     def test_complete_analysis_workflow(self, cli_runner, temp_dir, mock_env_vars):
         """Test complete analysis workflow from start to finish."""
         # Step 1: Run analysis
-        result = cli_runner.invoke(cli, [
-            "historical-analysis",
-            "--protocol", "compound",
-            "--metric", "gini_coefficient",
-            "--format", "png",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli,
+            [
+                "historical-analysis",
+                "--protocol",
+                "compound",
+                "--metric",
+                "gini_coefficient",
+                "--format",
+                "png",
+                "--output-dir",
+                temp_dir,
+            ],
+        )
 
         assert result.exit_code == 0
 
         # Step 2: Generate report
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
         assert result.exit_code == 0
 
         # Step 3: Export data
-        result = cli_runner.invoke(cli, [
-            "export-historical-data",
-            "--protocol", "compound",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(cli, ["export-historical-data", "--protocol", "compound", "--output-dir", temp_dir])
 
         assert result.exit_code == 0
 
         # Validate all outputs exist
         files = os.listdir(temp_dir)
-        assert any(f.endswith('.png') for f in files)
-        assert any(f.endswith('.html') for f in files)
-        assert any(f.endswith('.json') for f in files)
+        assert any(f.endswith(".png") for f in files)
+        assert any(f.endswith(".html") for f in files)
+        assert any(f.endswith(".json") for f in files)
 
     def test_batch_protocol_analysis(self, cli_runner, temp_dir):
         """Test batch analysis of multiple protocols."""
         protocols = ["compound", "uniswap", "aave"]
 
         for protocol in protocols:
-            result = cli_runner.invoke(cli, [
-                "generate-report",
-                "--protocol", protocol,
-                "--output-dir", temp_dir
-            ])
+            result = cli_runner.invoke(cli, ["generate-report", "--protocol", protocol, "--output-dir", temp_dir])
 
             assert result.exit_code == 0
 
@@ -359,22 +313,16 @@ class TestCLIEdgeCases:
     def test_historical_data_workflow(self, cli_runner, temp_dir):
         """Test historical data analysis workflow."""
         # Step 1: Simulate historical data
-        result = cli_runner.invoke(cli, [
-            "simulate-historical",
-            "--protocol", "compound",
-            "--snapshots", "5",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli, ["simulate-historical", "--protocol", "compound", "--snapshots", "5", "--output-dir", temp_dir]
+        )
 
         assert result.exit_code == 0
 
         # Step 2: Analyze historical data
-        result = cli_runner.invoke(cli, [
-            "historical-analysis",
-            "--protocol", "compound",
-            "--data-dir", temp_dir,
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli, ["historical-analysis", "--protocol", "compound", "--data-dir", temp_dir, "--output-dir", temp_dir]
+        )
 
         assert result.exit_code == 0
 
@@ -382,43 +330,33 @@ class TestCLIEdgeCases:
 
     def test_cli_with_api_failures(self, cli_runner, temp_dir):
         """Test CLI behavior when APIs are completely unavailable."""
-        with patch('governance_token_analyzer.core.api_client.APIClient') as mock_client:
+        with patch("governance_token_analyzer.core.api_client.APIClient") as mock_client:
             mock_instance = MagicMock()
             mock_instance.get_protocol_data.side_effect = Exception("All APIs failed")
             mock_client.return_value = mock_instance
 
-            result = cli_runner.invoke(cli, [
-                "generate-report",
-                "--protocol", "compound",
-                "--output-dir", temp_dir
-            ])
+            result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
             # Should handle API failures gracefully
             assert result.exit_code == 0
 
     def test_cli_with_partial_api_failures(self, cli_runner, temp_dir):
         """Test CLI behavior when some APIs fail."""
-        with patch('governance_token_analyzer.core.api_client.APIClient') as mock_client:
+        with patch("governance_token_analyzer.core.api_client.APIClient") as mock_client:
             mock_instance = MagicMock()
             # Mock partial success
-            mock_instance.get_token_holders.return_value = [
-                {"address": "0x123", "balance": 1000}
-            ]
+            mock_instance.get_token_holders.return_value = [{"address": "0x123", "balance": 1000}]
             mock_instance.get_governance_proposals.side_effect = Exception("Proposals API failed")
             mock_instance.get_protocol_data.return_value = {
                 "protocol": "compound",
                 "holders": [{"address": "0x123", "balance": 1000}],
                 "proposals": [],
                 "participation_rate": 0.0,
-                "gini_coefficient": 0.5
+                "gini_coefficient": 0.5,
             }
             mock_client.return_value = mock_instance
 
-            result = cli_runner.invoke(cli, [
-                "generate-report",
-                "--protocol", "compound",
-                "--output-dir", temp_dir
-            ])
+            result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
             assert result.exit_code == 0
 
@@ -428,12 +366,18 @@ class TestCLIEdgeCases:
     def test_cli_performance_large_datasets(self, cli_runner, temp_dir):
         """Test CLI performance with large datasets."""
         start_time = time.time()
-        result = cli_runner.invoke(cli, [
-            "simulate-historical",
-            "--protocol", "compound",
-            "--snapshots", "50",  # Large dataset
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli,
+            [
+                "simulate-historical",
+                "--protocol",
+                "compound",
+                "--snapshots",
+                "50",  # Large dataset
+                "--output-dir",
+                temp_dir,
+            ],
+        )
         elapsed_time = time.time() - start_time
 
         # Should complete within reasonable time
@@ -446,11 +390,9 @@ class TestCLIEdgeCases:
 
         def run_analysis(protocol):
             runner = CliRunner()
-            result = runner.invoke(cli, [
-                "generate-report",
-                "--protocol", protocol,
-                "--output-dir", os.path.join(temp_dir, protocol)
-            ])
+            result = runner.invoke(
+                cli, ["generate-report", "--protocol", protocol, "--output-dir", os.path.join(temp_dir, protocol)]
+            )
             results.append(result)
 
         # Run concurrent analyses
@@ -473,22 +415,20 @@ class TestCLIEdgeCases:
         """Test memory usage during large analysis."""
         try:
             import psutil
+
             process = psutil.Process()
             initial_memory = process.memory_info().rss
         except ImportError:
             pytest.skip("psutil not available for memory testing")
 
-        result = cli_runner.invoke(cli, [
-            "simulate-historical",
-            "--protocol", "compound",
-            "--snapshots", "100",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli, ["simulate-historical", "--protocol", "compound", "--snapshots", "100", "--output-dir", temp_dir]
+        )
 
         try:
             final_memory = process.memory_info().rss
             memory_increase = final_memory - initial_memory
-            
+
             # Memory increase should be reasonable (less than 500MB)
             assert memory_increase < 500 * 1024 * 1024
         except ImportError:
@@ -498,20 +438,17 @@ class TestCLIEdgeCases:
 
     def test_output_file_content_validation(self, cli_runner, temp_dir):
         """Test validation of output file contents."""
-        result = cli_runner.invoke(cli, [
-            "export-historical-data",
-            "--protocol", "compound",
-            "--format", "json",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(
+            cli, ["export-historical-data", "--protocol", "compound", "--format", "json", "--output-dir", temp_dir]
+        )
 
         assert result.exit_code == 0
 
         # Find and validate JSON output
-        json_files = [f for f in os.listdir(temp_dir) if f.endswith('.json')]
+        json_files = [f for f in os.listdir(temp_dir) if f.endswith(".json")]
         assert len(json_files) > 0
 
-        with open(os.path.join(temp_dir, json_files[0]), 'r') as f:
+        with open(os.path.join(temp_dir, json_files[0]), "r") as f:
             data = json.load(f)
             assert "protocol" in data
             assert "data_points" in data
@@ -519,16 +456,12 @@ class TestCLIEdgeCases:
 
     def test_error_logging_and_reporting(self, cli_runner, temp_dir):
         """Test error logging and reporting functionality."""
-        with patch('governance_token_analyzer.core.api_client.APIClient') as mock_client:
+        with patch("governance_token_analyzer.core.api_client.APIClient") as mock_client:
             mock_instance = MagicMock()
             mock_instance.get_protocol_data.side_effect = Exception("Test error for logging")
             mock_client.return_value = mock_instance
 
-            result = cli_runner.invoke(cli, [
-                "generate-report",
-                "--protocol", "compound",
-                "--output-dir", temp_dir
-            ])
+            result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
             # Should handle errors gracefully and continue with fallback
             assert result.exit_code == 0
@@ -548,13 +481,11 @@ class TestValidationFrameworkEdgeCases:
         """Test validation with corrupted historical data."""
         # Create corrupted data file
         corrupted_file = os.path.join(temp_validation_dir, "corrupted_data.json")
-        with open(corrupted_file, 'w') as f:
+        with open(corrupted_file, "w") as f:
             f.write("{ invalid json content")
 
         # Run validation script
-        result = subprocess.run([
-            "python", "scripts/validate_live_data.py"
-        ], capture_output=True, text=True)
+        result = subprocess.run(["python", "scripts/validate_live_data.py"], capture_output=True, text=True)
 
         # Should handle corrupted data gracefully
         assert result.returncode in [0, 1]  # May warn but shouldn't crash
@@ -565,10 +496,11 @@ class TestValidationFrameworkEdgeCases:
         os.makedirs(os.path.join(temp_validation_dir, "proposals"), exist_ok=True)
 
         # Run validation script
-        result = subprocess.run([
-            "python", "scripts/validate_real_world_proposals.py",
-            "--protocol", "compound"
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            ["python", "scripts/validate_real_world_proposals.py", "--protocol", "compound"],
+            capture_output=True,
+            text=True,
+        )
 
         # Should handle missing data gracefully
         assert result.returncode in [0, 1, 2]  # May have different exit codes
@@ -576,10 +508,8 @@ class TestValidationFrameworkEdgeCases:
     def test_validation_with_network_connectivity_issues(self, temp_validation_dir):
         """Test validation with network connectivity issues."""
         # Mock network issues
-        with patch('requests.get', side_effect=Exception("Network unreachable")):
-            result = subprocess.run([
-                "python", "scripts/validate_live_data.py"
-            ], capture_output=True, text=True)
+        with patch("requests.get", side_effect=Exception("Network unreachable")):
+            result = subprocess.run(["python", "scripts/validate_live_data.py"], capture_output=True, text=True)
 
             # Should handle network issues gracefully
             assert result.returncode in [0, 1]
@@ -603,26 +533,15 @@ class TestDeploymentReadiness:
     def test_production_environment_simulation(self, cli_runner, temp_dir):
         """Test production environment simulation."""
         # Simulate production environment with limited resources
-        with patch.dict(os.environ, {
-            'ETHERSCAN_API_KEY': 'prod_etherscan_key',
-            'ALCHEMY_API_KEY': 'prod_alchemy_key'
-        }):
-            result = cli_runner.invoke(cli, [
-                "generate-report",
-                "--protocol", "compound",
-                "--output-dir", temp_dir
-            ])
+        with patch.dict(os.environ, {"ETHERSCAN_API_KEY": "prod_etherscan_key", "ALCHEMY_API_KEY": "prod_alchemy_key"}):
+            result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
             assert result.exit_code == 0
 
     def test_docker_environment_compatibility(self, cli_runner, temp_dir):
         """Test Docker environment compatibility."""
         # Simulate Docker environment constraints
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
         assert result.exit_code == 0
 
@@ -633,10 +552,6 @@ class TestDeploymentReadiness:
     def test_minimal_dependencies_environment(self, cli_runner, temp_dir):
         """Test minimal dependencies environment."""
         # Test with minimal dependencies (fallback mode)
-        result = cli_runner.invoke(cli, [
-            "generate-report",
-            "--protocol", "compound",
-            "--output-dir", temp_dir
-        ])
+        result = cli_runner.invoke(cli, ["generate-report", "--protocol", "compound", "--output-dir", temp_dir])
 
         assert result.exit_code == 0

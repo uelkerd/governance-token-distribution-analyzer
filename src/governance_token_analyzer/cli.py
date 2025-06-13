@@ -14,9 +14,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 # Set up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Import analyzer modules
@@ -56,10 +54,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
     # Display available APIs with their free tier limits
     logger.info("🔍 Available APIs for data fetching:")
-    if (
-        api_client.alchemy_api_key
-        and api_client.alchemy_api_key != "your_alchemy_api_key"
-    ):
+    if api_client.alchemy_api_key and api_client.alchemy_api_key != "your_alchemy_api_key":
         logger.info("  ✅ Alchemy (300M compute units/month - PRIORITIZED)")
     if api_client.graph_api_key:
         logger.info("  ✅ The Graph (generous query limits)")
@@ -72,18 +67,14 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
     # Get token holders data with real API calls prioritized
     try:
-        holders_data = api_client.get_token_holders(
-            token_name, limit=limit, use_real_data=True
-        )
+        holders_data = api_client.get_token_holders(token_name, limit=limit, use_real_data=True)
 
         # Extract balances for analysis
         balances = []
         for holder in holders_data:
             if isinstance(holder, dict):
                 # Try different balance field names
-                balance = (
-                    holder.get("balance") or holder.get("TokenHolderQuantity") or 0
-                )
+                balance = holder.get("balance") or holder.get("TokenHolderQuantity") or 0
                 if isinstance(balance, str):
                     try:
                         balance = float(balance)
@@ -101,11 +92,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
         metrics = calculate_all_concentration_metrics(balances)
 
         # Add metadata
-        data_source = (
-            holders_data[0].get("data_source", "simulation")
-            if holders_data
-            else "simulation"
-        )
+        data_source = holders_data[0].get("data_source", "simulation") if holders_data else "simulation"
 
         results = {
             "protocol": token_name,
@@ -113,17 +100,9 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
             "total_holders_analyzed": len(balances),
             "data_source": data_source,
             "concentration_metrics": metrics,
-            "top_10_concentration": sum(sorted(balances, reverse=True)[:10])
-            / sum(balances)
-            if balances
-            else 0,
-            "top_50_concentration": sum(sorted(balances, reverse=True)[:50])
-            / sum(balances)
-            if balances
-            else 0,
-            "holders_data": holders_data[:10]
-            if holders_data
-            else [],  # Include top 10 for reference
+            "top_10_concentration": sum(sorted(balances, reverse=True)[:10]) / sum(balances) if balances else 0,
+            "top_50_concentration": sum(sorted(balances, reverse=True)[:50]) / sum(balances) if balances else 0,
+            "holders_data": holders_data[:10] if holders_data else [],  # Include top 10 for reference
         }
 
         # Save results to file
@@ -157,9 +136,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
         return {"error": str(e), "protocol": token_name}
 
 
-def compare_tokens(
-    tokens: List[str], limit: int = 100, output_format: str = "json"
-) -> Dict[str, Dict[str, Any]]:
+def compare_tokens(tokens: List[str], limit: int = 100, output_format: str = "json") -> Dict[str, Dict[str, Any]]:
     """Compare distribution metrics across multiple tokens.
 
     Args:
@@ -193,9 +170,7 @@ def compare_tokens(
 
     # Note about report generation
     if output_format.lower() == "report":
-        logger.info(
-            "HTML report generation is not available in this simplified CLI version"
-        )
+        logger.info("HTML report generation is not available in this simplified CLI version")
 
     return results
 
@@ -214,9 +189,7 @@ def generate_simulated_data(
         Dictionary containing the simulated distribution data
 
     """
-    logger.info(
-        f"Generating simulated {distribution_type} distribution with {num_holders} holders"
-    )
+    logger.info(f"Generating simulated {distribution_type} distribution with {num_holders} holders")
 
     # Use different seeds for different distribution types to create variety
     seed_map = {"power_law": 42, "protocol_dominated": 123, "community": 456}
@@ -228,9 +201,7 @@ def generate_simulated_data(
     if distribution_type == "power_law":
         holders = simulator.generate_power_law_distribution(num_holders=num_holders)
     elif distribution_type == "protocol_dominated":
-        holders = simulator.generate_protocol_dominated_distribution(
-            num_holders=num_holders
-        )
+        holders = simulator.generate_protocol_dominated_distribution(num_holders=num_holders)
     elif distribution_type == "community":
         holders = simulator.generate_community_distribution(num_holders=num_holders)
     else:
@@ -255,18 +226,10 @@ def generate_simulated_data(
         "holders": response["result"],
         "metrics": {
             "concentration": {
-                "top_5_percentage": sum(
-                    float(h["TokenHolderPercentage"]) for h in holders[:5]
-                ),
-                "top_10_percentage": sum(
-                    float(h["TokenHolderPercentage"]) for h in holders[:10]
-                ),
-                "top_20_percentage": sum(
-                    float(h["TokenHolderPercentage"]) for h in holders[:20]
-                ),
-                "top_50_percentage": sum(
-                    float(h["TokenHolderPercentage"]) for h in holders[:50]
-                ),
+                "top_5_percentage": sum(float(h["TokenHolderPercentage"]) for h in holders[:5]),
+                "top_10_percentage": sum(float(h["TokenHolderPercentage"]) for h in holders[:10]),
+                "top_20_percentage": sum(float(h["TokenHolderPercentage"]) for h in holders[:20]),
+                "top_50_percentage": sum(float(h["TokenHolderPercentage"]) for h in holders[:50]),
             },
             "advanced": advanced_metrics,
         },
@@ -328,21 +291,15 @@ def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
 
             if "metrics" in data:
                 metrics = data["metrics"]
-                f.write(
-                    f"Gini Coefficient: {metrics.get('gini_coefficient', 'N/A'):.4f}\n"
-                )
-                f.write(
-                    f"Herfindahl Index: {metrics.get('herfindahl_index', 'N/A'):.4f}\n"
-                )
+                f.write(f"Gini Coefficient: {metrics.get('gini_coefficient', 'N/A'):.4f}\n")
+                f.write(f"Herfindahl Index: {metrics.get('herfindahl_index', 'N/A'):.4f}\n")
 
                 if "concentration" in metrics:
                     conc = metrics["concentration"]
                     f.write("Concentration Metrics:\n")
                     for key, value in conc.items():
                         if key.startswith("top_"):
-                            f.write(
-                                f"  {key.replace('_', ' ').title()}: {value:.2f}%\n"
-                            )
+                            f.write(f"  {key.replace('_', ' ').title()}: {value:.2f}%\n")
 
             f.write(f"Number of holders analyzed: {data.get('num_holders', 'N/A')}\n")
             f.write("\n")
@@ -353,27 +310,17 @@ def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
 
 def main():
     """Entry point for the CLI application."""
-    parser = argparse.ArgumentParser(
-        description="Governance Token Distribution Analyzer"
-    )
+    parser = argparse.ArgumentParser(description="Governance Token Distribution Analyzer")
 
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
     # Analyze a single token
-    analyze_parser = subparsers.add_parser(
-        "analyze", help="Analyze a single token distribution"
-    )
-    analyze_parser.add_argument(
-        "token", choices=["compound", "uniswap", "aave"], help="Token to analyze"
-    )
-    analyze_parser.add_argument(
-        "--limit", type=int, default=100, help="Number of top holders to analyze"
-    )
+    analyze_parser = subparsers.add_parser("analyze", help="Analyze a single token distribution")
+    analyze_parser.add_argument("token", choices=["compound", "uniswap", "aave"], help="Token to analyze")
+    analyze_parser.add_argument("--limit", type=int, default=100, help="Number of top holders to analyze")
 
     # Compare multiple tokens
-    compare_parser = subparsers.add_parser(
-        "compare", help="Compare multiple token distributions"
-    )
+    compare_parser = subparsers.add_parser("compare", help="Compare multiple token distributions")
     compare_parser.add_argument(
         "tokens",
         nargs="+",
@@ -394,17 +341,13 @@ def main():
     )
 
     # Generate simulated data
-    simulate_parser = subparsers.add_parser(
-        "simulate", help="Generate simulated token distribution data"
-    )
+    simulate_parser = subparsers.add_parser("simulate", help="Generate simulated token distribution data")
     simulate_parser.add_argument(
         "distribution_type",
         choices=["power_law", "protocol_dominated", "community"],
         help="Type of distribution to simulate",
     )
-    simulate_parser.add_argument(
-        "--holders", type=int, default=100, help="Number of holders to simulate"
-    )
+    simulate_parser.add_argument("--holders", type=int, default=100, help="Number of holders to simulate")
     simulate_parser.add_argument("--output", type=str, help="Output filename")
 
     # Generate report
@@ -415,9 +358,7 @@ def main():
         choices=["compound", "uniswap", "aave"],
         help="Tokens to include in the report",
     )
-    report_parser.add_argument(
-        "--output-dir", type=str, default=None, help="Directory to save the report"
-    )
+    report_parser.add_argument("--output-dir", type=str, default=None, help="Directory to save the report")
 
     args = parser.parse_args()
 
@@ -454,26 +395,16 @@ def main():
             for token, data in results.items():
                 print(f"\n{token.upper()}")
                 if "metrics" in data and "gini_coefficient" in data["metrics"]:
-                    print(
-                        f"  Gini Coefficient: {data['metrics']['gini_coefficient']:.4f}"
-                    )
+                    print(f"  Gini Coefficient: {data['metrics']['gini_coefficient']:.4f}")
                 if "metrics" in data and "concentration" in data["metrics"]:
-                    print(
-                        f"  Top 10 Holders: {data['metrics']['concentration'].get('top_10_percentage', 0):.2f}%"
-                    )
+                    print(f"  Top 10 Holders: {data['metrics']['concentration'].get('top_10_percentage', 0):.2f}%")
 
         elif args.command == "simulate":
-            output_file = (
-                args.output or f"simulated_{args.distribution_type}_{args.holders}.json"
-            )
-            results = generate_simulated_data(
-                args.distribution_type, args.holders, output_file
-            )
+            output_file = args.output or f"simulated_{args.distribution_type}_{args.holders}.json"
+            results = generate_simulated_data(args.distribution_type, args.holders, output_file)
 
             # Print simulation summary
-            print(
-                f"\n=== Simulated {args.distribution_type.capitalize()} Distribution ==="
-            )
+            print(f"\n=== Simulated {args.distribution_type.capitalize()} Distribution ===")
             print(f"Generated {args.holders} token holders")
 
             # Print key metrics

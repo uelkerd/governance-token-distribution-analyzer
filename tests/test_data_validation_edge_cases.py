@@ -69,7 +69,7 @@ class TestDataValidationEdgeCases:
         analysis = governance_analyzer.analyze_governance_effectiveness(
             proposals=mock_data["proposals"],
             token_distribution=mock_data["holders"],
-            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"])
+            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"]),
         )
 
         assert isinstance(analysis, dict)
@@ -90,7 +90,7 @@ class TestDataValidationEdgeCases:
         analysis = governance_analyzer.analyze_governance_effectiveness(
             proposals=mock_data["proposals"],
             token_distribution=mock_data["holders"],
-            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"])
+            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"]),
         )
 
         assert isinstance(analysis, dict)
@@ -105,7 +105,7 @@ class TestDataValidationEdgeCases:
         analysis = governance_analyzer.analyze_governance_effectiveness(
             proposals=mock_data["proposals"],
             token_distribution=mock_data["holders"],
-            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"])
+            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"]),
         )
 
         assert isinstance(analysis, dict)
@@ -117,9 +117,7 @@ class TestDataValidationEdgeCases:
     def test_large_token_holders_dataset(self, analyzer):
         """Test handling of extremely large token holder datasets (>10k addresses)."""
         # Generate 15,000 fake holders
-        large_holders = [
-            {"address": f"0x{i:040x}", "balance": 1000000 - i} for i in range(15000)
-        ]
+        large_holders = [{"address": f"0x{i:040x}", "balance": 1000000 - i} for i in range(15000)]
 
         # Should handle large datasets efficiently
         import time
@@ -139,14 +137,9 @@ class TestDataValidationEdgeCases:
     def test_large_governance_dataset(self, governance_analyzer):
         """Test handling of large governance datasets."""
         # Generate large datasets
-        large_holders = [
-            {"address": f"0x{i:040x}", "balance": 1000000 - i} for i in range(5000)
-        ]
+        large_holders = [{"address": f"0x{i:040x}", "balance": 1000000 - i} for i in range(5000)]
 
-        large_proposals = [
-            {"id": i, "title": f"Proposal {i}", "proposer": f"0x{i:040x}"}
-            for i in range(1000)
-        ]
+        large_proposals = [{"id": i, "title": f"Proposal {i}", "proposer": f"0x{i:040x}"} for i in range(1000)]
 
         large_votes = [
             {
@@ -171,7 +164,7 @@ class TestDataValidationEdgeCases:
         analysis = governance_analyzer.analyze_governance_effectiveness(
             proposals=mock_data["proposals"],
             token_distribution=mock_data["holders"],
-            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"])
+            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"]),
         )
         elapsed_time = time.time() - start_time
 
@@ -289,7 +282,7 @@ class TestDataValidationEdgeCases:
         analysis = governance_analyzer.analyze_governance_effectiveness(
             proposals=mock_data["proposals"],
             token_distribution=mock_data["holders"],
-            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"])
+            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"]),
         )
 
         assert isinstance(analysis, dict)
@@ -303,13 +296,9 @@ class TestDataValidationEdgeCases:
         for protocol in invalid_protocols:
             if protocol is not None:
                 try:
-                    holders = mock_api_client.get_token_holders(
-                        protocol, use_real_data=True
-                    )
-                    proposals = mock_api_client.get_governance_proposals(
-                        protocol, use_real_data=True
-                    )
-                    
+                    holders = mock_api_client.get_token_holders(protocol, use_real_data=True)
+                    proposals = mock_api_client.get_governance_proposals(protocol, use_real_data=True)
+
                     # Should return empty lists or fallback data
                     assert isinstance(holders, list)
                     assert isinstance(proposals, list)
@@ -333,7 +322,7 @@ class TestDataValidationEdgeCases:
         analysis = governance_analyzer.analyze_governance_effectiveness(
             proposals=mock_data["proposals"],
             token_distribution=mock_data["holders"],
-            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"])
+            total_eligible_votes=sum(h.get("balance", 0) for h in mock_data["holders"]),
         )
 
         assert isinstance(analysis, dict)
@@ -356,9 +345,7 @@ class TestDataValidationEdgeCases:
         assert gini_extreme > 0.7  # Should indicate high inequality (adjusted threshold)
 
         # Test perfect equality (all holders have same balance)
-        perfect_equality = [
-            {"address": f"0x{i:040x}", "balance": 1000} for i in range(100)
-        ]
+        perfect_equality = [{"address": f"0x{i:040x}", "balance": 1000} for i in range(100)]
 
         balances_equal = [h.get("balance", 0) for h in perfect_equality]
         gini_equal = analyzer.calculate_gini_coefficient(balances_equal)
@@ -377,9 +364,7 @@ class TestDataValidationEdgeCases:
 
         for protocol, params in protocols_with_params.items():
             # Test with correct parameters
-            simulation = simulation_engine.generate_power_law_distribution(
-                num_holders=1000, alpha=params["alpha"]
-            )
+            simulation = simulation_engine.generate_power_law_distribution(num_holders=1000, alpha=params["alpha"])
 
             assert isinstance(simulation, list)
             assert len(simulation) > 0
@@ -407,9 +392,7 @@ class TestDataValidationEdgeCases:
 
         for params in extreme_params:
             try:
-                simulation = simulation_engine.generate_power_law_distribution(
-                    num_holders=100, alpha=params["alpha"]
-                )
+                simulation = simulation_engine.generate_power_law_distribution(num_holders=100, alpha=params["alpha"])
 
                 # If simulation succeeds, validate results
                 if simulation:
@@ -427,8 +410,9 @@ class TestDataValidationEdgeCases:
             except (ValueError, Exception) as e:
                 # Extreme parameters might raise exceptions, which is acceptable
                 error_str = str(e).lower()
-                assert ("alpha" in error_str or "parameter" in error_str or 
-                        "a <=" in error_str or "constraint" in error_str)
+                assert (
+                    "alpha" in error_str or "parameter" in error_str or "a <=" in error_str or "constraint" in error_str
+                )
 
     def test_gini_coefficient_stability(self, analyzer):
         """Test Gini coefficient calculation stability under extreme scenarios."""
@@ -473,12 +457,8 @@ class TestDataValidationEdgeCases:
         ]
 
         for response in problematic_responses:
-            with patch.object(
-                mock_api_client, "_fetch_token_holders_alchemy", return_value=response
-            ):
-                holders = mock_api_client.get_token_holders(
-                    "compound", limit=5, use_real_data=True
-                )
+            with patch.object(mock_api_client, "_fetch_token_holders_alchemy", return_value=response):
+                holders = mock_api_client.get_token_holders("compound", limit=5, use_real_data=True)
 
                 # Should handle various formats gracefully
                 assert isinstance(holders, list)
@@ -489,9 +469,7 @@ class TestDataValidationEdgeCases:
         mock_holders = [{"address": "0x123", "balance": 1000}]
         mock_proposals = [{"id": 1, "title": "Test", "proposer": "0x123"}]
 
-        with patch.object(
-            mock_api_client, "get_token_holders", return_value=mock_holders
-        ), patch.object(
+        with patch.object(mock_api_client, "get_token_holders", return_value=mock_holders), patch.object(
             mock_api_client, "get_governance_proposals", return_value=mock_proposals
         ):
             # Multiple calls should return consistent data
@@ -508,9 +486,10 @@ class TestDataValidationEdgeCases:
     def test_memory_usage_large_datasets(self, analyzer):
         """Test memory usage with large datasets."""
         import os
-        
+
         try:
             import psutil
+
             has_psutil = True
         except ImportError:
             has_psutil = False
@@ -538,7 +517,7 @@ class TestDataValidationEdgeCases:
             memory_increase = final_memory - initial_memory
             # Memory increase should be reasonable (< 500MB)
             assert memory_increase < 500 * 1024 * 1024  # 500MB in bytes
-        
+
         assert isinstance(gini, (int, float))
 
     @pytest.mark.performance
@@ -550,9 +529,7 @@ class TestDataValidationEdgeCases:
         times = []
 
         for size in sizes:
-            holders = [
-                {"address": f"0x{i:040x}", "balance": 1000000 - i} for i in range(size)
-            ]
+            holders = [{"address": f"0x{i:040x}", "balance": 1000000 - i} for i in range(size)]
 
             start_time = time.time()
             balances = [h.get("balance", 0) for h in holders]
@@ -576,7 +553,12 @@ class TestDataValidationEdgeCases:
         ]
 
         # Should filter out corrupted data and continue
-        balances = [c.get("balance", 0) for c in corrupted_data if isinstance(c.get("balance"), (int, float)) and not (np.isnan(c.get("balance", 0)) or np.isinf(c.get("balance", 0)))]
+        balances = [
+            c.get("balance", 0)
+            for c in corrupted_data
+            if isinstance(c.get("balance"), (int, float))
+            and not (np.isnan(c.get("balance", 0)) or np.isinf(c.get("balance", 0)))
+        ]
         result = analyzer.calculate_gini_coefficient(balances)
         assert isinstance(result, (int, float))
         assert not np.isnan(result)
@@ -591,17 +573,13 @@ class TestDataValidationEdgeCases:
 
         working_holders = [{"address": "0x123", "balance": 1000}]
 
-        with patch.object(
-            mock_api_client, "get_token_holders", return_value=working_holders
-        ), patch.object(
+        with patch.object(mock_api_client, "get_token_holders", return_value=working_holders), patch.object(
             mock_api_client, "get_governance_proposals", side_effect=failing_proposals
         ):
             # Should handle partial failures gracefully
             try:
-                protocol_data = mock_api_client.get_protocol_data(
-                    "compound", use_real_data=True
-                )
-                
+                protocol_data = mock_api_client.get_protocol_data("compound", use_real_data=True)
+
                 if protocol_data:  # If any data is returned
                     assert isinstance(protocol_data, dict)
                     # At least some data structure should be present

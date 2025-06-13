@@ -163,9 +163,7 @@ def calculate_theil_index(balances: List[float]) -> float:
     return theil
 
 
-def calculate_nakamoto_coefficient(
-    balances: List[float], threshold: float = 51.0
-) -> int:
+def calculate_nakamoto_coefficient(balances: List[float], threshold: float = 51.0) -> int:
     """Calculate the Nakamoto coefficient, which is the minimum number of entities
     required to achieve a specified threshold of control (usually 51%).
 
@@ -231,9 +229,7 @@ def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
     return {"x": x_values, "y": y_values}
 
 
-def calculate_top_percentiles(
-    balances: List[float], percentiles: Optional[List[int]] = None
-) -> Dict[str, float]:
+def calculate_top_percentiles(balances: List[float], percentiles: Optional[List[int]] = None) -> Dict[str, float]:
     """Calculate the percentage of tokens held by the top X% of holders for specified percentiles.
 
     Args:
@@ -282,9 +278,7 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
     positive_balances = [b for b in balances if b > 0]
 
     if not positive_balances:
-        logger.warning(
-            "No positive balances provided for concentration metrics calculation"
-        )
+        logger.warning("No positive balances provided for concentration metrics calculation")
         return {
             "gini_coefficient": 0,
             "herfindahl_index": 0,

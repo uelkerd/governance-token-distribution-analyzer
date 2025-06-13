@@ -102,9 +102,7 @@ class ReportGenerator:
 
         return data
 
-    def generate_comparative_concentration_chart(
-        self, protocol_data: Dict[str, Dict]
-    ) -> str:
+    def generate_comparative_concentration_chart(self, protocol_data: Dict[str, Dict]) -> str:
         """Generate a comparative chart of concentration metrics across protocols.
 
         Args:
@@ -125,9 +123,7 @@ class ReportGenerator:
             # Extract metrics (with fallbacks if not available)
             metrics = data.get("concentration_metrics", {})
             gini_values.append(metrics.get("gini_coefficient", 0))
-            hhi_values.append(
-                metrics.get("herfindahl_index", 0) / 10000
-            )  # Normalize HHI to 0-1
+            hhi_values.append(metrics.get("herfindahl_index", 0) / 10000)  # Normalize HHI to 0-1
 
         # Create a DataFrame for easier plotting
         df = pd.DataFrame(
@@ -369,9 +365,7 @@ class ReportGenerator:
 
         """
         # Generate charts
-        concentration_chart = self.generate_comparative_concentration_chart(
-            protocol_data
-        )
+        concentration_chart = self.generate_comparative_concentration_chart(protocol_data)
         distribution_chart = self.generate_distribution_comparison(protocol_data)
         top_holders_chart = self.generate_top_holders_bar_chart(protocol_data)
 
@@ -463,9 +457,7 @@ class ReportGenerator:
 
             # Get top 10 holders percentage
             top_10_pct = "N/A"
-            top_holders_pct = data.get("concentration_metrics", {}).get(
-                "top_holders_percentage", {}
-            )
+            top_holders_pct = data.get("concentration_metrics", {}).get("top_holders_percentage", {})
             if top_holders_pct and "10" in top_holders_pct:
                 top_10_pct = f"{top_holders_pct['10']:.2f}%"
 
@@ -510,32 +502,18 @@ class ReportGenerator:
         # Find most concentrated protocol
         most_concentrated = max(
             protocol_data.items(),
-            key=lambda x: x[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0),
+            key=lambda x: x[1].get("concentration_metrics", {}).get("gini_coefficient", 0),
         )
         most_concentrated_name = most_concentrated[1].get("name", most_concentrated[0])
-        most_concentrated_gini = (
-            most_concentrated[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0)
-        )
+        most_concentrated_gini = most_concentrated[1].get("concentration_metrics", {}).get("gini_coefficient", 0)
 
         # Find least concentrated protocol
         least_concentrated = min(
             protocol_data.items(),
-            key=lambda x: x[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 1),
+            key=lambda x: x[1].get("concentration_metrics", {}).get("gini_coefficient", 1),
         )
-        least_concentrated_name = least_concentrated[1].get(
-            "name", least_concentrated[0]
-        )
-        least_concentrated_gini = (
-            least_concentrated[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0)
-        )
+        least_concentrated_name = least_concentrated[1].get("name", least_concentrated[0])
+        least_concentrated_gini = least_concentrated[1].get("concentration_metrics", {}).get("gini_coefficient", 0)
 
         html_content += f"""
                 <li>{most_concentrated_name} shows the highest token concentration with a Gini coefficient of {most_concentrated_gini:.4f}</li>
