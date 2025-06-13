@@ -273,13 +273,14 @@ def _find_analysis_files(protocol: str, data_dir: str) -> Dict[str, Any]:
     return {"error": f"No valid analysis files found for {protocol}"}
 
 
-def validate_proposal(protocol: str, proposal_id: int) -> Dict[str, Any]:
+def validate_proposal(protocol: str, proposal_id: int, data_dir: str = "data") -> Dict[str, Any]:
     """
     Validate a specific governance proposal.
 
     Args:
         protocol: The protocol name (compound, uniswap, aave)
         proposal_id: The ID of the proposal to validate
+        data_dir: Directory to read/write proposal data
 
     Returns:
         Dictionary containing validation results
@@ -300,7 +301,7 @@ def validate_proposal(protocol: str, proposal_id: int) -> Dict[str, Any]:
         }
 
     # Run analysis
-    analysis_result = run_python_analysis(protocol)
+    analysis_result = run_python_analysis(protocol, data_dir=data_dir)
 
     # Check if analysis was successful
     if "error" in analysis_result:
@@ -368,6 +369,7 @@ def main():
     parser.add_argument("--protocol", choices=["compound", "uniswap", "aave"], help="Protocol to validate")
     parser.add_argument("--proposal-id", type=int, help="Specific proposal ID to validate")
     parser.add_argument("--all", action="store_true", help="Validate all protocols and proposals")
+    parser.add_argument("--data-dir", type=str, default="data", help="Directory containing proposal data")
     args = parser.parse_args()
 
     if args.all:
@@ -376,7 +378,7 @@ def main():
             protocol_results = {}
             for proposal in proposals:
                 proposal_id = proposal["id"]
-                result = validate_proposal(protocol, proposal_id)
+                result = validate_proposal(protocol, proposal_id, args.data_dir)
                 protocol_results[proposal_id] = result
             results[protocol] = protocol_results
 
@@ -399,11 +401,22 @@ def main():
         )
 
     elif args.protocol and args.proposal_id:
-        result = validate_proposal(args.protocol, args.proposal_id)
+        result = validate_proposal(args.protocol, args.proposal_id, args.data_dir)
         logger.info(f"Validation result: {'SUCCESS' if result.get('success', False) else 'FAILURE'}")
         logger.info(f"Details: {result}")
     else:
-        parser.print_help()
+        # If no specific arguments provided, check for data directory and report status
+        data_dir = args.data_dir
+        if os.path.exists(data_dir):
+            logger.info(f"Data directory found: {data_dir}")
+            logger.info("No specific validation requested. Use --protocol and --proposal-id or --all to run validation.")
+            # Exit with success as the script ran correctly
+            sys.exit(0)
+        else:
+            logger.error(f"Data directory not found: {data_dir}")
+            logger.info("Please provide a valid data directory with --data-dir or create the default 'data' directory.")
+            # Exit with error code 1 to indicate the data directory issue
+            sys.exit(1)
 
 
 if __name__ == "__main__":
