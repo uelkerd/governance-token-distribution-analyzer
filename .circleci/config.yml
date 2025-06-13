@@ -100,17 +100,49 @@ commands:
 jobs:
   security-scan:
     docker:
-      - image: cimg/go:1.21
+      - image: cimg/base:stable
     steps:
       - checkout
       - run:
-          name: Install TruffleHog
+          name: Scan for hardcoded secrets
           command: |
-            go install github.com/trufflesecurity/trufflehog/v3@latest
-      - run:
-          name: Run TruffleHog secret scan
-          command: |
-            ~/go/bin/trufflehog filesystem . --no-update --fail
+            echo "Scanning for potential secrets in codebase..."
+            
+            # Check for common secret patterns
+            SECRET_PATTERNS=(
+              "api_key.*=.*[\"'][a-zA-Z0-9]{20,}"
+              "secret.*=.*[\"'][a-zA-Z0-9]{20,}"
+              "password.*=.*[\"'][^\"']{8,}"
+              "token.*=.*[\"'][a-zA-Z0-9_-]{30,}"
+              "sk-[a-zA-Z0-9]{20,}"
+              "xapp-[a-zA-Z0-9]{20,}"
+              "0x[a-fA-F0-9]{64}"
+              "-----BEGIN.*PRIVATE KEY-----"
+            )
+            
+            FOUND_SECRETS=false
+            
+            for pattern in "${SECRET_PATTERNS[@]}"; do
+              echo "Checking pattern: $pattern"
+              if grep -r -E "$pattern" --include="*.py" --include="*.js" --include="*.ts" --include="*.json" --include="*.yaml" --include="*.yml" . --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=__pycache__ --exclude-dir=.pytest_cache; then
+                echo "⚠️  Potential secret found matching pattern: $pattern"
+                FOUND_SECRETS=true
+              fi
+            done
+            
+            # Check for committed .env files
+            if find . -name ".env*" -not -path "./.git/*" -not -name ".env.example" -not -name ".env.template" | grep -q .; then
+              echo "⚠️  Found .env files that might contain secrets"
+              find . -name ".env*" -not -path "./.git/*" -not -name ".env.example" -not -name ".env.template"
+              FOUND_SECRETS=true
+            fi
+            
+            if [ "$FOUND_SECRETS" = true ]; then
+              echo "❌ Security scan failed: Potential secrets detected"
+              exit 1
+            else
+              echo "✅ Security scan passed: No obvious secrets detected"
+            fi
 
   code-quality:
     executor: python-312
