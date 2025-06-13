@@ -433,8 +433,8 @@ class TestCLIEdgeCases:
         assert elapsed_time < 60  # 1 minute max
         assert result.exit_code == 0
 
-    def test_concurrent_cli_operations(self, temp_dir):
-        """Test concurrent CLI operations."""
+    def test_sequential_cli_operations(self, temp_dir):
+        """Test sequential CLI operations across multiple protocols."""
 
         def run_cli_process(protocol):
             """Run CLI in a separate process with isolated environments."""
@@ -451,11 +451,10 @@ class TestCLIEdgeCases:
                 ],
                 capture_output=True,
                 text=True,
-                check=True,
             )
             return result
 
-        # Run analyses sequentially (simulating concurrent operations)
+        # Run analyses sequentially for multiple protocols
         protocols = ["compound", "uniswap", "aave"]
         results = []
 
@@ -468,6 +467,52 @@ class TestCLIEdgeCases:
             assert result.returncode == 0, f"CLI process failed with: {result.stderr}"
 
         # Verify output files were created
+        for protocol in protocols:
+            output_dir = os.path.join(temp_dir, protocol)
+            assert os.path.exists(output_dir), f"Output directory not created for {protocol}"
+            assert len(os.listdir(output_dir)) > 0, f"No output files created for {protocol}"
+
+    @pytest.mark.performance
+    def test_concurrent_cli_operations(self, temp_dir):
+        """Test truly concurrent CLI operations using parallel execution."""
+        import concurrent.futures
+
+        def run_cli_process(protocol):
+            """Run CLI in a separate process with isolated environments."""
+            output_dir = os.path.join(temp_dir, protocol)
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Use the actual installed CLI entry point from a simplified approach
+            # that works better with how the module is structured
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-c",
+                    f"from governance_token_analyzer.cli.main import cli; cli(['analyze', '--protocol', '{protocol}', '--output-dir', '{output_dir}'])",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            return protocol, result
+
+        # Run analyses concurrently using ThreadPoolExecutor
+        protocols = ["compound", "uniswap", "aave"]
+        results = {}
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            future_to_protocol = {
+                executor.submit(run_cli_process, protocol): protocol for protocol in protocols
+            }
+            
+            for future in concurrent.futures.as_completed(future_to_protocol):
+                protocol, result = future.result()
+                results[protocol] = result
+        
+        # All should succeed
+        for protocol, result in results.items():
+            assert result.returncode == 0, f"CLI process for {protocol} failed with: {result.stderr}"
+
+        # Verify output files were created for all protocols
         for protocol in protocols:
             output_dir = os.path.join(temp_dir, protocol)
             assert os.path.exists(output_dir), f"Output directory not created for {protocol}"
