@@ -176,9 +176,9 @@ def analyze(protocol, limit, format, output_dir, charts, live_data, verbose):
         for holder in holders_data:
             # Handle different data structures
             if isinstance(holder, dict):
-                balance = (holder.get("balance", 0) or 
-                          holder.get("TokenHolderQuantity", 0) or 
-                          holder.get("voting_power", 0))
+                balance = (
+                    holder.get("balance", 0) or holder.get("TokenHolderQuantity", 0) or holder.get("voting_power", 0)
+                )
             else:
                 balance = holder
 
@@ -205,12 +205,14 @@ def analyze(protocol, limit, format, output_dir, charts, live_data, verbose):
         metrics = calculate_all_concentration_metrics(balances)
 
         # Add safe concentration calculations
-        metrics.update({
-            "top_10_concentration": _safe_calculate_concentration(balances, 10),
-            "top_50_concentration": _safe_calculate_concentration(balances, 50),
-            "total_holders": len(balances),
-            "total_supply_analyzed": sum(balances) if balances else 0,
-        })
+        metrics.update(
+            {
+                "top_10_concentration": _safe_calculate_concentration(balances, 10),
+                "top_50_concentration": _safe_calculate_concentration(balances, 50),
+                "total_holders": len(balances),
+                "total_supply_analyzed": sum(balances) if balances else 0,
+            }
+        )
 
         # Create output data structure
         analysis_results = {
@@ -236,6 +238,7 @@ def analyze(protocol, limit, format, output_dir, charts, live_data, verbose):
         elif format == "csv":
             # Export key metrics as CSV
             import csv
+
             with open(output_file, "w", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow(["Metric", "Value"])
@@ -279,7 +282,7 @@ def analyze(protocol, limit, format, output_dir, charts, live_data, verbose):
         if charts:
             try:
                 import matplotlib.pyplot as plt
-                
+
                 # Generate concentration chart
                 top_holders = sorted(balances, reverse=True)[:20]
                 plt.figure(figsize=(10, 6))
@@ -287,7 +290,7 @@ def analyze(protocol, limit, format, output_dir, charts, live_data, verbose):
                 plt.title(f"{protocol.upper()} - Top 20 Holder Distribution")
                 plt.xlabel("Holder Rank")
                 plt.ylabel("Token Balance")
-                
+
                 chart_file = output_file.replace(f".{format}", "_chart.png")
                 plt.savefig(chart_file)
                 plt.close()
@@ -346,7 +349,7 @@ def analyze(protocol, limit, format, output_dir, charts, live_data, verbose):
 @click.option("--detailed", is_flag=True, help="Include detailed metrics for each protocol")
 def compare(protocols, metric, format, output_dir, charts, detailed):
     """⚖️ Compare token distributions across multiple protocols.
-    
+
     Generates side-by-side comparisons of concentration metrics and governance patterns.
 
     Examples:
@@ -436,32 +439,35 @@ def compare(protocols, metric, format, output_dir, charts, detailed):
         elif format == "csv":
             # Export comparison as CSV
             import csv
+
             with open(output_file, "w", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow(["Protocol", "Primary Metric", "Value", "Total Holders"])
                 for protocol in protocol_list:
                     result = comparison_results[protocol]
-                    writer.writerow([
-                        protocol.upper(),
-                        metric,
-                        result["summary"]["primary_metric_value"],
-                        result["summary"]["total_holders"]
-                    ])
+                    writer.writerow(
+                        [
+                            protocol.upper(),
+                            metric,
+                            result["summary"]["primary_metric_value"],
+                            result["summary"]["total_holders"],
+                        ]
+                    )
 
         # Handle charts option
         if charts:
             try:
                 import matplotlib.pyplot as plt
-                
+
                 protocols_names = [p.upper() for p in protocol_list]
                 values = [comparison_results[p]["summary"]["primary_metric_value"] for p in protocol_list]
-                
+
                 plt.figure(figsize=(10, 6))
                 plt.bar(protocols_names, values)
                 plt.title(f"Protocol Comparison - {metric}")
                 plt.ylabel(metric.replace("_", " ").title())
                 plt.xticks(rotation=45)
-                
+
                 chart_file = output_file.replace(f".{format}", "_chart.png")
                 plt.tight_layout()
                 plt.savefig(chart_file)
@@ -527,11 +533,7 @@ def historical_analysis(protocol, snapshots, interval, metric, output_dir, plot)
             balances = [float(h.get("balance", 0)) for h in snapshot["holders"]]
             if balances:
                 metrics = calculate_all_concentration_metrics(balances)
-                historical_metrics.append({
-                    "date": snapshot["date"],
-                    "metrics": metrics,
-                    "sample_size": len(balances)
-                })
+                historical_metrics.append({"date": snapshot["date"], "metrics": metrics, "sample_size": len(balances)})
 
         # Save results
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -540,12 +542,8 @@ def historical_analysis(protocol, snapshots, interval, metric, output_dir, plot)
         results = {
             "protocol": protocol,
             "analysis_timestamp": datetime.now().isoformat(),
-            "parameters": {
-                "snapshots": snapshots,
-                "interval_days": interval,
-                "primary_metric": metric
-            },
-            "historical_data": historical_metrics
+            "parameters": {"snapshots": snapshots, "interval_days": interval, "primary_metric": metric},
+            "historical_data": historical_metrics,
         }
 
         with open(output_file, "w") as f:
@@ -556,17 +554,17 @@ def historical_analysis(protocol, snapshots, interval, metric, output_dir, plot)
             try:
                 import matplotlib.pyplot as plt
                 from datetime import datetime as dt
-                
+
                 dates = [dt.fromisoformat(point["date"]) for point in historical_metrics]
                 values = [point["metrics"].get(metric, 0) for point in historical_metrics]
-                
+
                 plt.figure(figsize=(12, 6))
-                plt.plot(dates, values, marker='o')
+                plt.plot(dates, values, marker="o")
                 plt.title(f"{protocol.upper()} - {metric.replace('_', ' ').title()} Over Time")
                 plt.xlabel("Date")
                 plt.ylabel(metric.replace("_", " ").title())
                 plt.xticks(rotation=45)
-                
+
                 plot_file = output_file.replace(".json", "_trend.png")
                 plt.tight_layout()
                 plt.savefig(plot_file)
@@ -588,15 +586,18 @@ def historical_analysis(protocol, snapshots, interval, metric, output_dir, plot)
 
 @cli.command()
 @click.argument("protocol", type=ProtocolChoice())
-@click.option(
-    "--format", type=click.Choice(["json", "csv"]), default="json", help="Export format (default: json)"
-)
+@click.option("--format", type=click.Choice(["json", "csv"]), default="json", help="Export format (default: json)")
 @click.option(
     "--output-dir", type=str, default="exports", callback=validate_output_dir, help="Directory to save exported data"
 )
 @click.option("--include-historical", is_flag=True, help="Include historical data in export")
 @click.option("--limit", type=int, default=1000, help="Maximum number of token holders to export")
-@click.option("--governance-proposals", type=int, default=10, help="Number of recent governance proposals to include (default: 10)")
+@click.option(
+    "--governance-proposals",
+    type=int,
+    default=10,
+    help="Number of recent governance proposals to include (default: 10)",
+)
 def export(protocol, format, output_dir, include_historical, limit, governance_proposals):
     """💾 Export comprehensive protocol data for external analysis.
 
@@ -631,7 +632,7 @@ def export(protocol, format, output_dir, include_historical, limit, governance_p
             "data_summary": {
                 "total_holders": len(holders_data),
                 "governance_proposals": len(governance_data),
-                "includes_historical": include_historical
+                "includes_historical": include_historical,
             },
             "token_holders": holders_data,
             "governance_proposals": governance_data,
@@ -679,9 +680,7 @@ def export(protocol, format, output_dir, include_historical, limit, governance_p
 
 @cli.command()
 @click.argument("protocol", type=ProtocolChoice())
-@click.option(
-    "--format", type=click.Choice(["html"]), default="html", help="Report format (default: html)"
-)
+@click.option("--format", type=click.Choice(["html"]), default="html", help="Report format (default: html)")
 @click.option(
     "--output-dir", type=str, default="reports", callback=validate_output_dir, help="Directory to save the report"
 )
@@ -759,19 +758,24 @@ def report(protocol, format, output_dir, include_charts, detailed):
 
 @cli.command()
 @click.option("--file", "-f", type=click.Path(exists=True), help="Validate specific output file")
-@click.option("--directory", "-d", type=click.Path(exists=True), default="outputs", 
-              help="Directory containing output files to validate")
+@click.option(
+    "--directory",
+    "-d",
+    type=click.Path(exists=True),
+    default="outputs",
+    help="Directory containing output files to validate",
+)
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed validation results")
 @click.option("--report", "-r", is_flag=True, help="Generate validation report")
 def validate(file, directory, verbose, report):
     """🔍 Validate governance token analysis outputs for accuracy and consistency.
-    
+
     This command validates analysis outputs against:
     • Mathematical accuracy (ranges, calculations)
     • Data consistency (structure, formats)
     • Known benchmarks (expected ranges for protocols)
     • Cross-protocol comparison consistency
-    
+
     Examples:
       gova validate --file outputs/compound_analysis.json
       gova validate --directory outputs --verbose
@@ -779,6 +783,7 @@ def validate(file, directory, verbose, report):
     """
     try:
         from .validate import validate as validate_cmd
+
         validate_cmd.callback(file, directory, verbose, report)
     except ImportError:
         click.echo("❌ Validation module not available", err=True)
