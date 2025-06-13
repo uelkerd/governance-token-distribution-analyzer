@@ -44,19 +44,13 @@ class GovernanceEffectivenessAnalyzer:
             }
 
         # Calculate total votes cast across all proposals
-        total_votes_cast = sum(
-            proposal.get("votes_cast", 0) for proposal in proposal_votes
-        )
+        total_votes_cast = sum(proposal.get("votes_cast", 0) for proposal in proposal_votes)
 
         # Calculate average votes cast per proposal
         average_votes_cast = total_votes_cast / len(proposal_votes)
 
         # Calculate overall participation rate
-        participation_rate = (
-            (average_votes_cast / total_eligible_votes) * 100
-            if total_eligible_votes > 0
-            else 0.0
-        )
+        participation_rate = (average_votes_cast / total_eligible_votes) * 100 if total_eligible_votes > 0 else 0.0
 
         # Count unique voters
         unique_voters = set()
@@ -66,9 +60,7 @@ class GovernanceEffectivenessAnalyzer:
 
         # Calculate unique voter percentage
         unique_voters_percentage = (
-            (len(unique_voters) / total_eligible_votes) * 100
-            if total_eligible_votes > 0
-            else 0.0
+            (len(unique_voters) / total_eligible_votes) * 100 if total_eligible_votes > 0 else 0.0
         )
 
         return {
@@ -77,9 +69,7 @@ class GovernanceEffectivenessAnalyzer:
             "unique_voters_percentage": unique_voters_percentage,
         }
 
-    def calculate_proposal_success_rate(
-        self, proposals: List[Dict[str, Any]]
-    ) -> Dict[str, float]:
+    def calculate_proposal_success_rate(self, proposals: List[Dict[str, Any]]) -> Dict[str, float]:
         """Calculate metrics related to proposal success rates.
 
         Args:
@@ -96,25 +86,13 @@ class GovernanceEffectivenessAnalyzer:
         successful_proposals = sum(1 for p in proposals if p.get("status") == "passed")
 
         # Calculate success rate
-        success_rate = (
-            (successful_proposals / total_proposals) * 100
-            if total_proposals > 0
-            else 0.0
-        )
+        success_rate = (successful_proposals / total_proposals) * 100 if total_proposals > 0 else 0.0
 
         # Count implemented proposals
-        implemented_proposals = sum(
-            1
-            for p in proposals
-            if p.get("status") == "passed" and p.get("implemented", False)
-        )
+        implemented_proposals = sum(1 for p in proposals if p.get("status") == "passed" and p.get("implemented", False))
 
         # Calculate implementation rate (% of passed proposals that were implemented)
-        implementation_rate = (
-            (implemented_proposals / successful_proposals) * 100
-            if successful_proposals > 0
-            else 0.0
-        )
+        implementation_rate = (implemented_proposals / successful_proposals) * 100 if successful_proposals > 0 else 0.0
 
         return {
             "proposal_success_rate": success_rate,
@@ -157,9 +135,7 @@ class GovernanceEffectivenessAnalyzer:
         ]
 
         # Calculate metrics
-        participation_metrics = self.calculate_voter_participation(
-            proposal_votes, total_eligible_votes
-        )
+        participation_metrics = self.calculate_voter_participation(proposal_votes, total_eligible_votes)
         success_metrics = self.calculate_proposal_success_rate(proposals)
 
         # Combine all metrics
@@ -167,9 +143,7 @@ class GovernanceEffectivenessAnalyzer:
             "participation": participation_metrics,
             "success": success_metrics,
             "timestamp": datetime.now().timestamp(),
-            "protocol": proposals[0].get("protocol", "unknown")
-            if proposals
-            else "unknown",
+            "protocol": proposals[0].get("protocol", "unknown") if proposals else "unknown",
         }
 
         return all_metrics
@@ -237,14 +211,10 @@ class ParticipationAnalyzer:
 
                 # Track participation count for each voter
                 for voter in voter_addresses:
-                    voter_participation_count[voter] = (
-                        voter_participation_count.get(voter, 0) + 1
-                    )
+                    voter_participation_count[voter] = voter_participation_count.get(voter, 0) + 1
 
                 # Calculate participation rate for this proposal
-                participation_rate = (
-                    (votes_cast / total_supply) * 100 if total_supply > 0 else 0.0
-                )
+                participation_rate = (votes_cast / total_supply) * 100 if total_supply > 0 else 0.0
 
                 proposal_participation.append(
                     {
@@ -257,14 +227,8 @@ class ParticipationAnalyzer:
 
             # Calculate overall participation rate
             total_votes_cast = sum(p.get("votes_cast", 0) for p in proposals)
-            avg_votes_per_proposal = (
-                total_votes_cast / total_proposals if total_proposals > 0 else 0
-            )
-            overall_participation_rate = (
-                (avg_votes_per_proposal / total_supply) * 100
-                if total_supply > 0
-                else 0.0
-            )
+            avg_votes_per_proposal = total_votes_cast / total_proposals if total_proposals > 0 else 0
+            overall_participation_rate = (avg_votes_per_proposal / total_supply) * 100 if total_supply > 0 else 0.0
 
             # Segment voters based on participation frequency
             highly_active = 0  # Voted in >75% of proposals
@@ -306,9 +270,7 @@ class ParticipationAnalyzer:
             self.logger.error(f"Error analyzing protocol participation: {str(e)}")
             return {"error": str(e)}
 
-    def calculate_voter_engagement_trends(
-        self, proposals: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def calculate_voter_engagement_trends(self, proposals: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Calculate trends in voter engagement over time.
 
         Args:
@@ -322,9 +284,7 @@ class ParticipationAnalyzer:
 
         try:
             # Sort proposals by timestamp if available
-            sorted_proposals = sorted(
-                [p for p in proposals if "timestamp" in p], key=lambda x: x["timestamp"]
-            )
+            sorted_proposals = sorted([p for p in proposals if "timestamp" in p], key=lambda x: x["timestamp"])
 
             if len(sorted_proposals) < 2:
                 return {
@@ -338,9 +298,7 @@ class ParticipationAnalyzer:
             for proposal in sorted_proposals:
                 votes_cast = proposal.get("votes_cast", 0)
                 total_supply = proposal.get("total_eligible_votes", 0)
-                participation_rate = (
-                    (votes_cast / total_supply) * 100 if total_supply > 0 else 0.0
-                )
+                participation_rate = (votes_cast / total_supply) * 100 if total_supply > 0 else 0.0
 
                 trend_data.append(
                     {
@@ -351,18 +309,15 @@ class ParticipationAnalyzer:
                 )
 
             # Calculate trend direction
-            early_participation = sum(
-                item["participation_rate"]
-                for item in trend_data[: len(trend_data) // 3]
-            ) / (len(trend_data) // 3)
-            recent_participation = sum(
-                item["participation_rate"]
-                for item in trend_data[-len(trend_data) // 3 :]
-            ) / (len(trend_data) // 3)
+            early_participation = sum(item["participation_rate"] for item in trend_data[: len(trend_data) // 3]) / (
+                len(trend_data) // 3
+            )
+            recent_participation = sum(item["participation_rate"] for item in trend_data[-len(trend_data) // 3 :]) / (
+                len(trend_data) // 3
+            )
 
             change_percentage = (
-                ((recent_participation - early_participation) / early_participation)
-                * 100
+                ((recent_participation - early_participation) / early_participation) * 100
                 if early_participation > 0
                 else 0.0
             )

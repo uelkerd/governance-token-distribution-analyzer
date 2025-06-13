@@ -100,9 +100,7 @@ def main():
         supply = result.get("supply", "Unknown")
 
         if "error" in result:
-            logger.warning(
-                f"{protocol_name} ({symbol}): Error fetching data - {result['error']}"
-            )
+            logger.warning(f"{protocol_name} ({symbol}): Error fetching data - {result['error']}")
         else:
             logger.info(f"{protocol_name} ({symbol}): Token Supply = {supply}")
 

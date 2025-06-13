@@ -109,9 +109,7 @@ def calculate_theil_index(balances: List[float]) -> float:
     return theil
 
 
-def calculate_nakamoto_coefficient(
-    balances: List[float], threshold: float = 51.0
-) -> int:
+def calculate_nakamoto_coefficient(balances: List[float], threshold: float = 51.0) -> int:
     """Calculate the Nakamoto coefficient, which is the minimum number of entities
     required to achieve a specified threshold of control (usually 51%).
 
@@ -175,9 +173,7 @@ def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
     return {"x": x_values, "y": y_values}
 
 
-def calculate_top_percentiles(
-    balances: List[float], percentiles: List[int] = None
-) -> Dict[str, float]:
+def calculate_top_percentiles(balances: List[float], percentiles: List[int] = None) -> Dict[str, float]:
     """Calculate the percentage of tokens held by the top X% of holders for specified percentiles.
 
     Args:
@@ -189,7 +185,7 @@ def calculate_top_percentiles(
     """
     if percentiles is None:
         percentiles = [1, 5, 10, 20, 50]
-        
+
     if not balances or sum(balances) == 0:
         return {str(p): 0.0 for p in percentiles}
 
@@ -224,9 +220,7 @@ def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]
     positive_balances = [b for b in balances if b > 0]
 
     if not positive_balances:
-        logger.warning(
-            "No positive balances provided for concentration metrics calculation"
-        )
+        logger.warning("No positive balances provided for concentration metrics calculation")
         return {
             "gini_coefficient": 0,
             "herfindahl_index": 0,
@@ -299,17 +293,13 @@ class VotingBlockAnalyzer:
                 # Extract votes for this proposal
                 for vote_data in proposal.get("votes", []):
                     voter = vote_data.get("voter_address")
-                    vote = vote_data.get(
-                        "vote"
-                    )  # Assuming 'for', 'against', or 'abstain'
+                    vote = vote_data.get("vote")  # Assuming 'for', 'against', or 'abstain'
 
                     if voter and vote:
                         voter_votes[voter][proposal_id] = vote
 
             # Only consider voters who voted on at least 2 proposals
-            active_voters = {
-                voter: votes for voter, votes in voter_votes.items() if len(votes) >= 2
-            }
+            active_voters = {voter: votes for voter, votes in voter_votes.items() if len(votes) >= 2}
 
             if len(active_voters) < 2:
                 return {"blocks": [], "block_stats": {}, "voter_block_mapping": {}}
@@ -321,18 +311,14 @@ class VotingBlockAnalyzer:
             for i, voter1 in enumerate(voters):
                 for voter2 in voters[i + 1 :]:
                     # Find proposals both voters voted on
-                    common_proposals = set(active_voters[voter1].keys()) & set(
-                        active_voters[voter2].keys()
-                    )
+                    common_proposals = set(active_voters[voter1].keys()) & set(active_voters[voter2].keys())
 
                     if not common_proposals:
                         continue
 
                     # Count how many times they voted the same way
                     same_votes = sum(
-                        1
-                        for p in common_proposals
-                        if active_voters[voter1][p] == active_voters[voter2][p]
+                        1 for p in common_proposals if active_voters[voter1][p] == active_voters[voter2][p]
                     )
                     similarity = same_votes / len(common_proposals)
 
@@ -361,9 +347,7 @@ class VotingBlockAnalyzer:
             for i, community in enumerate(communities):
                 block_id = f"block_{i + 1}"
                 block_voters = list(community)
-                blocks.append(
-                    {"id": block_id, "size": len(block_voters), "voters": block_voters}
-                )
+                blocks.append({"id": block_id, "size": len(block_voters), "voters": block_voters})
 
                 # Map each voter to their block
                 for voter in block_voters:
@@ -381,9 +365,7 @@ class VotingBlockAnalyzer:
 
                 for i, voter1 in enumerate(block_voters):
                     for voter2 in block_voters[i + 1 :]:
-                        pair_key = (
-                            (voter1, voter2) if voter1 < voter2 else (voter2, voter1)
-                        )
+                        pair_key = (voter1, voter2) if voter1 < voter2 else (voter2, voter1)
                         if pair_key in similarity_matrix:
                             cohesion += similarity_matrix[pair_key]
                             pair_count += 1
@@ -393,8 +375,7 @@ class VotingBlockAnalyzer:
                 block_stats[block_id] = {
                     "size": block["size"],
                     "cohesion": avg_cohesion,
-                    "influence_score": block["size"]
-                    * avg_cohesion,  # Simple influence metric
+                    "influence_score": block["size"] * avg_cohesion,  # Simple influence metric
                 }
 
             return {
@@ -409,9 +390,7 @@ class VotingBlockAnalyzer:
             self.logger.error(f"Error identifying voting blocks: {str(e)}")
             return {"error": str(e)}
 
-    def analyze_block_voting_patterns(
-        self, proposals: List[Dict[str, Any]], blocks: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def analyze_block_voting_patterns(self, proposals: List[Dict[str, Any]], blocks: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze how different voting blocks vote on proposals.
 
         Args:
@@ -436,15 +415,11 @@ class VotingBlockAnalyzer:
                 proposal_id = proposal.get("id", "unknown")
 
                 # Count votes by block
-                block_votes = defaultdict(
-                    lambda: {"for": 0, "against": 0, "abstain": 0}
-                )
+                block_votes = defaultdict(lambda: {"for": 0, "against": 0, "abstain": 0})
 
                 for vote_data in proposal.get("votes", []):
                     voter = vote_data.get("voter_address")
-                    vote = vote_data.get(
-                        "vote"
-                    )  # Assuming 'for', 'against', or 'abstain'
+                    vote = vote_data.get("vote")  # Assuming 'for', 'against', or 'abstain'
 
                     if voter in voter_block_mapping and vote:
                         block_id = voter_block_mapping[voter]
@@ -455,11 +430,7 @@ class VotingBlockAnalyzer:
                 for block_id, votes in block_votes.items():
                     total_votes = sum(votes.values())
                     dominant_vote = max(votes.items(), key=lambda x: x[1])[0]
-                    dominant_percentage = (
-                        (votes[dominant_vote] / total_votes) * 100
-                        if total_votes > 0
-                        else 0
-                    )
+                    dominant_percentage = (votes[dominant_vote] / total_votes) * 100 if total_votes > 0 else 0
 
                     proposal_blocks[block_id] = {
                         "votes": votes,
@@ -483,10 +454,7 @@ class VotingBlockAnalyzer:
                     for proposal_id, blocks_data in block_voting_patterns.items():
                         if block1 in blocks_data and block2 in blocks_data:
                             total_common_proposals += 1
-                            if (
-                                blocks_data[block1]["dominant_vote"]
-                                == blocks_data[block2]["dominant_vote"]
-                            ):
+                            if blocks_data[block1]["dominant_vote"] == blocks_data[block2]["dominant_vote"]:
                                 agreements += 1
 
                     if total_common_proposals > 0:
@@ -549,11 +517,7 @@ class VotingBlockAnalyzer:
             # Calculate influence metrics for each block
             block_influence = {}
             for block_id, stats in block_stats.items():
-                token_share = (
-                    (block_holdings[block_id] / total_block_tokens) * 100
-                    if total_block_tokens > 0
-                    else 0
-                )
+                token_share = (block_holdings[block_id] / total_block_tokens) * 100 if total_block_tokens > 0 else 0
                 cohesion = stats.get("cohesion", 0)
 
                 # Calculate influence as a combination of token share and cohesion
@@ -575,13 +539,8 @@ class VotingBlockAnalyzer:
 
             return {
                 "block_influence": block_influence,
-                "ranked_blocks": [
-                    {"id": block_id, **influence}
-                    for block_id, influence in ranked_blocks
-                ],
-                "most_influential_block": ranked_blocks[0][0]
-                if ranked_blocks
-                else None,
+                "ranked_blocks": [{"id": block_id, **influence} for block_id, influence in ranked_blocks],
+                "most_influential_block": ranked_blocks[0][0] if ranked_blocks else None,
             }
 
         except Exception as e:
@@ -646,9 +605,7 @@ class DelegationAnalyzer:
                 delegated_power[node] = incoming
 
             # Rank delegates by delegated power
-            ranked_delegates = sorted(
-                delegated_power.items(), key=lambda x: x[1], reverse=True
-            )
+            ranked_delegates = sorted(delegated_power.items(), key=lambda x: x[1], reverse=True)
 
             # Calculate network centralization metrics
             try:
@@ -667,37 +624,25 @@ class DelegationAnalyzer:
             # Identify delegation chains
             delegation_chains = []
             for node in G.nodes():
-                if (
-                    G.in_degree(node) == 0 and G.out_degree(node) > 0
-                ):  # Start of a chain
+                if G.in_degree(node) == 0 and G.out_degree(node) > 0:  # Start of a chain
                     chain = self._trace_delegation_chain(G, node)
                     delegation_chains.append(chain)
 
             return {
-                "key_delegates": [
-                    {"address": addr, "delegators": count}
-                    for addr, count in key_delegates[:10]
-                ],
+                "key_delegates": [{"address": addr, "delegators": count} for addr, count in key_delegates[:10]],
                 "ranked_delegates": [
-                    {"address": addr, "delegated_power": power}
-                    for addr, power in ranked_delegates[:10]
+                    {"address": addr, "delegated_power": power} for addr, power in ranked_delegates[:10]
                 ],
                 "top_delegate": ranked_delegates[0][0] if ranked_delegates else None,
                 "top_delegate_power": ranked_delegates[0][1] if ranked_delegates else 0,
                 "total_delegations": sum(in_degrees.values()),
                 "delegation_chains": delegation_chains,
                 "centrality_metrics": {
-                    "top_centrality": max(
-                        in_degree_centrality.items(), key=lambda x: x[1]
-                    )
+                    "top_centrality": max(in_degree_centrality.items(), key=lambda x: x[1])
                     if in_degree_centrality
                     else None,
-                    "top_pagerank": max(pagerank.items(), key=lambda x: x[1])
-                    if pagerank
-                    else None,
-                    "top_authority": max(authority_scores.items(), key=lambda x: x[1])
-                    if authority_scores
-                    else None,
+                    "top_pagerank": max(pagerank.items(), key=lambda x: x[1]) if pagerank else None,
+                    "top_authority": max(authority_scores.items(), key=lambda x: x[1]) if authority_scores else None,
                 },
             }
 
@@ -774,9 +719,7 @@ class DelegationAnalyzer:
                     vote = vote_data.get("vote")
 
                     if voter in delegator_to_delegate.values():
-                        delegate_votes[voter].append(
-                            {"proposal_id": proposal_id, "vote": vote}
-                        )
+                        delegate_votes[voter].append({"proposal_id": proposal_id, "vote": vote})
                         voting_delegates.add(voter)
 
                 # Update voting rates
@@ -788,40 +731,22 @@ class DelegationAnalyzer:
             # Calculate delegate participation rates
             delegate_participation = {}
             for delegate, stats in delegate_voting_rate.items():
-                rate = (
-                    (stats["votes"] / stats["proposals"]) * 100
-                    if stats["proposals"] > 0
-                    else 0
-                )
+                rate = (stats["votes"] / stats["proposals"]) * 100 if stats["proposals"] > 0 else 0
                 delegate_participation[delegate] = rate
 
             # Calculate overall delegation effectiveness
-            active_delegates = sum(
-                1 for rate in delegate_participation.values() if rate > 0
-            )
-            inactive_delegates = sum(
-                1 for rate in delegate_participation.values() if rate == 0
-            )
+            active_delegates = sum(1 for rate in delegate_participation.values() if rate > 0)
+            inactive_delegates = sum(1 for rate in delegate_participation.values() if rate == 0)
             avg_participation = (
-                sum(delegate_participation.values()) / len(delegate_participation)
-                if delegate_participation
-                else 0
+                sum(delegate_participation.values()) / len(delegate_participation) if delegate_participation else 0
             )
 
             # Categorize delegates by activity level
             delegate_categories = {
-                "highly_active": sum(
-                    1 for rate in delegate_participation.values() if rate >= 75
-                ),
-                "active": sum(
-                    1 for rate in delegate_participation.values() if 50 <= rate < 75
-                ),
-                "occasional": sum(
-                    1 for rate in delegate_participation.values() if 25 <= rate < 50
-                ),
-                "inactive": sum(
-                    1 for rate in delegate_participation.values() if rate < 25
-                ),
+                "highly_active": sum(1 for rate in delegate_participation.values() if rate >= 75),
+                "active": sum(1 for rate in delegate_participation.values() if 50 <= rate < 75),
+                "occasional": sum(1 for rate in delegate_participation.values() if 25 <= rate < 50),
+                "inactive": sum(1 for rate in delegate_participation.values() if rate < 25),
             }
 
             return {
@@ -896,9 +821,7 @@ class DelegationAnalyzer:
                     delegate_tokens[delegate] += address_to_balance.get(delegator, 0)
 
             # Sort delegates by delegated tokens
-            sorted_delegates = sorted(
-                delegate_tokens.items(), key=lambda x: x[1], reverse=True
-            )
+            sorted_delegates = sorted(delegate_tokens.items(), key=lambda x: x[1], reverse=True)
 
             # Calculate delegation to top delegates
             if sorted_delegates:
@@ -909,19 +832,13 @@ class DelegationAnalyzer:
                 "unique_delegators": len(delegators),
                 "unique_delegates": len(delegates),
                 "total_delegated_tokens": total_delegated,
-                "delegation_percentage": (total_delegated / total_supply) * 100
-                if total_supply > 0
-                else 0,
+                "delegation_percentage": (total_delegated / total_supply) * 100 if total_supply > 0 else 0,
                 "delegated_to_top_5": delegated_to_top_5,
-                "delegated_to_top_5_percentage": (delegated_to_top_5 / total_delegated)
-                * 100
+                "delegated_to_top_5_percentage": (delegated_to_top_5 / total_delegated) * 100
                 if total_delegated > 0
                 else 0,
                 "delegated_to_top_10": delegated_to_top_10,
-                "delegated_to_top_10_percentage": (
-                    delegated_to_top_10 / total_delegated
-                )
-                * 100
+                "delegated_to_top_10_percentage": (delegated_to_top_10 / total_delegated) * 100
                 if total_delegated > 0
                 else 0,
                 "top_delegates": sorted_delegates[:10],
