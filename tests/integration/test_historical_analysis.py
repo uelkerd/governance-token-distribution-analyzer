@@ -51,12 +51,8 @@ class TestHistoricalAnalysisIntegration:
         assert len(retrieved_snapshots) == 6, "Should retrieve 6 snapshots"
 
         # Verify snapshots are ordered by timestamp
-        timestamps = [
-            datetime.fromisoformat(s["timestamp"]) for s in retrieved_snapshots
-        ]
-        assert timestamps == sorted(timestamps), (
-            "Snapshots should be ordered by timestamp"
-        )
+        timestamps = [datetime.fromisoformat(s["timestamp"]) for s in retrieved_snapshots]
+        assert timestamps == sorted(timestamps), "Snapshots should be ordered by timestamp"
 
     def test_time_series_extraction(self, sample_historical_data):
         """Test extracting time series data from historical snapshots."""
@@ -68,14 +64,10 @@ class TestHistoricalAnalysisIntegration:
 
         # Verify the time series
         assert not gini_series.empty, "Time series should not be empty"
-        assert "gini_coefficient" in gini_series.columns, (
-            "Time series should contain gini_coefficient"
-        )
+        assert "gini_coefficient" in gini_series.columns, "Time series should contain gini_coefficient"
 
         # Verify the index is a DatetimeIndex
-        assert isinstance(gini_series.index, pd.DatetimeIndex), (
-            "Index should be a DatetimeIndex"
-        )
+        assert isinstance(gini_series.index, pd.DatetimeIndex), "Index should be a DatetimeIndex"
 
     def test_distribution_change_calculation(self, sample_historical_data):
         """Test calculating changes in token distribution."""
@@ -96,30 +88,20 @@ class TestHistoricalAnalysisIntegration:
 
         # Verify changes DataFrame
         assert not changes.empty, "Changes DataFrame should not be empty"
-        assert "absolute_change" in changes.columns, (
-            "Changes should include absolute_change column"
-        )
-        assert "percent_change" in changes.columns, (
-            "Changes should include percent_change column"
-        )
+        assert "absolute_change" in changes.columns, "Changes should include absolute_change column"
+        assert "percent_change" in changes.columns, "Changes should include percent_change column"
 
     def test_concentration_trends_analysis(self, sample_historical_data):
         """Test analyzing token concentration trends."""
         snapshots = sample_historical_data["snapshots"]
 
         # Analyze concentration trends
-        trends = historical_data.analyze_concentration_trends(
-            snapshots, top_n_holders=10
-        )
+        trends = historical_data.analyze_concentration_trends(snapshots, top_n_holders=10)
 
         # Verify trends DataFrame
         assert not trends.empty, "Trends DataFrame should not be empty"
-        assert "top_10_concentration" in trends.columns, (
-            "Trends should include top_10_concentration"
-        )
-        assert "gini_coefficient" in trends.columns, (
-            "Trends should include gini_coefficient"
-        )
+        assert "top_10_concentration" in trends.columns, "Trends should include top_10_concentration"
+        assert "gini_coefficient" in trends.columns, "Trends should include gini_coefficient"
 
     def test_governance_participation_trends(self, sample_historical_data):
         """Test analyzing governance participation trends."""
@@ -130,9 +112,7 @@ class TestHistoricalAnalysisIntegration:
 
         # Verify trends DataFrame
         assert not trends.empty, "Trends DataFrame should not be empty"
-        assert "participation_rate" in trends.columns, (
-            "Trends should include participation_rate"
-        )
+        assert "participation_rate" in trends.columns, "Trends should include participation_rate"
 
     def test_visualization_integration(self, sample_historical_data):
         """Test that visualization components work with historical data."""
@@ -171,9 +151,7 @@ class TestHistoricalAnalysisIntegration:
         # Get time series data for all protocols
         protocol_data = {}
         for protocol in ["compound", "uniswap", "aave"]:
-            time_series = data_manager.get_time_series_data(
-                protocol, "gini_coefficient"
-            )
+            time_series = data_manager.get_time_series_data(protocol, "gini_coefficient")
             protocol_data[protocol] = time_series
 
         # Create comparison visualization
@@ -188,9 +166,7 @@ class TestHistoricalAnalysisIntegration:
 
         # Verify that the figure has content
         assert len(fig.axes) > 0, "Figure should have at least one axis"
-        assert len(fig.axes[0].lines) >= 3, (
-            "Axis should have at least three lines (one per protocol)"
-        )
+        assert len(fig.axes[0].lines) >= 3, "Axis should have at least three lines (one per protocol)"
 
         # Close the figure to avoid warnings
         plt.close(fig)
@@ -202,12 +178,8 @@ class TestHistoricalAnalysisIntegration:
 
         # Get time series data for multiple metrics
         metrics_data = {
-            "gini_coefficient": data_manager.get_time_series_data(
-                protocol, "gini_coefficient"
-            ),
-            "top_10_concentration": data_manager.get_time_series_data(
-                protocol, "top_10_concentration"
-            ),
+            "gini_coefficient": data_manager.get_time_series_data(protocol, "gini_coefficient"),
+            "top_10_concentration": data_manager.get_time_series_data(protocol, "top_10_concentration"),
         }
 
         # Create dashboard
@@ -221,9 +193,7 @@ class TestHistoricalAnalysisIntegration:
         assert isinstance(fig, plt.Figure), "Should return a matplotlib Figure"
 
         # Verify that the figure has content
-        assert len(fig.axes) >= 2, (
-            "Figure should have at least two axes (one per metric)"
-        )
+        assert len(fig.axes) >= 2, "Figure should have at least two axes (one per metric)"
 
         # Close the figure to avoid warnings
         plt.close(fig)

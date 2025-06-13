@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Governance Token Distribution Report Generator
+"""Governance Token Distribution Report Generator.
 
 This script generates comprehensive reports on governance token distribution patterns
 including visualizations, metrics, and insights across multiple protocols.
@@ -42,6 +42,7 @@ class ReportGenerator:
 
         Args:
             output_dir: Directory to save generated reports
+
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
@@ -79,6 +80,7 @@ class ReportGenerator:
 
         Returns:
             Dictionary mapping protocol names to their analysis data
+
         """
         data = {}
         for protocol in protocols:
@@ -100,9 +102,7 @@ class ReportGenerator:
 
         return data
 
-    def generate_comparative_concentration_chart(
-        self, protocol_data: Dict[str, Dict]
-    ) -> str:
+    def generate_comparative_concentration_chart(self, protocol_data: Dict[str, Dict]) -> str:
         """Generate a comparative chart of concentration metrics across protocols.
 
         Args:
@@ -110,6 +110,7 @@ class ReportGenerator:
 
         Returns:
             Path to the saved chart
+
         """
         # Extract Gini coefficients and Herfindahl indices
         protocols = []
@@ -122,9 +123,7 @@ class ReportGenerator:
             # Extract metrics (with fallbacks if not available)
             metrics = data.get("concentration_metrics", {})
             gini_values.append(metrics.get("gini_coefficient", 0))
-            hhi_values.append(
-                metrics.get("herfindahl_index", 0) / 10000
-            )  # Normalize HHI to 0-1
+            hhi_values.append(metrics.get("herfindahl_index", 0) / 10000)  # Normalize HHI to 0-1
 
         # Create a DataFrame for easier plotting
         df = pd.DataFrame(
@@ -189,10 +188,8 @@ class ReportGenerator:
 
         Returns:
             Path to the saved chart
-        """
-        # Set up the figure with subplots for each protocol
-        fig = plt.figure(figsize=(15, 10))
 
+        """
         # Create a grid layout based on the number of protocols
         n_protocols = len(protocol_data)
         if n_protocols <= 2:
@@ -272,6 +269,7 @@ class ReportGenerator:
 
         Returns:
             Path to the saved chart
+
         """
         # Extract top holders data
         protocols = []
@@ -354,20 +352,19 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_html_report(self, protocol_data: Dict[str, Dict]) -> str:
-        """Generate a comprehensive HTML report with all analysis results.
+        """Generate an HTML report with charts and analysis.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
 
         Returns:
             Path to the saved HTML report
+
         """
-        # Generate charts
-        concentration_chart = self.generate_comparative_concentration_chart(
-            protocol_data
-        )
-        distribution_chart = self.generate_distribution_comparison(protocol_data)
-        top_holders_chart = self.generate_top_holders_bar_chart(protocol_data)
+        # Generate charts - ensure they're created in the output directory
+        self.generate_comparative_concentration_chart(protocol_data)
+        self.generate_distribution_comparison(protocol_data)
+        self.generate_top_holders_bar_chart(protocol_data)
 
         # Prepare HTML content
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -457,9 +454,7 @@ class ReportGenerator:
 
             # Get top 10 holders percentage
             top_10_pct = "N/A"
-            top_holders_pct = data.get("concentration_metrics", {}).get(
-                "top_holders_percentage", {}
-            )
+            top_holders_pct = data.get("concentration_metrics", {}).get("top_holders_percentage", {})
             if top_holders_pct and "10" in top_holders_pct:
                 top_10_pct = f"{top_holders_pct['10']:.2f}%"
 
@@ -504,32 +499,18 @@ class ReportGenerator:
         # Find most concentrated protocol
         most_concentrated = max(
             protocol_data.items(),
-            key=lambda x: x[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0),
+            key=lambda x: x[1].get("concentration_metrics", {}).get("gini_coefficient", 0),
         )
         most_concentrated_name = most_concentrated[1].get("name", most_concentrated[0])
-        most_concentrated_gini = (
-            most_concentrated[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0)
-        )
+        most_concentrated_gini = most_concentrated[1].get("concentration_metrics", {}).get("gini_coefficient", 0)
 
         # Find least concentrated protocol
         least_concentrated = min(
             protocol_data.items(),
-            key=lambda x: x[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 1),
+            key=lambda x: x[1].get("concentration_metrics", {}).get("gini_coefficient", 1),
         )
-        least_concentrated_name = least_concentrated[1].get(
-            "name", least_concentrated[0]
-        )
-        least_concentrated_gini = (
-            least_concentrated[1]
-            .get("concentration_metrics", {})
-            .get("gini_coefficient", 0)
-        )
+        least_concentrated_name = least_concentrated[1].get("name", least_concentrated[0])
+        least_concentrated_gini = least_concentrated[1].get("concentration_metrics", {}).get("gini_coefficient", 0)
 
         html_content += f"""
                 <li>{most_concentrated_name} shows the highest token concentration with a Gini coefficient of {most_concentrated_gini:.4f}</li>
@@ -581,6 +562,7 @@ class ReportGenerator:
 
         Returns:
             Path to the generated report
+
         """
         if protocols is None:
             protocols = ["compound", "uniswap", "aave"]
@@ -599,7 +581,7 @@ class ReportGenerator:
 
 
 def main():
-    """Main function to run the report generator."""
+    """Execute the report generation process."""
     logger.info("Starting governance token distribution report generation")
 
     try:

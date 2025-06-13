@@ -23,6 +23,7 @@ def calculate_gini_coefficient(
 
     Returns:
         Gini coefficient as a float between 0 and 1
+
     """
     # Convert to numpy array and ensure no negative values
     balances_array = np.array(balances)
@@ -38,9 +39,7 @@ def calculate_gini_coefficient(
     # Calculate Gini coefficient
     n = len(balances_array)
     index = np.arange(1, n + 1)
-    return ((2 * np.sum(index * balances_array)) / (n * np.sum(balances_array))) - (
-        (n + 1) / n
-    )
+    return ((2 * np.sum(index * balances_array)) / (n * np.sum(balances_array))) - ((n + 1) / n)
 
 
 def calculate_concentration_ratio(df: pd.DataFrame, n: int = 10) -> float:
@@ -55,6 +54,7 @@ def calculate_concentration_ratio(df: pd.DataFrame, n: int = 10) -> float:
 
     Returns:
         Concentration ratio as a percentage (0-100)
+
     """
     # Sort by balance in descending order
     sorted_df = df.sort_values(by="balance", ascending=False).reset_index(drop=True)
@@ -69,9 +69,7 @@ def calculate_concentration_ratio(df: pd.DataFrame, n: int = 10) -> float:
     return (top_n_balance / total_balance * 100) if total_balance > 0 else 0.0
 
 
-def calculate_participation_rate(
-    votes: List[Dict[str, Any]], total_holders: int
-) -> float:
+def calculate_participation_rate(votes: List[Dict[str, Any]], total_holders: int) -> float:
     """Calculate governance participation rate.
 
     Participation rate is the percentage of token holders who participated
@@ -83,14 +81,13 @@ def calculate_participation_rate(
 
     Returns:
         Participation rate as a percentage (0-100)
+
     """
     if not votes or total_holders <= 0:
         return 0.0
 
     # Count unique voters
-    unique_voters = set(
-        vote.get("voter_address") for vote in votes if vote.get("voter_address")
-    )
+    unique_voters = set(vote.get("voter_address") for vote in votes if vote.get("voter_address"))
 
     # Calculate participation rate
     return len(unique_voters) / total_holders * 100
@@ -104,6 +101,7 @@ def calculate_vote_distribution(votes: List[Dict[str, Any]]) -> Dict[str, float]
 
     Returns:
         Dictionary with percentages for each vote type
+
     """
     if not votes:
         return {"for": 0.0, "against": 0.0, "abstain": 0.0}
@@ -118,17 +116,12 @@ def calculate_vote_distribution(votes: List[Dict[str, Any]]) -> Dict[str, float]
 
     # Calculate percentages
     total_votes = sum(vote_counts.values())
-    vote_percentages = {
-        k: (v / total_votes * 100) if total_votes > 0 else 0.0
-        for k, v in vote_counts.items()
-    }
+    vote_percentages = {k: (v / total_votes * 100) if total_votes > 0 else 0.0 for k, v in vote_counts.items()}
 
     return vote_percentages
 
 
-def calculate_whale_influence(
-    df: pd.DataFrame, threshold_percentage: float = 1.0
-) -> Dict[str, Any]:
+def calculate_whale_influence(df: pd.DataFrame, threshold_percentage: float = 1.0) -> Dict[str, Any]:
     """Calculate whale influence metrics.
 
     "Whales" are defined as holders with more than threshold_percentage of the total supply.
@@ -139,6 +132,7 @@ def calculate_whale_influence(
 
     Returns:
         Dictionary with whale metrics
+
     """
     # Identify whales
     whales = df[df["percentage"] >= threshold_percentage]
@@ -149,9 +143,7 @@ def calculate_whale_influence(
     whale_percentage = (whale_count / total_holders * 100) if total_holders > 0 else 0.0
     whale_holdings = whales["balance"].sum()
     total_holdings = df["balance"].sum()
-    holdings_percentage = (
-        (whale_holdings / total_holdings * 100) if total_holdings > 0 else 0.0
-    )
+    holdings_percentage = (whale_holdings / total_holdings * 100) if total_holdings > 0 else 0.0
 
     return {
         "whale_count": whale_count,

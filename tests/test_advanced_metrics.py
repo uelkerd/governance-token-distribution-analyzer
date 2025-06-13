@@ -1,20 +1,18 @@
-import unittest
 import sys
-import os
+import unittest
 from pathlib import Path
-import numpy as np
 
 # Add the src directory to the Python path
 src_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(src_dir))
 
 from src.analyzer.advanced_metrics import (
-    calculate_palma_ratio,
-    calculate_hoover_index,
-    calculate_theil_index,
-    calculate_nakamoto_coefficient,
-    calculate_lorenz_curve,
     calculate_all_concentration_metrics,
+    calculate_hoover_index,
+    calculate_lorenz_curve,
+    calculate_nakamoto_coefficient,
+    calculate_palma_ratio,
+    calculate_theil_index,
 )
 
 
@@ -36,9 +34,7 @@ class TestAdvancedMetrics(unittest.TestCase):
         nakamoto = calculate_nakamoto_coefficient(extreme_balances)
 
         # Verify expected values
-        self.assertAlmostEqual(
-            hoover, 0.9, places=1
-        )  # Should be close to 1 (complete inequality)
+        self.assertAlmostEqual(hoover, 0.9, places=1)  # Should be close to 1 (complete inequality)
         self.assertEqual(nakamoto, 1)  # Only 1 entity needed for control
 
     def test_perfect_equality(self):
@@ -52,9 +48,7 @@ class TestAdvancedMetrics(unittest.TestCase):
         nakamoto = calculate_nakamoto_coefficient(equal_balances)
 
         # Verify expected values for equal distribution
-        self.assertAlmostEqual(
-            palma, 0.25
-        )  # For equal distribution with this calculation method
+        self.assertAlmostEqual(palma, 0.25)  # For equal distribution with this calculation method
         self.assertAlmostEqual(hoover, 0.0)  # Perfect equality = 0
         self.assertAlmostEqual(theil, 0.0)  # Perfect equality = 0
         self.assertEqual(nakamoto, 6)  # Need 6 out of 10 holders for 51% control
@@ -79,9 +73,7 @@ class TestAdvancedMetrics(unittest.TestCase):
             self.assertEqual(nak_51, 2)  # Need 2 holders for 51% control
 
         # Similarly for 67% control
-        top_two_percentage = (
-            (self.test_balances[0] + self.test_balances[1]) / total
-        ) * 100
+        top_two_percentage = ((self.test_balances[0] + self.test_balances[1]) / total) * 100
         if top_two_percentage > 67.0:
             self.assertEqual(nak_67, 2)  # With our test data, top 2 holders have >67%
         else:

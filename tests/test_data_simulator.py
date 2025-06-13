@@ -1,8 +1,6 @@
-import unittest
 import sys
-import os
+import unittest
 from pathlib import Path
-import numpy as np
 
 # Add the src directory to the Python path
 src_dir = Path(__file__).parent.parent
@@ -36,55 +34,39 @@ class TestTokenDistributionSimulator(unittest.TestCase):
 
         # Verify total adds up to total supply (allowing for small rounding errors)
         total_quantity = sum(float(holder["TokenHolderQuantity"]) for holder in holders)
-        self.assertAlmostEqual(
-            total_quantity, 10_000_000, delta=30
-        )  # Allow small delta for rounding
+        self.assertAlmostEqual(total_quantity, 10_000_000, delta=30)  # Allow small delta for rounding
 
         # Verify percentages add up to approximately 100%
-        total_percentage = sum(
-            float(holder["TokenHolderPercentage"]) for holder in holders
-        )
+        total_percentage = sum(float(holder["TokenHolderPercentage"]) for holder in holders)
         self.assertAlmostEqual(total_percentage, 100.0, delta=0.1)
 
     def test_protocol_dominated_distribution(self):
         """Test that protocol dominated distribution generates expected data structure."""
         # Generate distribution
-        holders = self.simulator.generate_protocol_dominated_distribution(
-            num_holders=50, protocol_percentage=30.0
-        )
+        holders = self.simulator.generate_protocol_dominated_distribution(num_holders=50, protocol_percentage=30.0)
 
         # Verify structure and properties
-        self.assertLessEqual(
-            len(holders), 50
-        )  # Can be slightly less due to protocol wallets
+        self.assertLessEqual(len(holders), 50)  # Can be slightly less due to protocol wallets
         self.assertIn("TokenHolderAddress", holders[0])
         self.assertIn("TokenHolderQuantity", holders[0])
         self.assertIn("TokenHolderPercentage", holders[0])
 
         # Verify top holders (protocol wallets) have expected percentage
-        top_5_percentage = sum(
-            float(holder["TokenHolderPercentage"]) for holder in holders[:5]
-        )
-        self.assertGreaterEqual(
-            top_5_percentage, 25.0
-        )  # Protocol wallets should have significant holdings
+        top_5_percentage = sum(float(holder["TokenHolderPercentage"]) for holder in holders[:5])
+        self.assertGreaterEqual(top_5_percentage, 25.0)  # Protocol wallets should have significant holdings
 
         # Verify total adds up to total supply
         total_quantity = sum(float(holder["TokenHolderQuantity"]) for holder in holders)
         self.assertAlmostEqual(total_quantity, 10_000_000, delta=30)
 
         # Verify percentages add up to approximately 100%
-        total_percentage = sum(
-            float(holder["TokenHolderPercentage"]) for holder in holders
-        )
+        total_percentage = sum(float(holder["TokenHolderPercentage"]) for holder in holders)
         self.assertAlmostEqual(total_percentage, 100.0, delta=0.1)
 
     def test_community_distribution(self):
         """Test that community distribution generates expected data structure."""
         # Generate distribution with target Gini coefficient
-        holders = self.simulator.generate_community_distribution(
-            num_holders=50, gini_target=0.5
-        )
+        holders = self.simulator.generate_community_distribution(num_holders=50, gini_target=0.5)
 
         # Verify structure and properties
         self.assertEqual(len(holders), 50)
@@ -93,21 +75,15 @@ class TestTokenDistributionSimulator(unittest.TestCase):
         self.assertIn("TokenHolderPercentage", holders[0])
 
         # Verify top holders have less concentration than power law
-        top_5_percentage = sum(
-            float(holder["TokenHolderPercentage"]) for holder in holders[:5]
-        )
-        self.assertLessEqual(
-            top_5_percentage, 60.0
-        )  # Community distribution should be more equal
+        top_5_percentage = sum(float(holder["TokenHolderPercentage"]) for holder in holders[:5])
+        self.assertLessEqual(top_5_percentage, 60.0)  # Community distribution should be more equal
 
         # Verify total adds up to total supply
         total_quantity = sum(float(holder["TokenHolderQuantity"]) for holder in holders)
         self.assertAlmostEqual(total_quantity, 10_000_000, delta=30)
 
         # Verify percentages add up to approximately 100%
-        total_percentage = sum(
-            float(holder["TokenHolderPercentage"]) for holder in holders
-        )
+        total_percentage = sum(float(holder["TokenHolderPercentage"]) for holder in holders)
         self.assertAlmostEqual(total_percentage, 100.0, delta=0.1)
 
     def test_historical_distribution(self):
@@ -160,19 +136,11 @@ class TestTokenDistributionSimulator(unittest.TestCase):
         last_period_decreasing = decreasing[dates_decreasing[-1]]["result"]
 
         # Compare top holder percentages
-        top_holder_first_increasing = float(
-            first_period_increasing[0]["TokenHolderPercentage"]
-        )
-        top_holder_last_increasing = float(
-            last_period_increasing[0]["TokenHolderPercentage"]
-        )
+        top_holder_first_increasing = float(first_period_increasing[0]["TokenHolderPercentage"])
+        top_holder_last_increasing = float(last_period_increasing[0]["TokenHolderPercentage"])
 
-        top_holder_first_decreasing = float(
-            first_period_decreasing[0]["TokenHolderPercentage"]
-        )
-        top_holder_last_decreasing = float(
-            last_period_decreasing[0]["TokenHolderPercentage"]
-        )
+        top_holder_first_decreasing = float(first_period_decreasing[0]["TokenHolderPercentage"])
+        top_holder_last_decreasing = float(last_period_decreasing[0]["TokenHolderPercentage"])
 
         # For increasing concentration, the top holder should have a higher percentage in the last period
         self.assertGreater(top_holder_last_increasing, top_holder_first_increasing)

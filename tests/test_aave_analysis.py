@@ -1,9 +1,8 @@
-import unittest
-import sys
 import os
+import sys
+import unittest
 from pathlib import Path
-import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Add the src directory to the Python path
 src_dir = Path(__file__).parent.parent
@@ -55,9 +54,7 @@ class TestAaveAnalyzer(unittest.TestCase):
         holders = self.analyzer.get_token_holders(limit=3)
 
         # Verify the API was called correctly
-        self.mock_api.get_token_holders.assert_called_once_with(
-            self.analyzer.AAVE_CONTRACT_ADDRESS, 3
-        )
+        self.mock_api.get_token_holders.assert_called_once_with(self.analyzer.AAVE_CONTRACT_ADDRESS, 3)
 
         # Verify the method returns the expected data
         self.assertEqual(holders, self.simulated_holders)
@@ -72,9 +69,7 @@ class TestAaveAnalyzer(unittest.TestCase):
 
         # Verify the results contain the expected fields
         self.assertEqual(results["token"], "AAVE")
-        self.assertEqual(
-            results["contract_address"], self.analyzer.AAVE_CONTRACT_ADDRESS
-        )
+        self.assertEqual(results["contract_address"], self.analyzer.AAVE_CONTRACT_ADDRESS)
         self.assertIn("timestamp", results)
 
         # Verify metrics were calculated

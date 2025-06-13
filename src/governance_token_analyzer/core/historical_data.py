@@ -39,6 +39,7 @@ class HistoricalDataManager:
 
         Raises:
             DataStorageError: If there's an issue creating the data directory
+
         """
         self.data_dir = data_dir
         try:
@@ -52,6 +53,7 @@ class HistoricalDataManager:
 
         Raises:
             OSError: If there's an issue creating the directory
+
         """
         os.makedirs(self.data_dir, exist_ok=True)
         for protocol in self.SUPPORTED_PROTOCOLS:
@@ -65,16 +67,13 @@ class HistoricalDataManager:
 
         Raises:
             ProtocolNotSupportedError: If the protocol is not supported
+
         """
         if protocol not in self.SUPPORTED_PROTOCOLS:
             logger.warning(f"Unsupported protocol requested: {protocol}")
-            raise ProtocolNotSupportedError(
-                protocol, supported_protocols=list(self.SUPPORTED_PROTOCOLS)
-            )
+            raise ProtocolNotSupportedError(protocol, supported_protocols=list(self.SUPPORTED_PROTOCOLS))
 
-    def store_snapshot(
-        self, protocol: str, data: Dict[str, Any], timestamp: Optional[datetime] = None
-    ) -> None:
+    def store_snapshot(self, protocol: str, data: Dict[str, Any], timestamp: Optional[datetime] = None) -> None:
         """Store a snapshot of token distribution data.
 
         Args:
@@ -86,14 +85,13 @@ class HistoricalDataManager:
             ProtocolNotSupportedError: If the protocol is not supported
             DataStorageError: If there's an issue storing the data
             DataFormatError: If the data is not in the expected format
+
         """
         self._validate_protocol(protocol)
 
         if not isinstance(data, dict):
             logger.error(f"Invalid data format: expected dict, got {type(data)}")
-            raise DataFormatError(
-                f"Invalid data format: expected dict, got {type(data)}"
-            )
+            raise DataFormatError(f"Invalid data format: expected dict, got {type(data)}")
 
         if timestamp is None:
             timestamp = datetime.now()
@@ -121,9 +119,7 @@ class HistoricalDataManager:
             logger.info(f"Stored snapshot for {protocol} at {timestamp_str}")
         except (OSError, TypeError, ValueError) as e:
             logger.error(f"Failed to store snapshot for {protocol}: {e}")
-            raise DataStorageError(
-                f"Failed to store snapshot for {protocol}: {e}"
-            ) from e
+            raise DataStorageError(f"Failed to store snapshot for {protocol}: {e}") from e
 
     def get_snapshots(
         self,
@@ -144,6 +140,7 @@ class HistoricalDataManager:
         Raises:
             ProtocolNotSupportedError: If the protocol is not supported
             DataAccessError: If there's an issue accessing the data
+
         """
         self._validate_protocol(protocol)
 
@@ -182,9 +179,7 @@ class HistoricalDataManager:
                     continue
 
                 # Filter by date range if specified
-                if (start_date and snapshot_time < start_date) or (
-                    end_date and snapshot_time > end_date
-                ):
+                if (start_date and snapshot_time < start_date) or (end_date and snapshot_time > end_date):
                     continue
 
                 snapshots.append(snapshot)
@@ -197,9 +192,7 @@ class HistoricalDataManager:
 
         except OSError as e:
             logger.error(f"Failed to access snapshots for {protocol}: {e}")
-            raise DataAccessError(
-                f"Failed to access snapshots for {protocol}: {e}"
-            ) from e
+            raise DataAccessError(f"Failed to access snapshots for {protocol}: {e}") from e
 
     def get_time_series_data(
         self,
@@ -223,6 +216,7 @@ class HistoricalDataManager:
             ProtocolNotSupportedError: If the protocol is not supported
             DataAccessError: If there's an issue accessing the data
             MetricNotFoundError: If the metric is not found in any snapshot
+
         """
         self._validate_protocol(protocol)
 
@@ -243,19 +237,14 @@ class HistoricalDataManager:
                 # Track available metrics for error reporting
                 if isinstance(snapshot["data"], dict):
                     available_metrics.update(snapshot["data"].keys())
-                    if "metrics" in snapshot["data"] and isinstance(
-                        snapshot["data"]["metrics"], dict
-                    ):
+                    if "metrics" in snapshot["data"] and isinstance(snapshot["data"]["metrics"], dict):
                         available_metrics.update(snapshot["data"]["metrics"].keys())
 
                 # Navigate nested dictionaries if necessary
                 value = None
                 if metric in snapshot["data"]:
                     value = snapshot["data"][metric]
-                elif (
-                    "metrics" in snapshot["data"]
-                    and metric in snapshot["data"]["metrics"]
-                ):
+                elif "metrics" in snapshot["data"] and metric in snapshot["data"]["metrics"]:
                     value = snapshot["data"]["metrics"][metric]
 
                 if value is not None:
@@ -263,14 +252,10 @@ class HistoricalDataManager:
 
             # Check if we found any data points
             if not data:
-                logger.warning(
-                    f"Metric '{metric}' not found in any snapshots for {protocol}"
-                )
+                logger.warning(f"Metric '{metric}' not found in any snapshots for {protocol}")
                 # Only raise an error if snapshots exist but metric doesn't
                 if snapshots and available_metrics:
-                    raise MetricNotFoundError(
-                        metric, available_metrics=list(available_metrics)
-                    )
+                    raise MetricNotFoundError(metric, available_metrics=list(available_metrics))
                 return pd.DataFrame(columns=["timestamp", metric])
 
             # Convert to DataFrame
@@ -279,20 +264,14 @@ class HistoricalDataManager:
             if not df.empty:
                 df.set_index("timestamp", inplace=True)
 
-            logger.info(
-                f"Retrieved time series data for {protocol} with {len(df)} data points"
-            )
+            logger.info(f"Retrieved time series data for {protocol} with {len(df)} data points")
             return df
 
         except Exception as e:
-            if isinstance(
-                e, (ProtocolNotSupportedError, DataAccessError, MetricNotFoundError)
-            ):
+            if isinstance(e, (ProtocolNotSupportedError, DataAccessError, MetricNotFoundError)):
                 raise
             logger.error(f"Failed to retrieve time series data: {e}")
-            raise HistoricalDataError(
-                f"Failed to retrieve time series data: {e}"
-            ) from e
+            raise HistoricalDataError(f"Failed to retrieve time series data: {e}") from e
 
     def get_available_metrics(self, protocol: str) -> Set[str]:
         """Get a set of all available metrics for a protocol.
@@ -306,6 +285,7 @@ class HistoricalDataManager:
         Raises:
             ProtocolNotSupportedError: If the protocol is not supported
             DataAccessError: If there's an issue accessing the data
+
         """
         self._validate_protocol(protocol)
 
@@ -320,9 +300,7 @@ class HistoricalDataManager:
             for snapshot in snapshots:
                 if isinstance(snapshot["data"], dict):
                     metrics.update(snapshot["data"].keys())
-                    if "metrics" in snapshot["data"] and isinstance(
-                        snapshot["data"]["metrics"], dict
-                    ):
+                    if "metrics" in snapshot["data"] and isinstance(snapshot["data"]["metrics"], dict):
                         metrics.update(snapshot["data"]["metrics"].keys())
 
             # Remove non-metric keys
@@ -358,6 +336,7 @@ def calculate_distribution_change(
     Raises:
         DataFormatError: If the input DataFrames don't have the expected columns
         HistoricalDataError: If there's an issue calculating the changes
+
     """
     # Validate input DataFrames
     for name, df in [
@@ -375,12 +354,8 @@ def calculate_distribution_change(
 
     try:
         # Create dictionaries mapping addresses to balances
-        old_balances = dict(
-            zip(old_distribution[address_col], old_distribution[balance_col])
-        )
-        new_balances = dict(
-            zip(new_distribution[address_col], new_distribution[balance_col])
-        )
+        old_balances = dict(zip(old_distribution[address_col], old_distribution[balance_col]))
+        new_balances = dict(zip(new_distribution[address_col], new_distribution[balance_col]))
 
         # Get all unique addresses
         all_addresses = set(old_balances.keys()) | set(new_balances.keys())
@@ -420,14 +395,10 @@ def calculate_distribution_change(
         if isinstance(e, DataFormatError):
             raise
         logger.error(f"Failed to calculate distribution changes: {e}")
-        raise HistoricalDataError(
-            f"Failed to calculate distribution changes: {e}"
-        ) from e
+        raise HistoricalDataError(f"Failed to calculate distribution changes: {e}") from e
 
 
-def analyze_concentration_trends(
-    snapshots: List[Dict[str, Any]], top_n_holders: int = 10
-) -> pd.DataFrame:
+def analyze_concentration_trends(snapshots: List[Dict[str, Any]], top_n_holders: int = 10) -> pd.DataFrame:
     """Analyze trends in token concentration over time.
 
     Args:
@@ -440,6 +411,7 @@ def analyze_concentration_trends(
     Raises:
         DataFormatError: If the snapshots don't have the expected format
         HistoricalDataError: If there's an issue analyzing the trends
+
     """
     if not snapshots:
         logger.info("No snapshots provided for concentration trend analysis")
@@ -465,9 +437,7 @@ def analyze_concentration_trends(
             metrics = {}
 
             # Check if metrics are already calculated
-            if "metrics" in snapshot["data"] and isinstance(
-                snapshot["data"]["metrics"], dict
-            ):
+            if "metrics" in snapshot["data"] and isinstance(snapshot["data"]["metrics"], dict):
                 metrics = snapshot["data"]["metrics"]
 
             # Get concentration of top N holders if available
@@ -514,6 +484,7 @@ def analyze_governance_participation_trends(
     Raises:
         DataFormatError: If the snapshots don't have the expected format
         HistoricalDataError: If there's an issue analyzing the trends
+
     """
     if not snapshots:
         logger.info("No snapshots provided for governance participation analysis")
@@ -538,9 +509,7 @@ def analyze_governance_participation_trends(
             # Extract participation metrics if available
             metrics = {}
 
-            if "metrics" in snapshot["data"] and isinstance(
-                snapshot["data"]["metrics"], dict
-            ):
+            if "metrics" in snapshot["data"] and isinstance(snapshot["data"]["metrics"], dict):
                 metrics = snapshot["data"]["metrics"]
 
             # Get participation metrics
@@ -562,9 +531,7 @@ def analyze_governance_participation_trends(
 
         if not df.empty:
             df.set_index("timestamp", inplace=True)
-            logger.info(
-                f"Analyzed governance participation trends across {len(df)} snapshots"
-            )
+            logger.info(f"Analyzed governance participation trends across {len(df)} snapshots")
         else:
             logger.warning("No valid participation metrics found in snapshots")
 
@@ -574,9 +541,7 @@ def analyze_governance_participation_trends(
         if isinstance(e, DataFormatError):
             raise
         logger.error(f"Failed to analyze governance participation trends: {e}")
-        raise HistoricalDataError(
-            f"Failed to analyze governance participation trends: {e}"
-        ) from e
+        raise HistoricalDataError(f"Failed to analyze governance participation trends: {e}") from e
 
 
 def simulate_historical_data(
@@ -601,6 +566,7 @@ def simulate_historical_data(
     Raises:
         ProtocolNotSupportedError: If the protocol is not supported
         HistoricalDataError: If there's an issue generating the data
+
     """
     # Set random seed if provided
     if seed is not None:
@@ -612,9 +578,7 @@ def simulate_historical_data(
             data_manager = HistoricalDataManager()
         except DataStorageError as e:
             logger.error(f"Failed to create data manager for simulation: {e}")
-            raise HistoricalDataError(
-                f"Failed to create data manager for simulation: {e}"
-            ) from e
+            raise HistoricalDataError(f"Failed to create data manager for simulation: {e}") from e
 
     # Validate protocol
     try:
@@ -653,9 +617,7 @@ def simulate_historical_data(
             balances = balances * time_factor
 
             # Sort by balance (descending)
-            holder_data = sorted(
-                zip(addresses, balances), key=lambda x: x[1], reverse=True
-            )
+            holder_data = sorted(zip(addresses, balances), key=lambda x: x[1], reverse=True)
 
             # Create token holder list
             token_holders = []
@@ -675,9 +637,7 @@ def simulate_historical_data(
             balances_sorted = np.sort(balances_array)
             indices = np.arange(1, len(balances_array) + 1)
             n = len(balances_array)
-            gini = (2 * np.sum(indices * balances_sorted)) / (
-                n * np.sum(balances_array)
-            ) - (n + 1) / n
+            gini = (2 * np.sum(indices * balances_sorted)) / (n * np.sum(balances_array)) - (n + 1) / n
 
             # Top 10 concentration
             top_10_concentration = sum(h["percentage"] for h in token_holders[:10])

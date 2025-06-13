@@ -28,15 +28,14 @@ class DataCollectionManager:
 
         Args:
             data_dir: Directory to store collected data
+
         """
         self.api_client = APIClient()
 
         # Set up data directory
         if data_dir is None:
             # Default to a data directory in the user's home directory
-            self.data_dir = os.path.join(
-                os.path.expanduser("~"), ".governance_token_analyzer", "data"
-            )
+            self.data_dir = os.path.join(os.path.expanduser("~"), ".governance_token_analyzer", "data")
         else:
             self.data_dir = data_dir
 
@@ -64,6 +63,7 @@ class DataCollectionManager:
 
         Returns:
             Dictionary containing protocol data
+
         """
         if protocol not in SUPPORTED_PROTOCOLS:
             raise ValueError(f"Unsupported protocol: {protocol}")
@@ -76,29 +76,17 @@ class DataCollectionManager:
                 return cached_data
 
         # If no valid cache, fetch fresh data
-        logger.info(
-            f"Collecting fresh data for {protocol} (use_real_data={use_real_data})"
-        )
+        logger.info(f"Collecting fresh data for {protocol} (use_real_data={use_real_data})")
 
         # Get data based on protocol
         if protocol == "compound":
             data = (
-                compound.get_sample_data()
-                if not use_real_data
-                else self.api_client.get_protocol_data(protocol, True)
+                compound.get_sample_data() if not use_real_data else self.api_client.get_protocol_data(protocol, True)
             )
         elif protocol == "uniswap":
-            data = (
-                uniswap.get_sample_data()
-                if not use_real_data
-                else self.api_client.get_protocol_data(protocol, True)
-            )
+            data = uniswap.get_sample_data() if not use_real_data else self.api_client.get_protocol_data(protocol, True)
         elif protocol == "aave":
-            data = (
-                aave.get_sample_data()
-                if not use_real_data
-                else self.api_client.get_protocol_data(protocol, True)
-            )
+            data = aave.get_sample_data() if not use_real_data else self.api_client.get_protocol_data(protocol, True)
 
         # Add metadata
         data["metadata"] = {
@@ -125,14 +113,13 @@ class DataCollectionManager:
 
         Returns:
             Dictionary mapping protocol names to their data
+
         """
         all_data = {}
 
         for protocol in SUPPORTED_PROTOCOLS:
             try:
-                data = self.collect_protocol_data(
-                    protocol, use_cache, use_real_data, cache_ttl
-                )
+                data = self.collect_protocol_data(protocol, use_cache, use_real_data, cache_ttl)
                 all_data[protocol] = data
             except Exception as e:
                 logger.error(f"Error collecting data for {protocol}: {e}")
@@ -157,6 +144,7 @@ class DataCollectionManager:
 
         Returns:
             List of token holder dictionaries
+
         """
         # Get data from cache or API
         data = self.collect_protocol_data(protocol, use_cache, use_real_data)
@@ -182,6 +170,7 @@ class DataCollectionManager:
 
         Returns:
             List of proposal dictionaries
+
         """
         # Get data from cache or API
         data = self.collect_protocol_data(protocol, use_cache, use_real_data)
@@ -207,6 +196,7 @@ class DataCollectionManager:
 
         Returns:
             List of vote dictionaries
+
         """
         # Get data from cache or API
         data = self.collect_protocol_data(protocol, use_cache, use_real_data)

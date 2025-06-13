@@ -84,7 +84,7 @@ def analyze_protocols(protocol_keys: List[str]) -> List[Dict[str, Any]]:
 
 
 def main():
-    """Main function to run the analyzer."""
+    """Run the analyzer."""
     logger.info("Starting Governance Token Distribution Analyzer")
 
     # Use all protocols defined in config by default
@@ -100,9 +100,7 @@ def main():
         supply = result.get("supply", "Unknown")
 
         if "error" in result:
-            logger.warning(
-                f"{protocol_name} ({symbol}): Error fetching data - {result['error']}"
-            )
+            logger.warning(f"{protocol_name} ({symbol}): Error fetching data - {result['error']}")
         else:
             logger.info(f"{protocol_name} ({symbol}): Token Supply = {supply}")
 

@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -26,6 +27,7 @@ class ReportGenerator:
         Args:
             output_dir: Directory where reports will be saved
             template_dir: Directory containing Jinja2 templates
+
         """
         self.output_dir = output_dir
 
@@ -144,9 +146,7 @@ class ReportGenerator:
             """
 
             # Save the basic template
-            with open(
-                os.path.join(self.template_dir, "report_template.html"), "w"
-            ) as f:
+            with open(os.path.join(self.template_dir, "report_template.html"), "w") as f:
                 f.write(basic_template)
 
         # Initialize Jinja2 environment
@@ -172,6 +172,7 @@ class ReportGenerator:
 
         Returns:
             Path to the generated report
+
         """
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -194,9 +195,7 @@ class ReportGenerator:
         # Generate visualizations if requested
         visualizations = []
         if include_visualizations:
-            visualizations = self._generate_snapshot_visualizations(
-                protocol_data, viz_dir
-            )
+            visualizations = self._generate_snapshot_visualizations(protocol_data, viz_dir)
 
         # Generate report based on format
         if output_format == "html":
@@ -239,6 +238,7 @@ class ReportGenerator:
 
         Returns:
             Path to the generated report
+
         """
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -258,9 +258,7 @@ class ReportGenerator:
         latest_metrics = self._extract_metrics(snapshots[-1]["data"])
 
         # Generate historical visualizations
-        historical_visualizations = self._generate_historical_visualizations(
-            snapshots, viz_dir
-        )
+        historical_visualizations = self._generate_historical_visualizations(snapshots, viz_dir)
 
         # Generate report based on format
         if output_format == "html":
@@ -294,9 +292,7 @@ class ReportGenerator:
 
         return report_path
 
-    def generate_comparison_report(
-        self, protocol_data: Dict[str, Dict[str, Any]], output_format: str = "html"
-    ) -> str:
+    def generate_comparison_report(self, protocol_data: Dict[str, Dict[str, Any]], output_format: str = "html") -> str:
         """Generate a comparison report for multiple protocols.
 
         Args:
@@ -305,6 +301,7 @@ class ReportGenerator:
 
         Returns:
             Path to the generated report
+
         """
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -326,9 +323,7 @@ class ReportGenerator:
             protocol_metrics[protocol] = self._extract_metrics(data)
 
         # Generate comparison visualizations
-        comparison_visualizations = self._generate_comparison_visualizations(
-            protocol_data, viz_dir
-        )
+        comparison_visualizations = self._generate_comparison_visualizations(protocol_data, viz_dir)
 
         # Generate report based on format
         if output_format == "html":
@@ -389,10 +384,7 @@ class ReportGenerator:
             )
 
         # Add governance participation if available
-        if (
-            "governance_data" in protocol_data
-            and "participation_rate" in protocol_data["governance_data"]
-        ):
+        if "governance_data" in protocol_data and "participation_rate" in protocol_data["governance_data"]:
             metrics.append(
                 {
                     "name": "Governance Participation Rate",
@@ -414,9 +406,7 @@ class ReportGenerator:
 
         return descriptions.get(metric_name, "No description available")
 
-    def _generate_snapshot_visualizations(
-        self, protocol_data: Dict[str, Any], viz_dir: str
-    ) -> List[Dict[str, str]]:
+    def _generate_snapshot_visualizations(self, protocol_data: Dict[str, Any], viz_dir: str) -> List[Dict[str, str]]:
         """Generate visualizations for a protocol snapshot."""
         visualizations = []
 
@@ -425,9 +415,7 @@ class ReportGenerator:
             holder_df = pd.DataFrame(protocol_data["token_holders"])
 
             # Distribution chart
-            fig = charts.create_distribution_chart(
-                holder_df, title="Token Holder Distribution"
-            )
+            fig = charts.create_distribution_chart(holder_df, title="Token Holder Distribution")
             dist_chart_path = os.path.join(viz_dir, "distribution_chart.png")
             fig.savefig(dist_chart_path)
             plt.close(fig)
@@ -435,17 +423,13 @@ class ReportGenerator:
             visualizations.append(
                 {
                     "title": "Token Holder Distribution",
-                    "path": os.path.relpath(
-                        dist_chart_path, start=os.path.dirname(viz_dir)
-                    ),
+                    "path": os.path.relpath(dist_chart_path, start=os.path.dirname(viz_dir)),
                     "description": "Distribution of tokens among holders",
                 }
             )
 
             # Lorenz curve
-            fig = charts.create_lorenz_curve(
-                holder_df["balance"], title="Token Distribution Lorenz Curve"
-            )
+            fig = charts.create_lorenz_curve(holder_df["balance"], title="Token Distribution Lorenz Curve")
             lorenz_path = os.path.join(viz_dir, "lorenz_curve.png")
             fig.savefig(lorenz_path)
             plt.close(fig)
@@ -453,9 +437,7 @@ class ReportGenerator:
             visualizations.append(
                 {
                     "title": "Lorenz Curve",
-                    "path": os.path.relpath(
-                        lorenz_path, start=os.path.dirname(viz_dir)
-                    ),
+                    "path": os.path.relpath(lorenz_path, start=os.path.dirname(viz_dir)),
                     "description": "Lorenz curve showing inequality in token distribution",
                 }
             )
@@ -495,9 +477,7 @@ class ReportGenerator:
 
         # Generate gini coefficient over time chart
         if "gini_coefficient" in df.columns:
-            fig = historical_charts.plot_metric_over_time(
-                df, "gini_coefficient", title="Gini Coefficient Over Time"
-            )
+            fig = historical_charts.plot_metric_over_time(df, "gini_coefficient", title="Gini Coefficient Over Time")
             gini_path = os.path.join(viz_dir, "gini_over_time.png")
             fig.savefig(gini_path)
             plt.close(fig)
@@ -543,9 +523,7 @@ class ReportGenerator:
             visualizations.append(
                 {
                     "title": "Governance Participation Rate Over Time",
-                    "path": os.path.relpath(
-                        participation_path, start=os.path.dirname(viz_dir)
-                    ),
+                    "path": os.path.relpath(participation_path, start=os.path.dirname(viz_dir)),
                     "description": "Changes in governance participation over time",
                 }
             )
@@ -579,9 +557,7 @@ class ReportGenerator:
             visualizations.append(
                 {
                     "title": "Governance Metrics Dashboard",
-                    "path": os.path.relpath(
-                        dashboard_path, start=os.path.dirname(viz_dir)
-                    ),
+                    "path": os.path.relpath(dashboard_path, start=os.path.dirname(viz_dir)),
                     "description": "Dashboard showing multiple governance metrics over time",
                 }
             )
@@ -660,16 +636,13 @@ class ReportGenerator:
         # First, check which metrics are available for all protocols
         common_metrics = ["gini_coefficient", "top_10_concentration"]
 
-        if all(
-            any(m in metrics_data[p] for m in common_metrics)
-            for p in protocol_data.keys()
-        ):
+        if all(any(m in metrics_data[p] for m in common_metrics) for p in protocol_data):
             # Create radar chart data
             metric_labels = [m.replace("_", " ").title() for m in common_metrics]
 
             # Normalize values for radar chart
             normalized_values = {}
-            for protocol in protocol_data.keys():
+            for protocol in protocol_data:
                 values = []
                 for metric in common_metrics:
                     if metric in metrics_data[protocol]:
@@ -691,9 +664,7 @@ class ReportGenerator:
             ax = fig.add_subplot(111, polar=True)
 
             # Set the angle of each metric
-            angles = np.linspace(
-                0, 2 * np.pi, len(common_metrics), endpoint=False
-            ).tolist()
+            angles = np.linspace(0, 2 * np.pi, len(common_metrics), endpoint=False).tolist()
             # Make the plot a full circle
             angles += angles[:1]
 
@@ -794,9 +765,7 @@ class ReportGenerator:
         return output_path
 
 
-def generate_historical_analysis_report(
-    protocol, time_series_data, snapshots, output_path
-):
+def generate_historical_analysis_report(protocol, time_series_data, snapshots, output_path):
     """Generate a historical analysis report for a protocol.
 
     This is a standalone function that creates a report with historical data analysis.
@@ -809,19 +778,16 @@ def generate_historical_analysis_report(
 
     Returns:
         Path to the generated report
+
     """
     # Create a report generator instance
     report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))
 
     # Generate the report using the existing method
-    return report_gen.generate_historical_report(
-        snapshots=snapshots, protocol_name=protocol, output_format="html"
-    )
+    return report_gen.generate_historical_report(snapshots=snapshots, protocol_name=protocol, output_format="html")
 
 
-def generate_comprehensive_report(
-    protocol, snapshots, time_series_data, visualization_paths, output_path
-):
+def generate_comprehensive_report(protocol, snapshots, time_series_data, visualization_paths, output_path):
     """Generate a comprehensive report with all analysis components.
 
     This is a standalone function that creates a comprehensive report with
@@ -837,6 +803,7 @@ def generate_comprehensive_report(
 
     Returns:
         Path to the generated report
+
     """
     # Create a report generator instance
     report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))
@@ -914,15 +881,9 @@ def generate_comprehensive_report(
             """
 
             for idx, row in data.iterrows():
-                date_str = (
-                    idx.strftime("%Y-%m-%d")
-                    if isinstance(idx, pd.Timestamp)
-                    else str(idx)
-                )
+                date_str = idx.strftime("%Y-%m-%d") if isinstance(idx, pd.Timestamp) else str(idx)
                 value = row[metric] if metric in row else "N/A"
-                formatted_value = (
-                    f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
-                )
+                formatted_value = f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
                 html_content += f"""
                     <tr>
                         <td>{date_str}</td>
@@ -957,9 +918,7 @@ def generate_comprehensive_report(
             """
 
             for metric, value in latest_snapshot["data"]["metrics"].items():
-                formatted_value = (
-                    f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
-                )
+                formatted_value = f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
                 html_content += f"""
                     <tr>
                         <td>{metric.replace("_", " ").title()}</td>

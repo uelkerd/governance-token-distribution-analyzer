@@ -1,20 +1,11 @@
-"""
-Tests for the voting block analysis module.
-"""
+"""Tests for the voting block analysis module."""
 
 import pytest
-import pandas as pd
-import numpy as np
-from datetime import datetime
 
 from governance_token_analyzer.core.voting_block_analysis import (
     VotingBlockAnalyzer,
     analyze_proposal_influence,
     detect_voting_anomalies,
-)
-from governance_token_analyzer.core.exceptions import (
-    DataFormatError,
-    HistoricalDataError,
 )
 
 
@@ -111,9 +102,7 @@ def test_load_voting_data(voting_block_analyzer, sample_proposals):
             all_voters.add(vote["voter"])
 
     # Extract voters from voting history
-    history_voters = set(
-        record["address"] for record in voting_block_analyzer.voting_history
-    )
+    history_voters = set(record["address"] for record in voting_block_analyzer.voting_history)
     assert all(voter in history_voters for voter in all_voters)
 
 

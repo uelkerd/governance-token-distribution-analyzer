@@ -1,9 +1,7 @@
-"""
-Tests for the API Client module.
-"""
+"""Tests for the API Client module."""
 
 import pytest
-import os
+
 from governance_token_analyzer.core.api_client import APIClient
 
 

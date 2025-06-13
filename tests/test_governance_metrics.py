@@ -1,8 +1,7 @@
-import unittest
 import sys
-import os
-from pathlib import Path
+import unittest
 from datetime import datetime
+from pathlib import Path
 
 # Add the src directory to the Python path
 src_dir = Path(__file__).parent.parent
@@ -94,9 +93,7 @@ class TestGovernanceMetrics(unittest.TestCase):
         ]
 
         # Calculate participation metrics
-        metrics = self.analyzer.calculate_voter_participation(
-            proposal_votes, self.total_eligible_votes
-        )
+        metrics = self.analyzer.calculate_voter_participation(proposal_votes, self.total_eligible_votes)
 
         # Verify that all expected metrics are present
         self.assertIn("participation_rate", metrics)
@@ -114,9 +111,7 @@ class TestGovernanceMetrics(unittest.TestCase):
         # Unique voter percentage = (4 / 2000000) * 100 = 0.0002%
         # This is a simplification as we're treating each address as a token
         expected_unique_percentage = (4 / self.total_eligible_votes) * 100
-        self.assertAlmostEqual(
-            metrics["unique_voters_percentage"], expected_unique_percentage
-        )
+        self.assertAlmostEqual(metrics["unique_voters_percentage"], expected_unique_percentage)
 
     def test_calculate_proposal_success_rate(self):
         """Test that proposal success rate metrics are calculated correctly."""

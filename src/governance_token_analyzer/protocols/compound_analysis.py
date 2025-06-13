@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Compound Governance Token Analysis Module
+"""Compound Governance Token Analysis Module.
 
 This module provides functionality for analyzing the distribution of COMP tokens
 and related governance metrics for the Compound protocol.
@@ -43,6 +43,7 @@ class CompoundAnalyzer:
         Args:
             api_client: An instance of EtherscanAPI or compatible client
             config: Configuration object
+
         """
         self.config = config or Config()
         self.api_client = api_client or EtherscanAPI(self.config.get_api_key())
@@ -56,6 +57,7 @@ class CompoundAnalyzer:
 
         Returns:
             List of token holders with their balances
+
         """
         logger.info(f"Retrieving top {limit} COMP token holders")
         return self.api_client.get_token_holders(self.COMP_CONTRACT_ADDRESS, limit)
@@ -68,6 +70,7 @@ class CompoundAnalyzer:
 
         Returns:
             Dictionary containing distribution metrics
+
         """
         logger.info(f"Analyzing COMP token distribution for top {limit} holders")
         holders_response = self.get_token_holders(limit)
@@ -101,9 +104,7 @@ class CompoundAnalyzer:
                             continue
                     else:
                         # If no numeric value found, skip this holder
-                        logger.warning(
-                            f"Could not extract balance from holder data: {holder}"
-                        )
+                        logger.warning(f"Could not extract balance from holder data: {holder}")
                         continue
 
                 balances.append(balance)
@@ -120,15 +121,9 @@ class CompoundAnalyzer:
         # Calculate percentage held by top holders
         total_supply = sum(balances)
         top_5_pct = sum(balances[:5]) / total_supply * 100 if len(balances) >= 5 else 0
-        top_10_pct = (
-            sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
-        )
-        top_20_pct = (
-            sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
-        )
-        top_50_pct = (
-            sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
-        )
+        top_10_pct = sum(balances[:10]) / total_supply * 100 if len(balances) >= 10 else 0
+        top_20_pct = sum(balances[:20]) / total_supply * 100 if len(balances) >= 20 else 0
+        top_50_pct = sum(balances[:50]) / total_supply * 100 if len(balances) >= 50 else 0
 
         results = {
             "token": "COMP",
@@ -155,6 +150,7 @@ class CompoundAnalyzer:
         Args:
             results: Analysis results dictionary
             filename: Optional filename, defaults to comp_analysis_{timestamp}.json
+
         """
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -172,7 +168,7 @@ class CompoundAnalyzer:
 
 
 def main():
-    """Main function to run the Compound token analysis."""
+    """Run the Compound token analysis proof of concept."""
     logger.info("Starting Compound token analysis proof of concept")
 
     try:
@@ -192,12 +188,8 @@ def main():
         print("\nCOMP Token Distribution Analysis:")
         print(f"Gini Coefficient: {results['metrics']['gini_coefficient']:.4f}")
         print(f"Herfindahl Index: {results['metrics']['herfindahl_index']:.4f}")
-        print(
-            f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%"
-        )
-        print(
-            f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%"
-        )
+        print(f"Top 5 holders control: {results['metrics']['concentration']['top_5_pct']:.2f}%")
+        print(f"Top 10 holders control: {results['metrics']['concentration']['top_10_pct']:.2f}%")
 
         return 0
 

@@ -1,19 +1,16 @@
-"""
-Integration tests for the interaction between historical data, visualization, and report generation.
+"""Integration tests for the interaction between historical data, visualization, and report generation.
 These tests verify that historical data can be properly visualized and included in reports.
 """
 
-import pytest
 import os
-import tempfile
 import shutil
-from datetime import datetime, timedelta
-import pandas as pd
+import tempfile
+
 import matplotlib.pyplot as plt
+import pytest
 
 from governance_token_analyzer.core import historical_data
-from governance_token_analyzer.visualization import historical_charts
-from governance_token_analyzer.visualization import report_generator
+from governance_token_analyzer.visualization import historical_charts, report_generator
 
 
 @pytest.fixture
@@ -50,9 +47,7 @@ def sample_snapshots(data_manager):
 class TestVisualizationAndReportingIntegration:
     """Integration tests for visualization and reporting components."""
 
-    def test_time_series_visualization(
-        self, data_manager, sample_snapshots, temp_output_dir
-    ):
+    def test_time_series_visualization(self, data_manager, sample_snapshots, temp_output_dir):
         """Test that historical data can be visualized in time series charts."""
         # Get time series data from snapshots
         time_series = data_manager.get_time_series_data("compound", "gini_coefficient")
@@ -86,9 +81,7 @@ class TestVisualizationAndReportingIntegration:
         # Get time series data for each protocol
         protocol_data = {}
         for protocol in ["compound", "uniswap", "aave"]:
-            protocol_data[protocol] = data_manager.get_time_series_data(
-                protocol, "gini_coefficient"
-            )
+            protocol_data[protocol] = data_manager.get_time_series_data(protocol, "gini_coefficient")
 
         # Create a comparison visualization
         fig = historical_charts.plot_protocol_comparison_over_time(
@@ -108,9 +101,7 @@ class TestVisualizationAndReportingIntegration:
         assert os.path.exists(output_path)
         assert os.path.getsize(output_path) > 0
 
-    def test_report_generation_with_historical_data(
-        self, data_manager, sample_snapshots, temp_output_dir
-    ):
+    def test_report_generation_with_historical_data(self, data_manager, sample_snapshots, temp_output_dir):
         """Test that historical data can be included in generated reports."""
         # Get time series data
         time_series = data_manager.get_time_series_data("compound", "gini_coefficient")
@@ -127,13 +118,11 @@ class TestVisualizationAndReportingIntegration:
         )
 
         # Verify that the report was created (path returned by function may be different)
-        assert os.path.exists(generated_path), (
-            f"Report not found at path: {generated_path}"
-        )
+        assert os.path.exists(generated_path), f"Report not found at path: {generated_path}"
         assert os.path.getsize(generated_path) > 0, "Report file is empty"
 
         # Check that the HTML contains expected elements
-        with open(generated_path, "r") as f:
+        with open(generated_path) as f:
             content = f.read()
             assert "compound" in content.lower()
 
@@ -146,14 +135,10 @@ class TestVisualizationAndReportingIntegration:
 
         # 2. Extract time series data
         time_series = data_manager.get_time_series_data("compound", "gini_coefficient")
-        concentration_series = data_manager.get_time_series_data(
-            "compound", "top_10_concentration"
-        )
+        concentration_series = data_manager.get_time_series_data("compound", "top_10_concentration")
 
         # 3. Create visualizations
-        gini_fig = historical_charts.plot_metric_over_time(
-            time_series_data=time_series, metric_name="gini_coefficient"
-        )
+        gini_fig = historical_charts.plot_metric_over_time(time_series_data=time_series, metric_name="gini_coefficient")
 
         concentration_fig = historical_charts.plot_metric_over_time(
             time_series_data=concentration_series, metric_name="top_10_concentration"
@@ -188,7 +173,7 @@ class TestVisualizationAndReportingIntegration:
         assert os.path.exists(report_path)
 
         # 7. Verify report content
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             content = f.read()
             assert "Gini Coefficient" in content
             assert "Concentration" in content

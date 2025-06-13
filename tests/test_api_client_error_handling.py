@@ -1,17 +1,16 @@
-"""
-Tests for error handling in the API Client module.
-"""
+"""Tests for error handling in the API Client module."""
+
+from unittest.mock import patch
 
 import pytest
 import requests
 import responses
-import os
-from unittest.mock import patch, MagicMock
+
 from governance_token_analyzer.core.api_client import (
-    APIClient,
-    TOKEN_ADDRESSES,
-    GRAPHQL_ENDPOINTS,
     ETHPLORER_API_URL,
+    GRAPHQL_ENDPOINTS,
+    TOKEN_ADDRESSES,
+    APIClient,
 )
 
 
@@ -71,9 +70,7 @@ def test_proposals_api_error():
     """Test error handling when proposals API call fails."""
     # Mock the GraphQL API to return an error
     url = GRAPHQL_ENDPOINTS["compound"]
-    responses.add(
-        responses.POST, url, json={"errors": [{"message": "GraphQL Error"}]}, status=400
-    )
+    responses.add(responses.POST, url, json={"errors": [{"message": "GraphQL Error"}]}, status=400)
 
     # Create client and attempt to fetch proposals
     client = APIClient()
@@ -92,9 +89,7 @@ def test_votes_api_error():
     """Test error handling when votes API call fails."""
     # Mock the GraphQL API to return an error
     url = GRAPHQL_ENDPOINTS["compound"]
-    responses.add(
-        responses.POST, url, json={"errors": [{"message": "GraphQL Error"}]}, status=400
-    )
+    responses.add(responses.POST, url, json={"errors": [{"message": "GraphQL Error"}]}, status=400)
 
     # Create client and attempt to fetch votes
     client = APIClient()
@@ -192,9 +187,7 @@ def test_multiple_protocol_errors():
         for protocol in protocols:
             # Should get sample data for all protocols
             holders = client.get_token_holders(protocol, limit=5, use_real_data=True)
-            proposals = client.get_governance_proposals(
-                protocol, limit=3, use_real_data=True
-            )
+            proposals = client.get_governance_proposals(protocol, limit=3, use_real_data=True)
 
             # Verify fallback data
             assert len(holders) == 5
@@ -205,13 +198,9 @@ def test_multiple_protocol_errors():
 
 def test_rate_limit_handling():
     """Test handling of API rate limits."""
-    with patch(
-        "governance_token_analyzer.core.api_client.APIClient._fetch_compound_token_holders"
-    ) as mock_fetch:
+    with patch("governance_token_analyzer.core.api_client.APIClient._fetch_compound_token_holders") as mock_fetch:
         # First call succeeds
-        mock_fetch.return_value = [
-            {"address": "0x123", "balance": 1000, "protocol": "compound"}
-        ]
+        mock_fetch.return_value = [{"address": "0x123", "balance": 1000, "protocol": "compound"}]
 
         # Create client
         client = APIClient()

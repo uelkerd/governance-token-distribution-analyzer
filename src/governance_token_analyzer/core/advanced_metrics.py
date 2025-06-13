@@ -1,14 +1,13 @@
-"""
-Advanced Concentration Metrics for Token Distribution Analysis
+"""Advanced Concentration Metrics for Token Distribution Analysis.
 
 This module provides advanced metrics for analyzing token distribution concentration
 beyond the basic Gini coefficient and Herfindahl index.
 """
 
-import numpy as np
-import pandas as pd
-from typing import List, Dict, Any, Optional
 import logging
+from typing import Any, Dict, List
+
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -16,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def calculate_gini_coefficient(balances: List[float]) -> float:
-    """
-    Calculate the Gini coefficient, which measures inequality in token distribution.
+    """Calculate the Gini coefficient, which measures inequality in token distribution.
 
     The Gini coefficient ranges from 0 (perfect equality) to 1 (maximum inequality).
 
@@ -26,6 +24,7 @@ def calculate_gini_coefficient(balances: List[float]) -> float:
 
     Returns:
         Gini coefficient as a float between 0 and 1
+
     """
     if not balances or sum(balances) == 0:
         return 0.0
@@ -45,8 +44,7 @@ def calculate_gini_coefficient(balances: List[float]) -> float:
 
 
 def calculate_herfindahl_index(balances: List[float]) -> float:
-    """
-    Calculate the Herfindahl-Hirschman Index (HHI) for token concentration.
+    """Calculate the Herfindahl-Hirschman Index (HHI) for token concentration.
 
     The HHI is the sum of the squares of market shares (percentages).
     Higher values indicate more concentration.
@@ -56,6 +54,7 @@ def calculate_herfindahl_index(balances: List[float]) -> float:
 
     Returns:
         Herfindahl index as a float
+
     """
     if not balances or sum(balances) == 0:
         return 0.0
@@ -69,8 +68,7 @@ def calculate_herfindahl_index(balances: List[float]) -> float:
 
 
 def calculate_palma_ratio(balances: List[float]) -> float:
-    """
-    Calculate the Palma ratio, which is the ratio of the share of total income held by the
+    """Calculate the Palma ratio, which is the ratio of the share of total income held by the
     top 10% to that held by the bottom 40%.
 
     In the context of token distribution, this measures the ratio of tokens held by the top 10%
@@ -81,6 +79,7 @@ def calculate_palma_ratio(balances: List[float]) -> float:
 
     Returns:
         Palma ratio as a float
+
     """
     if not balances or sum(balances) == 0:
         return 0.0
@@ -107,8 +106,7 @@ def calculate_palma_ratio(balances: List[float]) -> float:
 
 
 def calculate_hoover_index(balances: List[float]) -> float:
-    """
-    Calculate the Hoover index (also known as Robin Hood index), which represents
+    """Calculate the Hoover index (also known as Robin Hood index), which represents
     the proportion of tokens that would need to be redistributed to achieve perfect equality.
 
     Args:
@@ -116,6 +114,7 @@ def calculate_hoover_index(balances: List[float]) -> float:
 
     Returns:
         Hoover index as a float between 0 and 1
+
     """
     if not balances or sum(balances) == 0:
         return 0.0
@@ -134,8 +133,7 @@ def calculate_hoover_index(balances: List[float]) -> float:
 
 
 def calculate_theil_index(balances: List[float]) -> float:
-    """
-    Calculate the Theil index, which is a measure of economic inequality.
+    """Calculate the Theil index, which is a measure of economic inequality.
     The Theil index can be decomposed to show inequality within and between different subgroups.
 
     Args:
@@ -143,6 +141,7 @@ def calculate_theil_index(balances: List[float]) -> float:
 
     Returns:
         Theil index as a float (0 = perfect equality, higher values = more inequality)
+
     """
     if not balances or sum(balances) == 0:
         return 0.0
@@ -164,11 +163,8 @@ def calculate_theil_index(balances: List[float]) -> float:
     return theil
 
 
-def calculate_nakamoto_coefficient(
-    balances: List[float], threshold: float = 51.0
-) -> int:
-    """
-    Calculate the Nakamoto coefficient, which is the minimum number of entities
+def calculate_nakamoto_coefficient(balances: List[float], threshold: float = 51.0) -> int:
+    """Calculate the Nakamoto coefficient, which is the minimum number of entities
     required to achieve a specified threshold of control (usually 51%).
 
     Args:
@@ -177,6 +173,7 @@ def calculate_nakamoto_coefficient(
 
     Returns:
         Nakamoto coefficient as an integer
+
     """
     if not balances or sum(balances) == 0:
         return 0
@@ -197,8 +194,7 @@ def calculate_nakamoto_coefficient(
 
 
 def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
-    """
-    Calculate the Lorenz curve coordinates for token distribution.
+    """Calculate the Lorenz curve coordinates for token distribution.
 
     The Lorenz curve plots the cumulative share of tokens (y-axis) against
     the cumulative share of holders (x-axis).
@@ -208,6 +204,7 @@ def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
 
     Returns:
         Dictionary with 'x' and 'y' coordinates for the Lorenz curve
+
     """
     if not balances or sum(balances) == 0:
         return {"x": [0, 1], "y": [0, 1]}
@@ -232,11 +229,8 @@ def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
     return {"x": x_values, "y": y_values}
 
 
-def calculate_top_percentiles(
-    balances: List[float], percentiles: List[int] = [1, 5, 10, 20, 50]
-) -> Dict[str, float]:
-    """
-    Calculate the percentage of tokens held by the top X% of holders for specified percentiles.
+def calculate_top_percentiles(balances: List[float], percentiles: List[int] = None) -> Dict[str, float]:
+    """Calculate the percentage of tokens held by the top X% of holders for specified percentiles.
 
     Args:
         balances: List of token balances
@@ -244,7 +238,11 @@ def calculate_top_percentiles(
 
     Returns:
         Dictionary mapping percentiles to concentration percentages
+
     """
+    if percentiles is None:
+        percentiles = [1, 5, 10, 20, 50]
+
     if not balances or sum(balances) == 0:
         return {str(p): 0.0 for p in percentiles}
 
@@ -267,22 +265,20 @@ def calculate_top_percentiles(
 
 
 def calculate_all_concentration_metrics(balances: List[float]) -> Dict[str, Any]:
-    """
-    Calculate all concentration metrics available in this module.
+    """Calculate all concentration metrics available in this module.
 
     Args:
         balances: List of token balances
 
     Returns:
         Dictionary of concentration metrics
+
     """
     # Ensure positive balances for calculations
     positive_balances = [b for b in balances if b > 0]
 
     if not positive_balances:
-        logger.warning(
-            "No positive balances provided for concentration metrics calculation"
-        )
+        logger.warning("No positive balances provided for concentration metrics calculation")
         return {
             "gini_coefficient": 0,
             "herfindahl_index": 0,

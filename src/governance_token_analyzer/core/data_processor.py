@@ -8,9 +8,7 @@ from typing import Any, Dict, List, Union
 import pandas as pd
 
 
-def standardize_holder_data(
-    holder_data: List[Dict[str, Any]], protocol_name: str
-) -> pd.DataFrame:
+def standardize_holder_data(holder_data: List[Dict[str, Any]], protocol_name: str) -> pd.DataFrame:
     """Standardize token holder data from different protocols into a common DataFrame format.
 
     Args:
@@ -19,6 +17,7 @@ def standardize_holder_data(
 
     Returns:
         DataFrame with standardized columns: address, balance, percentage, protocol
+
     """
     # Handle different protocol data structures
     if protocol_name.lower() == "compound":
@@ -92,6 +91,7 @@ def combine_protocol_data(protocol_dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame
 
     Returns:
         Combined DataFrame with data from all protocols
+
     """
     return pd.concat(protocol_dfs.values(), ignore_index=True)
 
@@ -105,13 +105,12 @@ def filter_top_holders(df: pd.DataFrame, top_n: int = 100) -> pd.DataFrame:
 
     Returns:
         DataFrame with only the top N holders
+
     """
     return df.sort_values(by="balance", ascending=False).head(top_n)
 
 
-def calculate_overlap(
-    df1: pd.DataFrame, df2: pd.DataFrame, column: str = "address"
-) -> Dict[str, Union[int, float]]:
+def calculate_overlap(df1: pd.DataFrame, df2: pd.DataFrame, column: str = "address") -> Dict[str, Union[int, float]]:
     """Calculate the overlap between two DataFrames based on a specific column.
 
     Args:
@@ -121,6 +120,7 @@ def calculate_overlap(
 
     Returns:
         Dictionary containing overlap count and percentage
+
     """
     set1 = set(df1[column].unique())
     set2 = set(df2[column].unique())
@@ -129,7 +129,5 @@ def calculate_overlap(
 
     return {
         "overlap_count": len(overlap),
-        "overlap_percentage": len(overlap) / min(len(set1), len(set2)) * 100
-        if min(len(set1), len(set2)) > 0
-        else 0,
+        "overlap_percentage": len(overlap) / min(len(set1), len(set2)) * 100 if min(len(set1), len(set2)) > 0 else 0,
     }

@@ -1,19 +1,16 @@
-"""
-API Client Module for governance token data collection.
+"""API Client Module for governance token data collection.
 
 This module provides utilities for fetching data from various blockchain APIs
 including Etherscan, The Graph, and protocol-specific endpoints.
 """
 
-import os
-import requests
-import json
 import logging
-from typing import Dict, List, Any, Optional, Union
-from datetime import datetime, timedelta
-import time
-import random
-from .config import Config, ETHERSCAN_API_KEY, ETHERSCAN_BASE_URL
+import os
+from typing import Any, Dict, Optional
+
+import requests
+
+from .config import ETHERSCAN_API_KEY, ETHERSCAN_BASE_URL, Config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -96,11 +93,11 @@ class APIClient:
     """Client for interacting with the Etherscan API."""
 
     def __init__(self, api_key: Optional[str] = None):
-        """
-        Initialize the Etherscan API client.
+        """Initialize the Etherscan API client.
 
         Args:
             api_key (str, optional): Etherscan API key. If None, uses the key from config.
+
         """
         # Keep backward compatibility but also support the new Config class
         if api_key is None:
@@ -113,13 +110,10 @@ class APIClient:
         self.base_url = ETHERSCAN_BASE_URL
 
         if not self.api_key:
-            logger.warning(
-                "No Etherscan API key provided. API calls may be rate limited."
-            )
+            logger.warning("No Etherscan API key provided. API calls may be rate limited.")
 
     def _make_request(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Make a request to the Etherscan API.
+        """Make a request to the Etherscan API.
 
         Args:
             params (Dict[str, Any]): Parameters for the API request.
@@ -129,6 +123,7 @@ class APIClient:
 
         Raises:
             requests.exceptions.RequestException: If the request fails.
+
         """
         # Add API key to parameters
         params["apikey"] = self.api_key
@@ -154,14 +149,14 @@ class APIClient:
             raise
 
     def get_token_supply(self, token_address: str) -> Dict[str, Any]:
-        """
-        Get the total supply of a token.
+        """Get the total supply of a token.
 
         Args:
             token_address (str): The Ethereum address of the token.
 
         Returns:
             Dict[str, Any]: Token supply information.
+
         """
         params = {
             "module": "stats",
@@ -171,11 +166,8 @@ class APIClient:
 
         return self._make_request(params)
 
-    def get_token_holders(
-        self, token_address: str, page: int = 1, offset: int = 100
-    ) -> Dict[str, Any]:
-        """
-        Get a list of token holders.
+    def get_token_holders(self, token_address: str, page: int = 1, offset: int = 100) -> Dict[str, Any]:
+        """Get a list of token holders.
 
         Note: This requires a paid Etherscan API key for the tokenholderslist endpoint.
         For the free tier, we'll simulate this with a limited list of holders.
@@ -187,6 +179,7 @@ class APIClient:
 
         Returns:
             Dict[str, Any]: List of token holders.
+
         """
         # For free tier API, we'll use account/txlist to get transactions and simulate holder data
         # In a real implementation with a paid API key, use the tokenholderlist endpoint
@@ -208,19 +201,14 @@ class APIClient:
             logger.warning(f"Token holder list endpoint failed: {str(e)}")
 
         # Fallback to simulated data if the API call doesn't work
-        logger.info(
-            "Using simulated token holder data (API requires paid tier for actual data)"
-        )
+        logger.info("Using simulated token holder data (API requires paid tier for actual data)")
 
         # Generate simulated holder data for testing
         simulated_data = self._generate_simulated_holders(token_address, page, offset)
         return simulated_data
 
-    def _generate_simulated_holders(
-        self, token_address: str, page: int, offset: int
-    ) -> Dict[str, Any]:
-        """
-        Generate simulated token holder data for testing purposes.
+    def _generate_simulated_holders(self, token_address: str, page: int, offset: int) -> Dict[str, Any]:
+        """Generate simulated token holder data for testing purposes.
 
         Args:
             token_address: The token contract address
@@ -229,6 +217,7 @@ class APIClient:
 
         Returns:
             Simulated API response with token holders
+
         """
         # Get the total supply to make realistic percentages
         supply_response = self.get_token_supply(token_address)
@@ -287,8 +276,7 @@ class APIClient:
         return {"status": "1", "message": "OK", "result": holders}
 
     def get_token_balance(self, token_address: str, address: str) -> Dict[str, Any]:
-        """
-        Get the token balance for a specific address.
+        """Get the token balance for a specific address.
 
         Args:
             token_address (str): The Ethereum address of the token.
@@ -296,6 +284,7 @@ class APIClient:
 
         Returns:
             Dict[str, Any]: Token balance information.
+
         """
         params = {
             "module": "account",
@@ -312,19 +301,16 @@ class TheGraphAPI:
     """Client for interacting with The Graph API."""
 
     def __init__(self, subgraph_url: str):
-        """
-        Initialize The Graph API client.
+        """Initialize The Graph API client.
 
         Args:
             subgraph_url (str): URL of the subgraph to query.
+
         """
         self.subgraph_url = subgraph_url
 
-    def execute_query(
-        self, query: str, variables: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Execute a GraphQL query against the subgraph.
+    def execute_query(self, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Execute a GraphQL query against the subgraph.
 
         Args:
             query (str): GraphQL query.
@@ -335,6 +321,7 @@ class TheGraphAPI:
 
         Raises:
             requests.exceptions.RequestException: If the request fails.
+
         """
         payload = {"query": query}
         if variables:
