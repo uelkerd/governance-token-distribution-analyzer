@@ -53,6 +53,13 @@ commands:
     description: "Install Python dependencies"
     steps:
       - run:
+          name: Remove pyenv version file (Docker images have fixed Python versions)
+          command: |
+            if [ -f .python-version ]; then
+              echo "Removing .python-version file (incompatible with CircleCI Docker images)"
+              rm .python-version
+            fi
+      - run:
           name: Check Python and pip version
           command: |
             python --version
