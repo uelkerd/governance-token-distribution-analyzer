@@ -31,6 +31,7 @@ class NetworkError(Exception):
 
     pass
 
+
 class LiveDataValidator:
     """Validates live data integration functionality."""
 
