@@ -157,9 +157,6 @@ class HistoricalTokenAnalyzer:
         """
         logger.info(f"Compiling historical metrics for {self.token_symbol}")
 
-        # Pattern for historical data files
-        file_pattern = f"{self.token_symbol.lower()}_analysis_*.json"
-
         # Find all historical data files
         file_paths = []
         for filename in os.listdir(self.data_dir):

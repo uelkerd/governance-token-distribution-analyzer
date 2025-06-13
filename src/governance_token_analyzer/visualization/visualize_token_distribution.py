@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Token Distribution Visualization
+"""Token Distribution Visualization.
 
 This script generates visualizations of token distribution data for DeFi governance tokens.
 """
@@ -711,7 +711,7 @@ def visualize_comparative_analysis(tokens, historical_data_dict, output_dir="plo
 
 
 def main():
-    """Main function to run the visualization."""
+    """Execute the visualization process."""
     # Paths to data files
     comp_file = "data/comp_analysis_latest.json"
     comp_historical_file = "data/historical/comp_historical_metrics.json"

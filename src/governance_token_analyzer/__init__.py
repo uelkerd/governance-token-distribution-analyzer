@@ -1,4 +1,4 @@
-"""Governance Token Distribution Analyzer
+"""Governance Token Distribution Analyzer.
 
 A tool for analyzing governance token distributions across DeFi protocols
 like Compound, Uniswap, and Aave.

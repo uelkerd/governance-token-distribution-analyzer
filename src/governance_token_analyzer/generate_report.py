@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Governance Token Distribution Report Generator
+"""Governance Token Distribution Report Generator.
 
 This script generates comprehensive reports on governance token distribution patterns
 including visualizations, metrics, and insights across multiple protocols.
@@ -190,9 +190,6 @@ class ReportGenerator:
             Path to the saved chart
 
         """
-        # Set up the figure with subplots for each protocol
-        fig = plt.figure(figsize=(15, 10))
-
         # Create a grid layout based on the number of protocols
         n_protocols = len(protocol_data)
         if n_protocols <= 2:
@@ -355,7 +352,7 @@ class ReportGenerator:
         return str(chart_path)
 
     def generate_html_report(self, protocol_data: Dict[str, Dict]) -> str:
-        """Generate a comprehensive HTML report with all analysis results.
+        """Generate an HTML report with charts and analysis.
 
         Args:
             protocol_data: Dictionary of protocol analysis data
@@ -364,10 +361,10 @@ class ReportGenerator:
             Path to the saved HTML report
 
         """
-        # Generate charts
-        concentration_chart = self.generate_comparative_concentration_chart(protocol_data)
-        distribution_chart = self.generate_distribution_comparison(protocol_data)
-        top_holders_chart = self.generate_top_holders_bar_chart(protocol_data)
+        # Generate charts - ensure they're created in the output directory
+        self.generate_comparative_concentration_chart(protocol_data)
+        self.generate_distribution_comparison(protocol_data)
+        self.generate_top_holders_bar_chart(protocol_data)
 
         # Prepare HTML content
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -584,7 +581,7 @@ class ReportGenerator:
 
 
 def main():
-    """Main function to run the report generator."""
+    """Execute the report generation process."""
     logger.info("Starting governance token distribution report generation")
 
     try:

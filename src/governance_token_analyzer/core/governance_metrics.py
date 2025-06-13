@@ -1,4 +1,4 @@
-"""Governance Effectiveness Metrics
+"""Governance Effectiveness Metrics.
 
 This module provides tools to analyze the effectiveness of DAO governance
 and correlate token distribution patterns with governance outcomes.
