@@ -663,7 +663,11 @@ class TestErrorPropagation:
                 assert "analysis complete" in result.output.lower() or "output files" in result.output.lower()
             else:
                 # If exit code is non-zero, check that error message is present
-                assert "error" in result.output.lower() or "exception" in result.output.lower() or "failed" in result.output.lower()
+                assert (
+                    "error" in result.output.lower()
+                    or "exception" in result.output.lower()
+                    or "failed" in result.output.lower()
+                )
 
 
 if __name__ == "__main__":
