@@ -41,7 +41,7 @@ The `gova` command provides easy access to all functionality:
 gova analyze --protocol compound
 
 # Compare multiple protocols
-gova compare compound uniswap aave
+gova compare-protocols --protocols compound,uniswap,aave
 
 # Generate comprehensive reports
 gova report compound uniswap --output-dir reports
