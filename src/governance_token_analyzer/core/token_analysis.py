@@ -110,9 +110,6 @@ class TokenDistributionAnalyzer:
         balances_sorted = sorted(balances)
         n = len(balances_sorted)
 
-        # Calculate cumulative sum
-        cum_balances = np.cumsum(balances_sorted)
-
         # Calculate Gini coefficient using the formula
         # G = (2 * sum(i * x_i) / (n * sum(x_i))) - (n + 1) / n
         indices = np.arange(1, n + 1)
