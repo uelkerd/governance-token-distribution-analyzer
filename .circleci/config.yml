@@ -1,6 +1,7 @@
 # CircleCI Configuration for Governance Token Analyzer
 # This configuration translates the comprehensive GitHub Actions pipeline
 # to CircleCI format with equivalent functionality and job orchestration
+# Update: Fixed validation script and thread-safety issues in tests
 
 version: 2.1
 
