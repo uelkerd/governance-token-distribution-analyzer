@@ -171,7 +171,7 @@ GOVERNANCE_QUERIES = {
                 updatedAt
             }
         }
-    """
+    """,
 }
 
 VOTE_QUERIES = {
@@ -216,7 +216,7 @@ VOTE_QUERIES = {
                 transactionHash
             }
         }
-    """
+    """,
 }
 
 
@@ -468,18 +468,20 @@ class APIClient:
 
         # Protocol-specific power-law parameters for different distributions
         protocol_params = {
-            "compound": {"alpha": 1.8, "seed": 42},    # More whale-dominated
-            "uniswap": {"alpha": 1.3, "seed": 123},   # More community distributed
-            "aave": {"alpha": 1.5, "seed": 456}       # Balanced distribution
+            "compound": {"alpha": 1.8, "seed": 42},  # More whale-dominated
+            "uniswap": {"alpha": 1.3, "seed": 123},  # More community distributed
+            "aave": {"alpha": 1.5, "seed": 456},  # Balanced distribution
         }
-        
+
         params = protocol_params.get(protocol, {"alpha": 1.5, "seed": 789})
-        
+
         # Set random seed for reproducible but different distributions
         random.seed(params["seed"])
-        
+
         # Generate a power-law distribution of token balances with protocol-specific alpha
-        balances = self._generate_power_law_distribution(count, total_supply, params["alpha"])
+        balances = self._generate_power_law_distribution(
+            count, total_supply, params["alpha"]
+        )
 
         # Create sample addresses
         holders = []
@@ -778,53 +780,61 @@ class APIClient:
         """
         try:
             if protocol not in self.graph_clients:
-                logger.warning(f"No Graph client available for {protocol}, using sample data")
+                logger.warning(
+                    f"No Graph client available for {protocol}, using sample data"
+                )
                 return self._generate_sample_proposal_data(protocol, limit)
-            
+
             graph_client = self.graph_clients[protocol]
             query = GOVERNANCE_QUERIES.get(protocol)
-            
+
             if not query:
-                logger.warning(f"No GraphQL query defined for {protocol}, using sample data")
+                logger.warning(
+                    f"No GraphQL query defined for {protocol}, using sample data"
+                )
                 return self._generate_sample_proposal_data(protocol, limit)
-            
+
             logger.info(f"Fetching {protocol} governance proposals from The Graph")
-            
+
             variables = {"first": limit, "skip": 0}
             response = graph_client.execute_query(query, variables)
-            
+
             if "errors" in response:
                 logger.error(f"GraphQL errors for {protocol}: {response['errors']}")
                 return self._generate_sample_proposal_data(protocol, limit)
-            
+
             proposals_data = response.get("data", {}).get("proposals", [])
-            
+
             proposals = []
             for proposal in proposals_data:
-                proposals.append({
-                    "id": int(proposal.get("id", 0)),
-                    "title": proposal.get("title", ""),
-                    "description": proposal.get("description", ""),
-                    "proposer": proposal.get("proposer", ""),
-                    "startBlock": int(proposal.get("startBlock", 0)),
-                    "endBlock": int(proposal.get("endBlock", 0)),
-                    "forVotes": proposal.get("forVotes", "0"),
-                    "againstVotes": proposal.get("againstVotes", "0"),
-                    "abstainVotes": proposal.get("abstainVotes", "0"),
-                    "canceled": proposal.get("canceled", False),
-                    "queued": proposal.get("queued", False),
-                    "executed": proposal.get("executed", False),
-                    "createdAt": proposal.get("createdAt", ""),
-                    "eta": proposal.get("eta", ""),
-                })
-            
+                proposals.append(
+                    {
+                        "id": int(proposal.get("id", 0)),
+                        "title": proposal.get("title", ""),
+                        "description": proposal.get("description", ""),
+                        "proposer": proposal.get("proposer", ""),
+                        "startBlock": int(proposal.get("startBlock", 0)),
+                        "endBlock": int(proposal.get("endBlock", 0)),
+                        "forVotes": proposal.get("forVotes", "0"),
+                        "againstVotes": proposal.get("againstVotes", "0"),
+                        "abstainVotes": proposal.get("abstainVotes", "0"),
+                        "canceled": proposal.get("canceled", False),
+                        "queued": proposal.get("queued", False),
+                        "executed": proposal.get("executed", False),
+                        "createdAt": proposal.get("createdAt", ""),
+                        "eta": proposal.get("eta", ""),
+                    }
+                )
+
             if proposals:
-                logger.info(f"Successfully fetched {len(proposals)} proposals from The Graph")
+                logger.info(
+                    f"Successfully fetched {len(proposals)} proposals from The Graph"
+                )
                 return proposals
             else:
                 logger.warning(f"No proposals found for {protocol}, using sample data")
                 return self._generate_sample_proposal_data(protocol, limit)
-                
+
         except Exception as e:
             logger.error(f"Error fetching governance proposals for {protocol}: {e}")
             logger.info(f"Falling back to sample data for {protocol}")
@@ -845,48 +855,58 @@ class APIClient:
         """
         try:
             if protocol not in self.graph_clients:
-                logger.warning(f"No Graph client available for {protocol}, using sample data")
+                logger.warning(
+                    f"No Graph client available for {protocol}, using sample data"
+                )
                 return self._generate_sample_vote_data(protocol, proposal_id)
-            
+
             graph_client = self.graph_clients[protocol]
             query = VOTE_QUERIES.get(protocol)
-            
+
             if not query:
-                logger.warning(f"No vote query defined for {protocol}, using sample data")
+                logger.warning(
+                    f"No vote query defined for {protocol}, using sample data"
+                )
                 return self._generate_sample_vote_data(protocol, proposal_id)
-            
+
             logger.info(f"Fetching votes for proposal {proposal_id} from The Graph")
-            
+
             variables = {"proposalId": str(proposal_id)}
             response = graph_client.execute_query(query, variables)
-            
+
             if "errors" in response:
-                logger.error(f"GraphQL errors for {protocol} votes: {response['errors']}")
+                logger.error(
+                    f"GraphQL errors for {protocol} votes: {response['errors']}"
+                )
                 return self._generate_sample_vote_data(protocol, proposal_id)
-            
+
             votes_data = response.get("data", {}).get("votes", [])
-            
+
             votes = []
             for vote in votes_data:
-                votes.append({
-                    "id": vote.get("id", ""),
-                    "voter": vote.get("voter", ""),
-                    "support": vote.get("support", False),
-                    "voting_power": float(vote.get("votingPower", "0")),
-                    "reason": vote.get("reason", ""),
-                    "block_number": int(vote.get("blockNumber", 0)),
-                    "block_timestamp": vote.get("blockTimestamp", ""),
-                    "transaction_hash": vote.get("transactionHash", ""),
-                    "proposal_id": proposal_id,
-                })
-            
+                votes.append(
+                    {
+                        "id": vote.get("id", ""),
+                        "voter": vote.get("voter", ""),
+                        "support": vote.get("support", False),
+                        "voting_power": float(vote.get("votingPower", "0")),
+                        "reason": vote.get("reason", ""),
+                        "block_number": int(vote.get("blockNumber", 0)),
+                        "block_timestamp": vote.get("blockTimestamp", ""),
+                        "transaction_hash": vote.get("transactionHash", ""),
+                        "proposal_id": proposal_id,
+                    }
+                )
+
             if votes:
                 logger.info(f"Successfully fetched {len(votes)} votes from The Graph")
                 return votes
             else:
-                logger.warning(f"No votes found for proposal {proposal_id}, using sample data")
+                logger.warning(
+                    f"No votes found for proposal {proposal_id}, using sample data"
+                )
                 return self._generate_sample_vote_data(protocol, proposal_id)
-                
+
         except Exception as e:
             logger.error(f"Error fetching governance votes for {protocol}: {e}")
             logger.info(f"Falling back to sample data for {protocol}")
@@ -1017,15 +1037,15 @@ class APIClient:
                 "whale_pct_range": (8, 18),  # 8-18% per whale
                 "institution_count": 15,
                 "institution_pct_range": (0.8, 3.5),
-                "seed_offset": 42
+                "seed_offset": 42,
             },
-            # Uniswap - more community distributed  
+            # Uniswap - more community distributed
             "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984": {
                 "whale_count": 4,
                 "whale_pct_range": (4, 12),  # 4-12% per whale
                 "institution_count": 25,
                 "institution_pct_range": (0.3, 2.0),
-                "seed_offset": 123
+                "seed_offset": 123,
             },
             # Aave - balanced distribution
             "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9": {
@@ -1033,18 +1053,21 @@ class APIClient:
                 "whale_pct_range": (6, 15),  # 6-15% per whale
                 "institution_count": 20,
                 "institution_pct_range": (0.5, 2.8),
-                "seed_offset": 456
-            }
+                "seed_offset": 456,
+            },
         }
-        
+
         # Get parameters for this token, or use defaults
-        params = protocol_params.get(token_address.lower(), {
-            "whale_count": 5,
-            "whale_pct_range": (5, 15),
-            "institution_count": 20,
-            "institution_pct_range": (0.5, 2.5),
-            "seed_offset": 789
-        })
+        params = protocol_params.get(
+            token_address.lower(),
+            {
+                "whale_count": 5,
+                "whale_pct_range": (5, 15),
+                "institution_count": 20,
+                "institution_pct_range": (0.5, 2.5),
+                "seed_offset": 789,
+            },
+        )
 
         # Determine start index based on page and offset
         start_idx = (page - 1) * offset
@@ -1208,7 +1231,7 @@ class APIClient:
                 timeout=30
             )
             response.raise_for_status()
-            
+
             data = response.json()
             
             if "data" in data and "tokenHolders" in data["data"]:
@@ -1308,7 +1331,6 @@ class APIClient:
             
             logger.warning("No token holders found via Moralis, using fallback")
             return self._generate_simulated_holders(token_address, 1, limit)["result"]
-            
         except Exception as e:
             logger.error(f"Moralis API error: {e}")
             return self._generate_simulated_holders(token_address, 1, limit)["result"]
@@ -1326,12 +1348,11 @@ class TheGraphAPI:
         """
         self.subgraph_url = subgraph_url
         self.session = requests.Session()
-        
+
         # Set up request headers
-        self.session.headers.update({
-            "Content-Type": "application/json",
-            "User-Agent": "gta/1.0.0"
-        })
+        self.session.headers.update(
+            {"Content-Type": "application/json", "User-Agent": "gta/1.0.0"}
+        )
 
     def execute_query(
         self, query: str, variables: Optional[Dict[str, Any]] = None
@@ -1358,26 +1379,35 @@ class TheGraphAPI:
             max_retries = 3
             for attempt in range(max_retries):
                 try:
-                    response = self.session.post(self.subgraph_url, json=payload, timeout=30)
+                    response = self.session.post(
+                        self.subgraph_url, json=payload, timeout=30
+                    )
                     response.raise_for_status()
-                    
+
                     result = response.json()
-                    
+
                     # Check for GraphQL errors
                     if "errors" in result:
-                        logger.warning(f"GraphQL errors in response: {result['errors']}")
-                        
+                        logger.warning(
+                            f"GraphQL errors in response: {result['errors']}"
+                        )
+
                     return result
-                    
-                except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+
+                except (
+                    requests.exceptions.Timeout,
+                    requests.exceptions.ConnectionError,
+                ) as e:
                     if attempt < max_retries - 1:
-                        wait_time = 2 ** attempt  # Exponential backoff
-                        logger.warning(f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {e}")
+                        wait_time = 2**attempt  # Exponential backoff
+                        logger.warning(
+                            f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {e}"
+                        )
                         time.sleep(wait_time)
                         continue
                     else:
                         raise
-                        
+
         except requests.exceptions.RequestException as e:
             logger.error(f"GraphQL query failed after {max_retries} attempts: {str(e)}")
             raise
