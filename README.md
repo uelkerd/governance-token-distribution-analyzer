@@ -32,6 +32,29 @@ The Governance Token Distribution Analyzer provides tools to:
 
 This tool helps researchers, investors, and protocol designers understand the decentralization and concentration patterns in governance token distributions.
 
+## Quick Start
+
+The `gova` command provides easy access to all functionality:
+
+```bash
+# Analyze a single protocol
+gova analyze compound
+
+# Compare multiple protocols
+gova compare compound uniswap aave
+
+# Generate comprehensive reports
+gova report compound uniswap --output-dir reports
+
+# Simulate different distribution patterns
+gova simulate power_law --holders 100
+
+# Get help
+gova --help
+```
+
+📚 **For comprehensive CLI documentation and examples, see [docs/usage.md](docs/usage.md)**
+
 ## Development Status
 
 ✅ **Integration Tests for Voting Block Analysis**: Comprehensive integration tests for the voting block analysis module are complete and passing, providing thorough test coverage for:
