@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Aave Token Analysis
+"""Aave Token Analysis.
 
 This script analyzes the Aave (AAVE) governance token distribution.
 It retrieves data from Etherscan and calculates concentration metrics.
@@ -171,7 +171,7 @@ class AaveAnalyzer:
 
 
 def main():
-    """Main function to run the Aave token analysis."""
+    """Run the Aave token analysis."""
     logger.info("Starting Aave token analysis")
 
     try:
