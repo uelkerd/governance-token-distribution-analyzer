@@ -254,22 +254,21 @@ class APIClient:
 
         Args:
             protocol: Protocol name (compound, uniswap, aave)
-            limit: Number of token holders to fetch
-            use_real_data: Whether to attempt real API calls first
+            limit: Number of holders to fetch
+            use_real_data: Whether to use real API data or simulated data
 
         Returns:
             List of token holder dictionaries
-
         """
         logger.info(f"Fetching token holders for {protocol} (limit: {limit}, real_data: {use_real_data})")
 
         if protocol not in PROTOCOL_INFO:
             raise ValueError(f"Unsupported protocol: {protocol}")
 
-        if protocol not in TOKEN_ADDRESSES:
-            raise ValueError(f"Token address not found for protocol: {protocol}")
-
-        token_address = TOKEN_ADDRESSES[protocol]
+        # Get token address for the protocol
+        token_address = TOKEN_ADDRESSES.get(protocol)
+        if not token_address:
+            raise ValueError(f"No token address found for protocol: {protocol}")
 
         if use_real_data:
             try:
@@ -283,12 +282,12 @@ class APIClient:
                 else:
                     logger.warning(f"⚠️  No real data available for {protocol}, falling back to simulation")
 
-            except Exception as e:
-                logger.warning(f"❌ Real data fetch failed for {protocol}: {e}")
+            except Exception as exception:
+                logger.warning(f"❌ Real data fetch failed for {protocol}: {exception}")
 
         # Fallback to protocol-specific simulation
         logger.info(f"🔄 Using protocol-specific simulation for {protocol}")
-        return self._generate_sample_holder_data(protocol, limit)
+        return self._generate_protocol_specific_holders(protocol, limit)
 
     def get_governance_proposals(
         self, protocol: str, limit: int = 10, use_real_data: bool = False
@@ -315,8 +314,8 @@ class APIClient:
                 # Generate sample data for testing
                 return self._generate_sample_proposal_data(protocol, limit)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance proposals for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
             return []
 
     def get_governance_votes(
@@ -344,16 +343,16 @@ class APIClient:
                 # Generate sample data for testing
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance votes for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance votes for {protocol}: {exception}")
             return []
 
     def get_protocol_data(self, protocol: str, use_real_data: bool = False) -> Dict[str, Any]:
-        """Get comprehensive protocol data including token holders, proposals, and governance metrics.
+        """Get comprehensive data for a protocol.
 
         Args:
             protocol: Protocol name (compound, uniswap, aave)
-            use_real_data: Whether to use real data from APIs (vs. sample data)
+            use_real_data: Whether to use real API data or simulated data
 
         Returns:
             Dictionary containing comprehensive protocol data
@@ -376,12 +375,9 @@ class APIClient:
 
             return {
                 "protocol": protocol,
-                "token_symbol": protocol_info.get("token_symbol", ""),
-                "token_name": protocol_info.get("token_name", ""),
+                "name": protocol_info.get("token_name", protocol.capitalize()),
+                "symbol": protocol_info.get("token_symbol", protocol.upper()),
                 "total_supply": protocol_info.get("total_supply", 0),
-                "token_holders": holders,
-                "proposals": proposals,
-                "votes": votes,
                 "participation_rate": participation_rate,
                 "holder_concentration": holder_concentration,
                 "proposal_count": len(proposals),
@@ -389,8 +385,8 @@ class APIClient:
                 "timestamp": datetime.now().isoformat(),
             }
 
-        except Exception as e:
-            logger.error(f"Error fetching protocol data for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching protocol data for {protocol}: {exception}")
             return {}
 
     def _get_token_holder_data(self, protocol: str, use_real_data: bool) -> List[Dict[str, Any]]:
@@ -782,8 +778,8 @@ class APIClient:
                 else:
                     logger.warning(f"⚠️  {api_name} returned no holders")
 
-            except Exception as e:
-                logger.warning(f"❌ {api_name} API failed: {e}")
+            except Exception as exception:
+                logger.warning(f"❌ {api_name} API failed: {exception}")
                 continue
 
         # Final fallback to simulation
@@ -852,8 +848,8 @@ class APIClient:
                 logger.warning(f"No proposals found for {protocol}, using sample data")
                 return self._generate_sample_proposal_data(protocol, limit)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance proposals for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_proposal_data(protocol, limit)
 
@@ -914,8 +910,8 @@ class APIClient:
                 logger.warning(f"No votes found for proposal {proposal_id}, using sample data")
                 return self._generate_sample_vote_data(protocol, proposal_id)
 
-        except Exception as e:
-            logger.error(f"Error fetching governance votes for {protocol}: {e}")
+        except Exception as exception:
+            logger.error(f"Error fetching governance votes for {protocol}: {exception}")
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_vote_data(protocol, proposal_id)
 
@@ -951,8 +947,8 @@ class APIClient:
 
             return data
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request failed: {str(e)}")
+        except requests.exceptions.RequestException as exception:
+            logger.error(f"Request failed: {str(exception)}")
             raise
 
     def get_token_supply(self, token_address: str) -> Dict[str, Any]:
@@ -1004,8 +1000,8 @@ class APIClient:
             result = self._make_request(params)
             if "result" in result and not isinstance(result["result"], str):
                 return result
-        except Exception as e:
-            logger.warning(f"Token holder list endpoint failed: {str(e)}")
+        except Exception as exception:
+            logger.warning(f"Token holder list endpoint failed: {str(exception)}")
 
         # Fallback to simulated data if the API call doesn't work
         logger.info("Using simulated token holder data (API requires paid tier for actual data)")
@@ -1213,7 +1209,6 @@ class APIClient:
 
         Returns:
             List of token holder dictionaries
-
         """
         if not self.alchemy_api_key or self.alchemy_api_key == "your_alchemy_api_key":
             logger.warning("Alchemy API key not configured")
@@ -1242,8 +1237,8 @@ class APIClient:
             logger.warning("Alchemy token holders endpoint requires paid tier, falling back")
             raise ValueError("Alchemy token holders requires paid tier")
 
-        except Exception as e:
-            logger.error(f"Alchemy API error: {e}")
+        except Exception as exception:
+            logger.error(f"Alchemy API error: {exception}")
             raise
 
     def _fetch_token_holders_graph(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
@@ -1255,7 +1250,6 @@ class APIClient:
 
         Returns:
             List of token holder dictionaries
-
         """
         if not self.graph_api_key:
             logger.warning("The Graph API key not configured")
@@ -1320,8 +1314,8 @@ class APIClient:
             logger.warning("No token holders found via The Graph")
             raise ValueError("No holders data from The Graph")
 
-        except Exception as e:
-            logger.error(f"The Graph API error: {e}")
+        except Exception as exception:
+            logger.error(f"The Graph API error: {exception}")
             raise
 
     def _fetch_token_holders_moralis(self, token_address: str, limit: int) -> List[Dict[str, Any]]:
@@ -1333,7 +1327,6 @@ class APIClient:
 
         Returns:
             List of token holder dictionaries
-
         """
         moralis_api_key = os.getenv("MORALIS_API_KEY")
         if not moralis_api_key:
@@ -1387,8 +1380,8 @@ class APIClient:
 
             logger.warning("No token holders found via Moralis, using fallback")
             return self._generate_simulated_holders(token_address, 1, limit)["result"]
-        except Exception as e:
-            logger.error(f"Moralis API error: {e}")
+        except Exception as exception:
+            logger.error(f"Moralis API error: {exception}")
             return self._generate_simulated_holders(token_address, 1, limit)["result"]
 
 
@@ -1445,15 +1438,15 @@ class TheGraphAPI:
                 except (
                     requests.exceptions.Timeout,
                     requests.exceptions.ConnectionError,
-                ) as e:
+                ) as exception:
                     if attempt < max_retries - 1:
                         wait_time = 2**attempt  # Exponential backoff
-                        logger.warning(f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {e}")
+                        logger.warning(f"Request failed (attempt {attempt + 1}), retrying in {wait_time}s: {exception}")
                         time.sleep(wait_time)
                         continue
                     else:
                         raise
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"GraphQL query failed after {max_retries} attempts: {str(e)}")
+        except requests.exceptions.RequestException as exception:
+            logger.error(f"GraphQL query failed after {max_retries} attempts: {str(exception)}")
             raise

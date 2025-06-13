@@ -141,9 +141,9 @@ def run_cli_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
             # Try to parse JSON output
             try:
                 return json.loads(result.stdout)
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse JSON output from CLI: {e}")
-                return {"error": f"JSON parse error: {e}", "raw_output": result.stdout}
+            except json.JSONDecodeError:
+                # If JSON parsing fails, return the raw output
+                return {"raw_output": result.stdout, "stderr": result.stderr}
         else:
             logger.error(f"CLI command failed with return code {result.returncode}")
             logger.error(f"STDOUT: {result.stdout}")
@@ -153,9 +153,9 @@ def run_cli_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
     except subprocess.TimeoutExpired:
         logger.error(f"CLI analysis for {protocol} timed out")
         return {"error": "Analysis timed out"}
-    except Exception as e:
-        logger.error(f"Error running CLI analysis: {str(e)}")
-        return {"error": str(e)}
+    except Exception as exception:
+        logger.error(f"Error running CLI analysis: {str(exception)}")
+        return {"error": str(exception)}
 
 
 def run_python_analysis(protocol: str, limit: int = 100, data_dir: str = "data") -> Dict[str, Any]:
@@ -184,9 +184,9 @@ def run_python_analysis(protocol: str, limit: int = 100, data_dir: str = "data")
     except subprocess.TimeoutExpired:
         logger.error(f"Python analysis for {protocol} timed out")
         return {"error": "Analysis timed out"}
-    except Exception as e:
-        logger.error(f"Error running Python analysis: {str(e)}")
-        return {"error": str(e)}
+    except Exception as exception:
+        logger.error(f"Error running Python analysis: {str(exception)}")
+        return {"error": str(exception)}
 
 
 def _execute_protocol_script(protocol: str, project_root: Path) -> Optional[Dict[str, Any]]:
@@ -256,8 +256,8 @@ def _find_analysis_files(protocol: str, data_dir: str) -> Dict[str, Any]:
                 json_data = json.load(f)
                 logger.info(f"Successfully parsed JSON from {latest_file}")
                 return json_data
-        except (json.JSONDecodeError, IOError) as e:
-            logger.error(f"Failed to parse JSON from {latest_file}: {e}")
+        except (json.JSONDecodeError, IOError) as exception:
+            logger.error(f"Failed to parse JSON from {latest_file}: {exception}")
             continue  # Try next pattern instead of exiting
 
     # If we got here, no valid files were found
@@ -330,6 +330,7 @@ def save_validation_results(results: Dict[str, Any], output_file: Optional[str] 
     data_dir_path = project_root / data_dir
     data_dir_path.mkdir(exist_ok=True)
     output_path = data_dir_path / output_file
+
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2, default=str)
 

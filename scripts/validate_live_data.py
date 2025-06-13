@@ -19,16 +19,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from governance_token_analyzer.core.api_client import APIClient
 from governance_token_analyzer.core.config import Config
+from governance_token_analyzer.core.exceptions import NetworkError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
-
-class NetworkError(Exception):
-    """Custom exception for network-related errors."""
-
-    pass
 
 
 class LiveDataValidator:
@@ -116,11 +111,14 @@ class LiveDataValidator:
             self.results["errors"].append(f"Network error for {protocol}: {str(net_err)}")
             self.results["token_holders"][protocol] = {"success": False, "error": str(net_err)}
             raise NetworkError(f"Network error: {net_err}")
-        except Exception as e:
-            error_msg = f"Error fetching token holders for {protocol}: {e}"
+        except Exception as exception:
+            error_msg = f"Error fetching token holders for {protocol}: {exception}"
             logger.error(error_msg)
             self.results["errors"].append(error_msg)
-            self.results["token_holders"][protocol] = {"success": False, "error": str(e)}
+            self.results["token_holders"][protocol] = {
+                "success": False,
+                "error": str(exception),
+            }
             return False
 
     def run_comprehensive_validation(self):
@@ -209,8 +207,8 @@ def main():
     except KeyboardInterrupt:
         logger.info("\nValidation interrupted by user")
         sys.exit(1)
-    except Exception as e:
-        logger.error(f"Unexpected error during validation: {e}")
+    except Exception as exception:
+        logger.error(f"Unexpected error during validation: {exception}")
         sys.exit(1)
 
 
