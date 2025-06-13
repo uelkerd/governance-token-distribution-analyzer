@@ -2,10 +2,13 @@
 
 A tool for analyzing governance token distribution and governance participation across DeFi protocols.
 
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/FSXowV52GpBGpAqYmKsFET/DK2dtWwtKUMKPcYB93EPdr/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/FSXowV52GpBGpAqYmKsFET/DK2dtWwtKUMKPcYB93EPdr/tree/main)
 [![Test Status](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/your-username/governance-token-distribution-analyzer)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/uelkerd/governance-token-distribution-analyzer/branch/main/graph/badge.svg)](https://codecov.io/gh/uelkerd/governance-token-distribution-analyzer)
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/FSXowV52GpBGpAqYmKsFET/DK2dtWwtKUMKPcYB93EPdr/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/FSXowV52GpBGpAqYmKsFET/DK2dtWwtKUMKPcYB93EPdr/tree/main)
 
 --
 
