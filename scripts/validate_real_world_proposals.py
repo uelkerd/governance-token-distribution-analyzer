@@ -136,9 +136,9 @@ def run_cli_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
             # Try to parse JSON output
             try:
                 return json.loads(result.stdout)
-            except json.JSONDecodeError:
-                # If JSON parsing fails, return the raw output
-                return {"raw_output": result.stdout, "stderr": result.stderr}
+            except json.JSONDecodeError as e:
+                print(f"error: Failed to parse JSON output from CLI: {e}", file=sys.stderr)
+                sys.exit(1)
         else:
             logger.error(f"CLI command failed with return code {result.returncode}")
             logger.error(f"STDOUT: {result.stdout}")
@@ -152,13 +152,14 @@ def run_cli_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
         logger.error(f"Error running CLI analysis: {str(e)}")
         return {"error": str(e)}
 
-def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
+def run_python_analysis(protocol: str, limit: int = 100, data_dir: str = "data") -> Dict[str, Any]:
     """
     Run analysis using Python script directly.
     
     Args:
         protocol: The protocol name (compound, uniswap, aave)
         limit: Number of token holders to analyze
+        data_dir: Directory to read/write proposal data
         
     Returns:
         Dictionary containing analysis results
@@ -166,24 +167,17 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
     logger.info(f"Running Python analysis for {protocol} with limit {limit}")
     
     try:
-        # Map protocol to analysis script
         script_map = {
             "compound": "compound_analysis.py",
-            "uniswap": "uniswap_analysis.py", 
+            "uniswap": "uniswap_analysis.py",
             "aave": "aave_analysis.py"
         }
-        
         if protocol not in script_map:
             return {"error": f"No analysis script found for protocol: {protocol}"}
-        
         script_path = project_root / "src" / script_map[protocol]
-        
         if not script_path.exists():
             return {"error": f"Analysis script not found: {script_path}"}
-        
-        # Run the analysis script
         cmd = [sys.executable, str(script_path)]
-        
         result = subprocess.run(
             cmd,
             cwd=project_root,
@@ -191,41 +185,40 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
             text=True,
             timeout=60
         )
-        
-        # Always try to find and parse the generated JSON file first
-        data_dir = project_root / "data"
-        if data_dir.exists():
-            # Look for the latest analysis file for this protocol
-            # Map protocol names to the actual file prefixes used
-            file_prefix_map = {
-                "compound": "comp",
-                "uniswap": "uni", 
-                "aave": "aave"
-            }
-            
-            file_prefix = file_prefix_map.get(protocol, protocol)
-            
-            patterns = [
-                f"{file_prefix}_analysis_latest.json",
-                f"{file_prefix}_analysis_*.json",
-                f"{protocol}_analysis_latest.json",
-                f"{protocol}_analysis_*.json"
-            ]
-            
-            for pattern in patterns:
-                analysis_files = list(data_dir.glob(pattern))
-                if analysis_files:
-                    latest_file = max(analysis_files, key=lambda f: f.stat().st_mtime)
-                    try:
-                        with open(latest_file, 'r') as f:
-                            json_data = json.load(f)
-                            logger.info(f"Successfully parsed JSON from {latest_file}")
-                            return json_data
-                    except (json.JSONDecodeError, IOError) as e:
-                        logger.warning(f"Failed to parse JSON from {latest_file}: {e}")
-                        continue
-        
-        # If JSON parsing failed, return the raw output
+        # Use the supplied data_dir for scanning .json files
+        data_dir_path = project_root / data_dir
+        if data_dir_path.exists():
+            for json_file in data_dir_path.glob("*.json"):
+                try:
+                    with open(json_file, 'r') as f:
+                        json.load(f)
+                except (json.JSONDecodeError, IOError) as e:
+                    print(f"error: Failed to parse JSON from {json_file}: {e}", file=sys.stderr)
+                    sys.exit(1)
+        file_prefix_map = {
+            "compound": "comp",
+            "uniswap": "uni",
+            "aave": "aave"
+        }
+        file_prefix = file_prefix_map.get(protocol, protocol)
+        patterns = [
+            f"{file_prefix}_analysis_latest.json",
+            f"{file_prefix}_analysis_*.json",
+            f"{protocol}_analysis_latest.json",
+            f"{protocol}_analysis_*.json"
+        ]
+        for pattern in patterns:
+            analysis_files = list(data_dir_path.glob(pattern))
+            if analysis_files:
+                latest_file = max(analysis_files, key=lambda f: f.stat().st_mtime)
+                try:
+                    with open(latest_file, 'r') as f:
+                        json_data = json.load(f)
+                        logger.info(f"Successfully parsed JSON from {latest_file}")
+                        return json_data
+                except (json.JSONDecodeError, IOError) as e:
+                    print(f"error: Failed to parse JSON from {latest_file}: {e}", file=sys.stderr)
+                    sys.exit(1)
         if result.returncode == 0:
             return {"raw_output": result.stdout, "stderr": result.stderr}
         else:
@@ -239,13 +232,14 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
         logger.error(f"Error running Python analysis: {str(e)}")
         return {"error": str(e)}
 
-def validate_proposal(protocol: str, proposal: Dict[str, Any]) -> Dict[str, Any]:
+def validate_proposal(protocol: str, proposal: Dict[str, Any], data_dir: str = "data") -> Dict[str, Any]:
     """
     Validate a single governance proposal by analyzing its token distribution.
     
     Args:
         protocol: The protocol name (compound, uniswap, aave)
         proposal: Proposal information dictionary
+        data_dir: Directory to read/write proposal data
         
     Returns:
         Dictionary containing validation results
@@ -257,7 +251,7 @@ def validate_proposal(protocol: str, proposal: Dict[str, Any]) -> Dict[str, Any]
     
     if "error" in analysis_result:
         logger.warning(f"CLI analysis failed, trying Python script: {analysis_result['error']}")
-        analysis_result = run_python_analysis(protocol)
+        analysis_result = run_python_analysis(protocol, data_dir=data_dir)
     
     # Compile validation results
     validation_result = {
@@ -291,18 +285,18 @@ def validate_proposal(protocol: str, proposal: Dict[str, Any]) -> Dict[str, Any]
     
     return validation_result
 
-def save_validation_results(results: Dict[str, Any], output_file: Optional[str] = None):
+def save_validation_results(results: Dict[str, Any], output_file: Optional[str] = None, data_dir: Optional[str] = None):
     """Save validation results to a JSON file."""
     if output_file is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_file = f"proposal_validation_{timestamp}.json"
     
     # Ensure data directory exists
-    data_dir = project_root / "data"
-    data_dir.mkdir(exist_ok=True)
-    
-    output_path = data_dir / output_file
-    
+    if data_dir is None:
+        data_dir = "data"
+    data_dir_path = project_root / data_dir
+    data_dir_path.mkdir(exist_ok=True)
+    output_path = data_dir_path / output_file
     with open(output_path, 'w') as f:
         json.dump(results, f, indent=2, default=str)
     
@@ -339,6 +333,12 @@ Examples:
         action="store_true", 
         help="Enable verbose logging"
     )
+    parser.add_argument(
+        "--data-dir",
+        type=str,
+        default="data",
+        help="Directory to read/write proposal data (default: 'data')"
+    )
     
     args = parser.parse_args()
     
@@ -372,14 +372,14 @@ Examples:
             if args.proposal_id and proposal["id"] != args.proposal_id:
                 continue
                 
-            result = validate_proposal(protocol, proposal)
+            result = validate_proposal(protocol, proposal, data_dir=args.data_dir)
             protocol_results.append(result)
             all_results["validation_metadata"]["total_proposals"] += 1
         
         all_results["results"][protocol] = protocol_results
     
     # Save results
-    output_path = save_validation_results(all_results, args.output)
+    output_path = save_validation_results(all_results, args.output, args.data_dir)
     
     # Print summary
     logger.info(f"\n=== VALIDATION SUMMARY ===")

@@ -358,7 +358,11 @@ class APIClient:
         Returns:
             Dictionary containing comprehensive protocol data
 
+        Raises:
+            ValueError: If the protocol is not supported
         """
+        if protocol not in PROTOCOL_INFO:
+            raise ValueError(f"Unsupported protocol: {protocol}")
         try:
             # Get token holders
             holders = self.get_token_holders(protocol, 100, use_real_data)
@@ -384,17 +388,27 @@ class APIClient:
             else:
                 holder_concentration = 0
 
+            # Ensure 'votes' key is present (empty list if not available)
+            votes = []
+            if proposals and isinstance(proposals, list):
+                for proposal in proposals:
+                    if "votes" in proposal and isinstance(proposal["votes"], list):
+                        votes.extend(proposal["votes"])
+            # If no votes found, keep as empty list
+
             return {
                 "protocol": protocol,
                 "token_symbol": protocol_info.get("token_symbol", ""),
                 "token_name": protocol_info.get("token_name", ""),
                 "total_supply": total_supply,
-                "holders": holders,
+                "token_holders": holders,
                 "proposals": proposals,
+                "votes": votes,
                 "participation_rate": participation_rate,
                 "holder_concentration": holder_concentration,
                 "proposal_count": len(proposals),
                 "active_holder_count": len(holders),
+                "timestamp": datetime.now().isoformat(),
             }
 
         except Exception as e:
@@ -980,6 +994,7 @@ class APIClient:
         protocol_params = {
             # Compound - more whale-dominated
             "0xc00e94cb662c3520282e6f5717214004a7f26888": {
+                "protocol": "compound",
                 "whale_count": 8,
                 "whale_pct_range": (8, 18),  # 8-18% per whale
                 "institution_count": 15,
@@ -988,6 +1003,7 @@ class APIClient:
             },
             # Uniswap - more community distributed
             "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984": {
+                "protocol": "uniswap",
                 "whale_count": 4,
                 "whale_pct_range": (4, 12),  # 4-12% per whale
                 "institution_count": 25,
@@ -996,6 +1012,7 @@ class APIClient:
             },
             # Aave - balanced distribution
             "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9": {
+                "protocol": "aave",
                 "whale_count": 6,
                 "whale_pct_range": (6, 15),  # 6-15% per whale
                 "institution_count": 20,
@@ -1008,6 +1025,7 @@ class APIClient:
         params = protocol_params.get(
             token_address.lower(),
             {
+                "protocol": "unknown",
                 "whale_count": 5,
                 "whale_pct_range": (5, 15),
                 "institution_count": 20,
@@ -1015,6 +1033,7 @@ class APIClient:
                 "seed_offset": 789,
             },
         )
+        protocol = params["protocol"]
 
         # Determine start index based on page and offset
         start_idx = (page - 1) * offset
@@ -1057,9 +1076,12 @@ class APIClient:
 
             holders.append(
                 {
-                    "TokenHolderAddress": address,
+                    "protocol": protocol,
+                    "address": address,
+                    "balance": str(quantity),
+                    "percentage": str(pct),
+                    "TokenHolderAddress": address,  # for legacy compatibility
                     "TokenHolderQuantity": str(quantity),
-                    "balance": str(quantity),  # Adding this field for compatibility
                     "TokenHolderPercentage": str(pct),
                 }
             )

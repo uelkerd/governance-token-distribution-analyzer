@@ -12,6 +12,7 @@ import logging
 import json
 from datetime import datetime
 from typing import Dict, List, Any
+import requests
 
 # Add the src directory to the path so we can import our modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -109,6 +110,9 @@ class LiveDataValidator:
             logger.info(f"✓ Successfully fetched {len(holders)} token holders for {protocol}")
             return True
             
+        except (requests.ConnectionError, requests.Timeout, OSError) as net_err:
+            print(f"network error: {net_err}", file=sys.stderr)
+            sys.exit(1)
         except Exception as e:
             error_msg = f"Error fetching token holders for {protocol}: {e}"
             logger.error(error_msg)
@@ -196,11 +200,15 @@ def main():
         else:
             sys.exit(1)  # Some failures
             
+    except (requests.ConnectionError, requests.Timeout, OSError) as net_err:
+        print(f"network error: {net_err}", file=sys.stderr)
+        sys.exit(1)
     except KeyboardInterrupt:
         logger.info("\nValidation interrupted by user")
         sys.exit(1)
     except Exception as e:
         logger.error(f"Unexpected error during validation: {e}")
+        print(f"network error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
