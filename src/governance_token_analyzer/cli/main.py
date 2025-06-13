@@ -168,9 +168,9 @@ def analyze(protocol, limit, format, output_dir, charts, live_data, verbose):
         balances = []
         for holder in holders_data:
             # Handle different data structures
-            if isinstance(holder, dict):
-                # Try different field names for balance
-                balance = holder.get("balance") or holder.get("TokenHolderQuantity") or holder.get("voting_power") or 0
+                balance = (holder.get("balance", 0) or 
+                          holder.get("TokenHolderQuantity", 0) or 
+                          holder.get("voting_power", 0))
             else:
                 balance = holder
 
