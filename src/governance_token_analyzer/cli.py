@@ -54,10 +54,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
     # Display available APIs with their free tier limits
     logger.info("🔍 Available APIs for data fetching:")
-    if (
-        api_client.alchemy_api_key
-        and api_client.alchemy_api_key != "your_alchemy_api_key"
-    ):
+    if api_client.alchemy_api_key and api_client.alchemy_api_key != "your_alchemy_api_key":
         logger.info("  ✅ Alchemy (300M compute units/month - PRIORITIZED)")
     if api_client.graph_api_key:
         logger.info("  ✅ The Graph (generous query limits)")
@@ -70,18 +67,14 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
     # Get token holders data with real API calls prioritized
     try:
-        holders_data = api_client.get_token_holders(
-            token_name, limit=limit, use_real_data=True
-        )
+        holders_data = api_client.get_token_holders(token_name, limit=limit, use_real_data=True)
 
         # Extract balances for analysis
         balances = []
         for holder in holders_data:
             if isinstance(holder, dict):
                 # Try different balance field names
-                balance = (
-                    holder.get("balance") or holder.get("TokenHolderQuantity") or 0
-                )
+                balance = holder.get("balance") or holder.get("TokenHolderQuantity") or 0
                 if isinstance(balance, str):
                     try:
                         balance = float(balance)
@@ -99,11 +92,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
         metrics = calculate_all_concentration_metrics(balances)
 
         # Add metadata
-        data_source = (
-            holders_data[0].get("data_source", "simulation")
-            if holders_data
-            else "simulation"
-        )
+        data_source = holders_data[0].get("data_source", "simulation") if holders_data else "simulation"
 
         results = {
             "protocol": token_name,
@@ -111,17 +100,9 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
             "total_holders_analyzed": len(balances),
             "data_source": data_source,
             "concentration_metrics": metrics,
-            "top_10_concentration": sum(sorted(balances, reverse=True)[:10])
-            / sum(balances)
-            if balances
-            else 0,
-            "top_50_concentration": sum(sorted(balances, reverse=True)[:50])
-            / sum(balances)
-            if balances
-            else 0,
-            "holders_data": holders_data[:10]
-            if holders_data
-            else [],  # Include top 10 for reference
+            "top_10_concentration": sum(sorted(balances, reverse=True)[:10]) / sum(balances) if balances else 0,
+            "top_50_concentration": sum(sorted(balances, reverse=True)[:50]) / sum(balances) if balances else 0,
+            "holders_data": holders_data[:10] if holders_data else [],  # Include top 10 for reference
         }
 
         # Save results to file
@@ -226,9 +207,7 @@ def compare_tokens(tokens: List[str], limit: int = 100, output_format: str = "js
     return results
 
 
-def analyze_proposal(
-    protocol: str, proposal_id: int, output_format: str = "json"
-) -> Dict[str, Any]:
+def analyze_proposal(protocol: str, proposal_id: int, output_format: str = "json") -> Dict[str, Any]:
     """Analyze voting patterns for a specific governance proposal.
 
     Args:
@@ -247,17 +226,13 @@ def analyze_proposal(
 
     try:
         # Get proposal details
-        proposal = api_client.get_governance_proposal(
-            protocol, proposal_id, use_real_data=True
-        )
+        proposal = api_client.get_governance_proposal(protocol, proposal_id, use_real_data=True)
         if not proposal:
             logger.error(f"Proposal {proposal_id} not found for {protocol}")
             return {"error": "Proposal not found"}
 
         # Get votes for the proposal
-        votes = api_client.get_governance_votes(
-            protocol, proposal_id, use_real_data=True
-        )
+        votes = api_client.get_governance_votes(protocol, proposal_id, use_real_data=True)
 
         # Extract voting power for analysis
         for_votes = [v["votingPower"] for v in votes if v["support"] == 1]
@@ -266,9 +241,7 @@ def analyze_proposal(
 
         # Calculate voting power concentration
         for_metrics = calculate_all_concentration_metrics(for_votes) if for_votes else {}
-        against_metrics = (
-            calculate_all_concentration_metrics(against_votes) if against_votes else {}
-        )
+        against_metrics = calculate_all_concentration_metrics(against_votes) if against_votes else {}
 
         # Prepare results
         results = {
@@ -286,11 +259,7 @@ def analyze_proposal(
             "abstain_votes_power": sum(abstain_votes),
             "for_votes_concentration": for_metrics,
             "against_votes_concentration": against_metrics,
-            "top_voters": sorted(votes, key=lambda v: v["votingPower"], reverse=True)[
-                :10
-            ]
-            if votes
-            else [],
+            "top_voters": sorted(votes, key=lambda v: v["votingPower"], reverse=True)[:10] if votes else [],
         }
 
         # Save results to file
@@ -303,16 +272,12 @@ def analyze_proposal(
         logger.info(f"📊 Analysis complete! Results saved to {output_file}")
 
         # Display some key metrics
-        total_power = (
-            results["for_votes_power"]
-            + results["against_votes_power"]
-            + results["abstain_votes_power"]
-        )
+        total_power = results["for_votes_power"] + results["against_votes_power"] + results["abstain_votes_power"]
         if total_power > 0:
             logger.info(
-                f"📈 Vote distribution: For {results['for_votes_power']/total_power:.1%}, "
-                f"Against {results['against_votes_power']/total_power:.1%}, "
-                f"Abstain {results['abstain_votes_power']/total_power:.1%}"
+                f"📈 Vote distribution: For {results['for_votes_power'] / total_power:.1%}, "
+                f"Against {results['against_votes_power'] / total_power:.1%}, "
+                f"Abstain {results['abstain_votes_power'] / total_power:.1%}"
             )
 
         return results
@@ -324,55 +289,31 @@ def analyze_proposal(
 
 def main():
     """Main entry point for the CLI."""
-    parser = argparse.ArgumentParser(
-        description="Governance Token Distribution Analyzer"
-    )
+    parser = argparse.ArgumentParser(description="Governance Token Distribution Analyzer")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
     # Analyze token command
-    analyze_parser = subparsers.add_parser(
-        "analyze", help="Analyze a token's distribution"
-    )
-    analyze_parser.add_argument(
-        "token", choices=["compound", "uniswap", "aave"], help="Token to analyze"
-    )
-    analyze_parser.add_argument(
-        "--limit", type=int, default=100, help="Number of token holders to analyze"
-    )
-    analyze_parser.add_argument(
-        "--format", choices=["json", "report"], default="json", help="Output format"
-    )
+    analyze_parser = subparsers.add_parser("analyze", help="Analyze a token's distribution")
+    analyze_parser.add_argument("token", choices=["compound", "uniswap", "aave"], help="Token to analyze")
+    analyze_parser.add_argument("--limit", type=int, default=100, help="Number of token holders to analyze")
+    analyze_parser.add_argument("--format", choices=["json", "report"], default="json", help="Output format")
 
     # Compare tokens command
-    compare_parser = subparsers.add_parser(
-        "compare", help="Compare multiple token distributions"
-    )
+    compare_parser = subparsers.add_parser("compare", help="Compare multiple token distributions")
     compare_parser.add_argument(
         "--tokens",
         nargs="+",
         default=["compound", "uniswap", "aave"],
         help="Tokens to compare",
     )
-    compare_parser.add_argument(
-        "--limit", type=int, default=100, help="Number of token holders to analyze"
-    )
-    compare_parser.add_argument(
-        "--format", choices=["json", "report"], default="json", help="Output format"
-    )
+    compare_parser.add_argument("--limit", type=int, default=100, help="Number of token holders to analyze")
+    compare_parser.add_argument("--format", choices=["json", "report"], default="json", help="Output format")
 
     # Analyze proposal command
-    proposal_parser = subparsers.add_parser(
-        "proposal", help="Analyze a governance proposal"
-    )
-    proposal_parser.add_argument(
-        "protocol", choices=["compound", "uniswap", "aave"], help="Protocol name"
-    )
-    proposal_parser.add_argument(
-        "proposal_id", type=int, help="ID of the proposal to analyze"
-    )
-    proposal_parser.add_argument(
-        "--format", choices=["json", "report"], default="json", help="Output format"
-    )
+    proposal_parser = subparsers.add_parser("proposal", help="Analyze a governance proposal")
+    proposal_parser.add_argument("protocol", choices=["compound", "uniswap", "aave"], help="Protocol name")
+    proposal_parser.add_argument("proposal_id", type=int, help="ID of the proposal to analyze")
+    proposal_parser.add_argument("--format", choices=["json", "report"], default="json", help="Output format")
 
     # Parse arguments
     args = parser.parse_args()
