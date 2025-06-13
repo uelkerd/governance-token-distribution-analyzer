@@ -24,8 +24,10 @@ except ImportError as e:
     click.echo(f"Error importing modules: {e}", err=True)
     sys.exit(1)
 
+from governance_token_analyzer.config import PROTOCOLS
+
 # Supported protocols
-SUPPORTED_PROTOCOLS = ["compound", "uniswap", "aave"]
+SUPPORTED_PROTOCOLS = list(PROTOCOLS.keys())
 SUPPORTED_METRICS = ["gini_coefficient", "participation_rate", "holder_concentration", "nakamoto_coefficient"]
 SUPPORTED_FORMATS = ["json", "csv", "html", "png"]
 
