@@ -296,8 +296,8 @@ def check_for_corrupted_files(data_dir: Path) -> bool:
         try:
             with open(file_path, "r") as f:
                 json.load(f)
-        except json.JSONDecodeError:
-            logger.error(f"Corrupted JSON file found: {file_path}")
+        except (json.JSONDecodeError, OSError, Exception) as e:
+            logger.error(f"Corrupted or inaccessible file detected: {file_path} ({e})")
             corrupted_files.append(file_path)
 
     return len(corrupted_files) > 0

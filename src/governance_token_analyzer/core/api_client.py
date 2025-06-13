@@ -377,17 +377,18 @@ class APIClient:
 
             return {
                 "protocol": protocol,
-                "token_symbol": protocol_info.get("token_symbol", ""),
-                "token_name": protocol_info.get("token_name", ""),
-                "total_supply": protocol_info.get("total_supply", 0),
+                "token_symbol": PROTOCOL_INFO[protocol]["token_symbol"],
                 "token_holders": holders,
+                "holders": holders,  # Add this for backward compatibility with tests
                 "proposals": proposals,
                 "votes": votes,
                 "participation_rate": participation_rate,
                 "holder_concentration": holder_concentration,
+                "active_holder_count": len([h for h in holders if float(h["balance"]) > 0]),
                 "proposal_count": len(proposals),
-                "active_holder_count": len(holders),
-                "timestamp": datetime.now().isoformat(),
+                "total_votes": len(votes),
+                "data_source": "live" if use_real_data else "simulated",
+                "last_updated": datetime.now().isoformat(),
             }
 
         except Exception as exception:
@@ -741,7 +742,7 @@ class APIClient:
                     "proposal_id": proposal_id,
                     "voter": voter,
                     "vote_choice": vote_choice,
-                    "vote_power": vote_power,
+                    "voting_power": vote_power,
                     "vote_weight": vote_power / info["total_supply"],
                     "voted_at": (datetime.now() - timedelta(days=random.randint(1, 14))).isoformat(),
                     "tx_hash": f"0x{random.getrandbits(256):064x}",
@@ -749,6 +750,36 @@ class APIClient:
             )
 
         return votes
+
+    def _normalize_holder_balances(self, holders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Normalize holder balances to consistent string format and sort by balance.
+        
+        Args:
+            holders: List of token holder dictionaries
+            
+        Returns:
+            List of normalized and sorted token holder dictionaries
+        """
+        normalized_holders = []
+        for holder in holders:
+            if "balance" in holder:
+                # Convert all balances to float first, then back to string for consistency
+                try:
+                    balance_float = float(holder["balance"]) if holder["balance"] is not None else 0.0
+                    holder_copy = holder.copy()
+                    holder_copy["balance"] = str(balance_float)
+                    normalized_holders.append(holder_copy)
+                except (ValueError, TypeError):
+                    # If balance can't be converted, use 0
+                    holder_copy = holder.copy()
+                    holder_copy["balance"] = "0"
+                    normalized_holders.append(holder_copy)
+            else:
+                normalized_holders.append(holder)
+
+        # Sort by balance in descending order to ensure consistent ordering
+        normalized_holders.sort(key=lambda h: float(h.get("balance", 0)), reverse=True)
+        return normalized_holders
 
     def _fetch_token_holders_with_fallback(self, protocol: str, token_address: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch token holders with multiple API fallbacks for better reliability.
@@ -792,19 +823,7 @@ class APIClient:
 
                 if holders and len(holders) > 0:
                     logger.info(f"✅ Successfully fetched {len(holders)} holders from {api_name}")
-
-                    # Ensure consistent balance format for all holders
-                    normalized_holders = []
-                    for holder in holders:
-                        if "balance" in holder:
-                            # Convert all balances to string format to avoid int precision issues
-                            holder_copy = holder.copy()
-                            holder_copy["balance"] = str(holder["balance"]) if holder["balance"] is not None else "0"
-                            normalized_holders.append(holder_copy)
-                        else:
-                            normalized_holders.append(holder)
-
-                    return normalized_holders
+                    return self._normalize_holder_balances(holders)
                 else:
                     logger.warning(f"⚠️  {api_name} returned no holders")
 

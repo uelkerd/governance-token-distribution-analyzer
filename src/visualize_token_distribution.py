@@ -445,7 +445,6 @@ def visualize_metrics_dashboard(token_name, historical_data, output_dir="plots")
     fig.suptitle(f"{token_name} Token Governance Metrics Dashboard", fontsize=16)
 
     # Plot 1: Gini Coefficient
-    axs[0, 0].plot(dates, gini_values, marker="o", linestyle="-", linewidth=2, color="blue")
     axs[0, 0].set_title("Gini Coefficient (Equality/Inequality)")
     axs[0, 0].set_ylim(0, 1)
     axs[0, 0].grid(True, linestyle="--", alpha=0.7)

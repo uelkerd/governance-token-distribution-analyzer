@@ -68,8 +68,7 @@ def test_get_governance_proposals_real_api(api_client):
 def test_get_governance_votes_real_api(api_client):
     """Test fetching governance votes using real API."""
     # Get a real proposal ID first
-    comp_proposals = api_client.get_governance_proposals("compound", limit=1, use_real_data=True)
-    if comp_proposals:
+    if comp_proposals := api_client.get_governance_proposals("compound", limit=1, use_real_data=True):
         proposal_id = comp_proposals[0]["id"]
 
         # Test Compound votes
@@ -77,7 +76,7 @@ def test_get_governance_votes_real_api(api_client):
         assert len(comp_votes) > 0
         assert "voter" in comp_votes[0]
         assert "vote_choice" in comp_votes[0]
-        assert "vote_power" in comp_votes[0]
+        assert "voting_power" in comp_votes[0]
 
 
 @pytest.mark.skipif(skip_tests, reason="Integration tests skipped")

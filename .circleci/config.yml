@@ -22,6 +22,7 @@ executors:
   python-38:
     docker:
       - image: cimg/python:3.8
+    working_directory: ~/governance-token-analyzer
     resource_class: medium
     environment:
       PYTHONUNBUFFERED: 1
@@ -29,6 +30,7 @@ executors:
   python-39:
     docker:
       - image: cimg/python:3.9
+    working_directory: ~/governance-token-analyzer
     resource_class: medium
     environment:
       PYTHONUNBUFFERED: 1
@@ -36,6 +38,7 @@ executors:
   python-310:
     docker:
       - image: cimg/python:3.10
+    working_directory: ~/governance-token-analyzer
     resource_class: medium
     environment:
       PYTHONUNBUFFERED: 1
@@ -43,6 +46,7 @@ executors:
   python-312:
     docker:
       - image: cimg/python:3.12
+    working_directory: ~/governance-token-analyzer
     resource_class: medium
     environment:
       PYTHONUNBUFFERED: 1
@@ -303,7 +307,15 @@ jobs:
       - run:
           name: Run integration tests
           command: |
-            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
+            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=html --junit-xml=integration-results.xml --cov-report=term-missing
+      - store_test_results:
+          path: integration-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: integration-coverage-python-39
+      - store_artifacts:
+          path: integration-results.xml
+          destination: integration-results-python-39
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN
@@ -317,7 +329,15 @@ jobs:
       - run:
           name: Run integration tests
           command: |
-            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
+            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=html --junit-xml=integration-results.xml --cov-report=term-missing
+      - store_test_results:
+          path: integration-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: integration-coverage-python-310
+      - store_artifacts:
+          path: integration-results.xml
+          destination: integration-results-python-310
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN
@@ -331,7 +351,15 @@ jobs:
       - run:
           name: Run integration tests
           command: |
-            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=term-missing
+            python -m pytest tests/ -v -m integration --cov=src --cov-report=xml --cov-report=html --junit-xml=integration-results.xml --cov-report=term-missing
+      - store_test_results:
+          path: integration-results.xml
+      - store_artifacts:
+          path: htmlcov
+          destination: integration-coverage-python-312
+      - store_artifacts:
+          path: integration-results.xml
+          destination: integration-results-python-312
       - codecov/upload:
           file: coverage.xml
           token: CODECOV_TOKEN

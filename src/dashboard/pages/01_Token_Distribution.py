@@ -70,8 +70,8 @@ if data:
             st.caption("Entities needed for 51% control")
 
         with col4:
-            if "top_holders_percentage" in metrics and "10" in metrics["top_holders_percentage"]:
-                cr10 = metrics["top_holders_percentage"]["10"]
+            if "top_holders_percentage" in metrics and 10 in metrics["top_holders_percentage"]:
+                cr10 = metrics["top_holders_percentage"][10]
                 st.metric("Top 10 Concentration", f"{cr10:.2f}%")
                 st.caption("% held by top 10 addresses")
 
