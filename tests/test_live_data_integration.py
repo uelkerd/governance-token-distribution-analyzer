@@ -433,9 +433,7 @@ class TestLiveDataIntegration:
         assert isinstance(holders, list)
         assert len(holders) > 0
 
-        proposals = empty_client.get_governance_proposals(
-            "compound", use_real_data=True
-        )
+        proposals = empty_client.get_governance_proposals("compound", use_real_data=True)
         assert isinstance(proposals, list)
         assert len(proposals) > 0
 
@@ -563,9 +561,7 @@ class TestLiveDataIntegration:
         assert elapsed_time < 30
 
         start_time = time.time()
-        proposals = api_client.get_governance_proposals(
-            "compound", limit=5, use_real_data=True
-        )
+        proposals = api_client.get_governance_proposals("compound", limit=5, use_real_data=True)
         elapsed_time = time.time() - start_time
 
         # Should complete within 30 seconds
@@ -616,9 +612,7 @@ if __name__ == "__main__":
     # Test governance proposals
     print("\n2. Testing governance proposals...")
     for protocol in ["compound", "uniswap", "aave"]:
-        proposals = client.get_governance_proposals(
-            protocol, limit=3, use_real_data=True
-        )
+        proposals = client.get_governance_proposals(protocol, limit=3, use_real_data=True)
         print(f"   {protocol}: {len(proposals)} proposals fetched")
 
     # Test comprehensive data

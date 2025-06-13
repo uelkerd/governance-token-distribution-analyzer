@@ -193,9 +193,7 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
         # Run the analysis script
         cmd = [sys.executable, str(script_path)]
 
-        result = subprocess.run(
-            cmd, cwd=project_root, capture_output=True, text=True, timeout=60
-        )
+        result = subprocess.run(cmd, cwd=project_root, capture_output=True, text=True, timeout=60)
 
         # Always try to find and parse the generated JSON file first
         data_dir = project_root / "data"
@@ -223,9 +221,7 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
                             logger.info(f"Successfully parsed JSON from {latest_file}")
                             return json_data
                     except (json.JSONDecodeError, IOError) as exception:
-                        logger.warning(
-                            f"Failed to parse JSON from {latest_file}: {exception}"
-                        )
+                        logger.warning(f"Failed to parse JSON from {latest_file}: {exception}")
                         continue
 
         # If JSON parsing failed, return the raw output
@@ -263,9 +259,7 @@ def validate_proposal(protocol: str, proposal: Dict[str, Any]) -> Dict[str, Any]
     analysis_result = run_cli_analysis(protocol)
 
     if "error" in analysis_result:
-        logger.warning(
-            f"CLI analysis failed, trying Python script: {analysis_result['error']}"
-        )
+        logger.warning(f"CLI analysis failed, trying Python script: {analysis_result['error']}")
         analysis_result = run_python_analysis(protocol)
 
     # Compile validation results
@@ -336,12 +330,8 @@ Examples:
         choices=list(PROPOSALS.keys()),
         help="Protocol to validate (if not specified, validates all)",
     )
-    parser.add_argument(
-        "--proposal-id", type=int, help="Specific proposal ID to validate"
-    )
-    parser.add_argument(
-        "--output", help="Output file name for results (default: auto-generated)"
-    )
+    parser.add_argument("--proposal-id", type=int, help="Specific proposal ID to validate")
+    parser.add_argument("--output", help="Output file name for results (default: auto-generated)")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
@@ -387,16 +377,12 @@ Examples:
 
     # Print summary
     logger.info(f"\n=== VALIDATION SUMMARY ===")
-    logger.info(
-        f"Total proposals validated: {all_results['validation_metadata']['total_proposals']}"
-    )
+    logger.info(f"Total proposals validated: {all_results['validation_metadata']['total_proposals']}")
     logger.info(f"Results saved to: {output_path}")
 
     # Print key findings for each protocol
     for protocol, results in all_results["results"].items():
-        successful = [
-            r for r in results if "error" not in r.get("analysis_results", {})
-        ]
+        successful = [r for r in results if "error" not in r.get("analysis_results", {})]
         failed = [r for r in results if "error" in r.get("analysis_results", {})]
 
         logger.info(f"\n{protocol.upper()}:")
@@ -408,9 +394,7 @@ Examples:
             analysis = result.get("analysis_results", {})
             metrics = analysis.get("metrics", {})
             if "gini_coefficient" in metrics:
-                logger.info(
-                    f"    Proposal {result['proposal_id']}: Gini = {metrics['gini_coefficient']:.4f}"
-                )
+                logger.info(f"    Proposal {result['proposal_id']}: Gini = {metrics['gini_coefficient']:.4f}")
 
 
 if __name__ == "__main__":

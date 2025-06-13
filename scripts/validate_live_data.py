@@ -20,9 +20,7 @@ from governance_token_analyzer.core.api_client import APIClient
 from governance_token_analyzer.core.config import Config
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -61,9 +59,7 @@ class LiveDataValidator:
                 logger.info(f"✓ {service.upper()} API key found")
             else:
                 logger.warning(f"✗ {service.upper()} API key not found")
-                self.results["warnings"].append(
-                    f"No {service.upper()} API key available"
-                )
+                self.results["warnings"].append(f"No {service.upper()} API key available")
 
         return keys
 
@@ -72,9 +68,7 @@ class LiveDataValidator:
         logger.info(f"Validating token holders for {protocol}...")
 
         try:
-            holders = self.api_client.get_token_holders(
-                protocol, limit=10, use_real_data=use_real_data
-            )
+            holders = self.api_client.get_token_holders(protocol, limit=10, use_real_data=use_real_data)
 
             if not holders:
                 error_msg = f"No token holders returned for {protocol}"
@@ -107,9 +101,7 @@ class LiveDataValidator:
                 "success": True,
             }
 
-            logger.info(
-                f"✓ Successfully fetched {len(holders)} token holders for {protocol}"
-            )
+            logger.info(f"✓ Successfully fetched {len(holders)} token holders for {protocol}")
             return True
 
         except Exception as exception:
@@ -165,9 +157,7 @@ class LiveDataValidator:
 
         success_rate = (successful_tests / total_tests * 100) if total_tests > 0 else 0
 
-        logger.info(
-            f"Success Rate: {successful_tests}/{total_tests} ({success_rate:.1f}%)"
-        )
+        logger.info(f"Success Rate: {successful_tests}/{total_tests} ({success_rate:.1f}%)")
         logger.info(f"Errors: {len(self.results['errors'])}")
         logger.info(f"Warnings: {len(self.results['warnings'])}")
 
@@ -181,13 +171,9 @@ class LiveDataValidator:
         if len(self.results["errors"]) == 0:
             logger.info("\n🎉 VALIDATION PASSED - Live data integration is working!")
         elif success_rate >= 70:
-            logger.info(
-                "\n⚠️  VALIDATION PARTIAL - Some issues found but core functionality works"
-            )
+            logger.info("\n⚠️  VALIDATION PARTIAL - Some issues found but core functionality works")
         else:
-            logger.info(
-                "\n❌ VALIDATION FAILED - Significant issues with live data integration"
-            )
+            logger.info("\n❌ VALIDATION FAILED - Significant issues with live data integration")
 
         return self.results
 

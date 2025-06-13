@@ -315,9 +315,7 @@ class APIClient:
                 return self._generate_sample_proposal_data(protocol, limit)
 
         except Exception as exception:
-            logger.error(
-                f"Error fetching governance proposals for {protocol}: {exception}"
-            )
+            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
             return []
 
     def get_governance_votes(
@@ -723,9 +721,7 @@ class APIClient:
                 holders = api_method(token_address, limit)
 
                 if holders and len(holders) > 0:
-                    logger.info(
-                        f"✅ Successfully fetched {len(holders)} holders from {api_name}"
-                    )
+                    logger.info(f"✅ Successfully fetched {len(holders)} holders from {api_name}")
                     return holders
                 else:
                     logger.warning(f"⚠️  {api_name} returned no holders")
@@ -801,9 +797,7 @@ class APIClient:
                 return self._generate_sample_proposal_data(protocol, limit)
 
         except Exception as exception:
-            logger.error(
-                f"Error fetching governance proposals for {protocol}: {exception}"
-            )
+            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_proposal_data(protocol, limit)
 
@@ -1128,9 +1122,7 @@ class APIClient:
 
             # For now, since getOwnersForToken might not be available in free tier,
             # let's use a different approach or fall back gracefully
-            logger.warning(
-                "Alchemy token holders endpoint requires paid tier, falling back"
-            )
+            logger.warning("Alchemy token holders endpoint requires paid tier, falling back")
             raise ValueError("Alchemy token holders requires paid tier")
 
         except Exception as exception:
@@ -1344,7 +1336,5 @@ class TheGraphAPI:
                         raise
 
         except requests.exceptions.RequestException as exception:
-            logger.error(
-                f"GraphQL query failed after {max_retries} attempts: {str(exception)}"
-            )
+            logger.error(f"GraphQL query failed after {max_retries} attempts: {str(exception)}")
             raise

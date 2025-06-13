@@ -54,10 +54,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
     # Display available APIs with their free tier limits
     logger.info("🔍 Available APIs for data fetching:")
-    if (
-        api_client.alchemy_api_key
-        and api_client.alchemy_api_key != "your_alchemy_api_key"
-    ):
+    if api_client.alchemy_api_key and api_client.alchemy_api_key != "your_alchemy_api_key":
         logger.info("  ✅ Alchemy (300M compute units/month - PRIORITIZED)")
     if api_client.graph_api_key:
         logger.info("  ✅ The Graph (generous query limits)")
@@ -70,18 +67,14 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
 
     # Get token holders data with real API calls prioritized
     try:
-        holders_data = api_client.get_token_holders(
-            token_name, limit=limit, use_real_data=True
-        )
+        holders_data = api_client.get_token_holders(token_name, limit=limit, use_real_data=True)
 
         # Extract balances for analysis
         balances = []
         for holder in holders_data:
             if isinstance(holder, dict):
                 # Try different balance field names
-                balance = (
-                    holder.get("balance") or holder.get("TokenHolderQuantity") or 0
-                )
+                balance = holder.get("balance") or holder.get("TokenHolderQuantity") or 0
                 if isinstance(balance, str):
                     try:
                         balance = float(balance)
@@ -99,11 +92,7 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
         metrics = calculate_all_concentration_metrics(balances)
 
         # Add metadata
-        data_source = (
-            holders_data[0].get("data_source", "simulation")
-            if holders_data
-            else "simulation"
-        )
+        data_source = holders_data[0].get("data_source", "simulation") if holders_data else "simulation"
 
         results = {
             "protocol": token_name,
@@ -111,17 +100,9 @@ def analyze_token(token_name: str, limit: int = 100) -> Dict[str, Any]:
             "total_holders_analyzed": len(balances),
             "data_source": data_source,
             "concentration_metrics": metrics,
-            "top_10_concentration": sum(sorted(balances, reverse=True)[:10])
-            / sum(balances)
-            if balances
-            else 0,
-            "top_50_concentration": sum(sorted(balances, reverse=True)[:50])
-            / sum(balances)
-            if balances
-            else 0,
-            "holders_data": holders_data[:10]
-            if holders_data
-            else [],  # Include top 10 for reference
+            "top_10_concentration": sum(sorted(balances, reverse=True)[:10]) / sum(balances) if balances else 0,
+            "top_50_concentration": sum(sorted(balances, reverse=True)[:50]) / sum(balances) if balances else 0,
+            "holders_data": holders_data[:10] if holders_data else [],  # Include top 10 for reference
         }
 
         # Save results to file
@@ -189,9 +170,7 @@ def compare_tokens(tokens: List[str], limit: int = 100, output_format: str = "js
 
     # Note about report generation
     if output_format.lower() == "report":
-        logger.info(
-            "HTML report generation is not available in this simplified CLI version"
-        )
+        logger.info("HTML report generation is not available in this simplified CLI version")
 
     return results
 
@@ -312,21 +291,15 @@ def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
 
             if "metrics" in data:
                 metrics = data["metrics"]
-                f.write(
-                    f"Gini Coefficient: {metrics.get('gini_coefficient', 'N/A'):.4f}\n"
-                )
-                f.write(
-                    f"Herfindahl Index: {metrics.get('herfindahl_index', 'N/A'):.4f}\n"
-                )
+                f.write(f"Gini Coefficient: {metrics.get('gini_coefficient', 'N/A'):.4f}\n")
+                f.write(f"Herfindahl Index: {metrics.get('herfindahl_index', 'N/A'):.4f}\n")
 
                 if "concentration" in metrics:
                     conc = metrics["concentration"]
                     f.write("Concentration Metrics:\n")
                     for key, value in conc.items():
                         if key.startswith("top_"):
-                            f.write(
-                                f"  {key.replace('_', ' ').title()}: {value:.2f}%\n"
-                            )
+                            f.write(f"  {key.replace('_', ' ').title()}: {value:.2f}%\n")
 
             f.write(f"Number of holders analyzed: {data.get('num_holders', 'N/A')}\n")
             f.write("\n")
