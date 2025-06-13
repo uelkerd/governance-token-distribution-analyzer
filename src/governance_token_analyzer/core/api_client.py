@@ -329,7 +329,9 @@ class APIClient:
                 return self._generate_sample_proposal_data(protocol, limit)
 
         except Exception as exception:
-            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
+            logger.error(
+                f"Error fetching governance proposals for {protocol}: {exception}"
+            )
             return []
 
     def get_governance_votes(
@@ -848,7 +850,9 @@ class APIClient:
                 return self._generate_sample_proposal_data(protocol, limit)
 
         except Exception as exception:
-            logger.error(f"Error fetching governance proposals for {protocol}: {exception}")
+            logger.error(
+                f"Error fetching governance proposals for {protocol}: {exception}"
+            )
             logger.info(f"Falling back to sample data for {protocol}")
             return self._generate_sample_proposal_data(protocol, limit)
 
@@ -1426,5 +1430,7 @@ class TheGraphAPI:
                         raise
 
         except requests.exceptions.RequestException as exception:
-            logger.error(f"GraphQL query failed after {max_retries} attempts: {str(exception)}")
+            logger.error(
+                f"GraphQL query failed after {max_retries} attempts: {str(exception)}"
+            )
             raise

@@ -186,7 +186,9 @@ class VotingBlockAnalyzer:
 
         except Exception as exception:
             logger.error(f"Failed to identify voting blocks: {exception}")
-            raise HistoricalDataError(f"Failed to identify voting blocks: {exception}") from exception
+            raise HistoricalDataError(
+                f"Failed to identify voting blocks: {exception}"
+            ) from exception
 
     def calculate_voting_power(
         self, token_balances: Dict[str, float]
@@ -413,7 +415,9 @@ class VotingBlockAnalyzer:
 
         except Exception as exception:
             logger.error(f"Failed to visualize voting blocks: {exception}")
-            raise HistoricalDataError(f"Failed to visualize voting blocks: {exception}") from exception
+            raise HistoricalDataError(
+                f"Failed to visualize voting blocks: {exception}"
+            ) from exception
 
     def analyze_block_cohesion(self) -> Dict[str, float]:
         """Analyze the cohesion of each voting block.
@@ -659,7 +663,9 @@ def analyze_proposal_influence(
     except Exception as exception:
         if isinstance(exception, KeyError):
             logger.error(f"Error accessing data fields: {exception}")
-            raise DataFormatError(f"Error accessing data fields: {exception}") from exception
+            raise DataFormatError(
+                f"Error accessing data fields: {exception}"
+            ) from exception
         logger.error(f"Failed to analyze proposal influence: {exception}")
         return {"error": str(exception)}
 
@@ -905,6 +911,8 @@ def detect_voting_anomalies(
     except Exception as exception:
         if isinstance(exception, KeyError):
             logger.error(f"Error accessing data fields: {exception}")
-            raise DataFormatError(f"Error accessing data fields: {exception}") from exception
+            raise DataFormatError(
+                f"Error accessing data fields: {exception}"
+            ) from exception
         logger.error(f"Failed to detect voting anomalies: {exception}")
         return {"anomalies": [], "error": str(exception)}
