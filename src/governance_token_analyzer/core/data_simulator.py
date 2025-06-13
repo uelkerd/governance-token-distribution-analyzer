@@ -1,4 +1,4 @@
-"""Token Distribution Data Simulator
+"""Token Distribution Data Simulator.
 
 This module provides tools to generate simulated token distribution data
 that mimics real-world patterns observed in governance tokens.

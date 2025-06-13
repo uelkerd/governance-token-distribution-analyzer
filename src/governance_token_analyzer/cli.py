@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Governance Token Distribution Analyzer CLI
+"""Governance Token Distribution Analyzer CLI.
 
 This module provides a command-line interface for analyzing governance token
 distributions across multiple DeFi protocols.
@@ -352,7 +352,7 @@ def generate_report(tokens: List[str], output_dir: Optional[str] = None) -> str:
 
 
 def main():
-    """Main CLI entry point."""
+    """Entry point for the CLI application."""
     parser = argparse.ArgumentParser(
         description="Governance Token Distribution Analyzer"
     )

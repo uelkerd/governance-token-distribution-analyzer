@@ -677,7 +677,6 @@ class DelegationPatternAnalyzer:
             return {"metrics_trends": {}, "delegatee_changes": []}
 
         # Extract timestamps and metrics
-        timestamps = [snapshot["timestamp"] for snapshot in snapshots_analysis]
         metrics_by_timestamp = {
             snapshot["timestamp"]: snapshot["analysis"]["metrics"]
             for snapshot in snapshots_analysis

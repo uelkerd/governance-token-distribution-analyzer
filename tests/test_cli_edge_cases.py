@@ -1,4 +1,4 @@
-"""End-to-End CLI and Integration Edge Cases Tests
+"""End-to-End CLI and Integration Edge Cases Tests.
 
 Comprehensive testing for CLI interface, user workflows, file system operations,
 environment validation, and deployment readiness scenarios.
@@ -63,7 +63,7 @@ class TestCLIEdgeCases:
         invalid_protocols = ["invalid_protocol", "", "123", "nonexistent"]
 
         for protocol in invalid_protocols:
-            result = cli_runner.invoke(cli, ["analyze", "--protocol", protocol])
+            result = cli_runner.invoke(cli, ["generate-report", "--protocol", protocol])
 
             # Should handle invalid protocols gracefully
             assert result.exit_code != 0 or "error" in result.output.lower()
@@ -189,7 +189,7 @@ class TestCLIEdgeCases:
         nonexistent_dir = os.path.join(temp_dir, "nonexistent", "deeply", "nested")
 
         result = cli_runner.invoke(cli, [
-            "analyze",
+            "generate-report",
             "--protocol", "compound",
             "--output-dir", nonexistent_dir
         ])
@@ -218,7 +218,7 @@ class TestCLIEdgeCases:
             long_path = os.path.join(long_path, "very_long_directory_name_" * 5)
 
         result = cli_runner.invoke(cli, [
-            "analyze",
+            "generate-report",
             "--protocol", "compound",
             "--output-dir", long_path
         ])
@@ -231,7 +231,7 @@ class TestCLIEdgeCases:
     def test_json_output_format_validation(self, cli_runner, temp_dir):
         """Test JSON output format validation."""
         result = cli_runner.invoke(cli, [
-            "analyze",
+            "export-historical-data",
             "--protocol", "compound",
             "--format", "json",
             "--output-dir", temp_dir

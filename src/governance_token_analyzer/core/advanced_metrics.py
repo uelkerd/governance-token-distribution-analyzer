@@ -1,11 +1,11 @@
-"""Advanced Concentration Metrics for Token Distribution Analysis
+"""Advanced Concentration Metrics for Token Distribution Analysis.
 
 This module provides advanced metrics for analyzing token distribution concentration
 beyond the basic Gini coefficient and Herfindahl index.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -232,18 +232,21 @@ def calculate_lorenz_curve(balances: List[float]) -> Dict[str, List[float]]:
 
 
 def calculate_top_percentiles(
-    balances: List[float], percentiles: List[int] = [1, 5, 10, 20, 50]
+    balances: List[float], percentiles: Optional[List[int]] = None
 ) -> Dict[str, float]:
     """Calculate the percentage of tokens held by the top X% of holders for specified percentiles.
 
     Args:
-        balances: List of token balances
-        percentiles: List of percentiles to calculate
+        balances: List of token balances (should be sorted in descending order)
+        percentiles: List of percentiles to calculate (default: [1, 5, 10, 20, 50])
 
     Returns:
-        Dictionary mapping percentiles to concentration percentages
+        Dictionary mapping percentile to percentage of tokens held
 
     """
+    if percentiles is None:
+        percentiles = [1, 5, 10, 20, 50]
+
     if not balances or sum(balances) == 0:
         return {str(p): 0.0 for p in percentiles}
 

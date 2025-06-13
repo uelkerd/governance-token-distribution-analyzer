@@ -359,7 +359,7 @@ class TestVotingBlockAnalysisIntegration:
         # plt.close(fig)
 
     def _modify_proposals_for_snapshot(self, proposals, snapshot_index):
-        """Helper method to modify proposals for historical snapshots."""
+        """Modify proposals for historical snapshots."""
         import copy
 
         modified = copy.deepcopy(proposals)

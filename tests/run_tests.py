@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Test Runner for Governance Token Distribution Analyzer
+"""Test Runner for Governance Token Distribution Analyzer.
 
 This script discovers and runs all tests for the project.
 Run this script from the project root directory.

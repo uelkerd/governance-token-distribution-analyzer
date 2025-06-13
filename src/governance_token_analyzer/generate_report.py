@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Governance Token Distribution Report Generator
+"""Governance Token Distribution Report Generator.
 
 This script generates comprehensive reports on governance token distribution patterns
 including visualizations, metrics, and insights across multiple protocols.
@@ -606,7 +606,7 @@ class ReportGenerator:
 
 
 def main():
-    """Main function to run the report generator."""
+    """Generate the governance token distribution report."""
     logger.info("Starting governance token distribution report generation")
 
     try:

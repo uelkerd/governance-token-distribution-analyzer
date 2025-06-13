@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Compound Governance Token Analysis Module
+"""Compound Governance Token Analysis Module.
 
 This module provides functionality for analyzing the distribution of COMP tokens
 and related governance metrics for the Compound protocol.
@@ -176,7 +176,7 @@ class CompoundAnalyzer:
 
 
 def main():
-    """Main function to run the Compound token analysis."""
+    """Run the Compound token analysis."""
     logger.info("Starting Compound token analysis proof of concept")
 
     try:
