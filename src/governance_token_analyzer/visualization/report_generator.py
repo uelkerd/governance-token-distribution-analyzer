@@ -701,11 +701,11 @@ class ReportGenerator:
 
     def generate_html_report(self, report_data: Dict[str, Any]) -> str:
         """Generate an HTML report from report data.
-        
+
         Args:
             report_data: Dictionary containing report data including protocol info,
                         metrics, visualizations, etc.
-        
+
         Returns:
             HTML content as string
         """
@@ -714,16 +714,18 @@ class ReportGenerator:
         protocol_info = report_data.get("protocol_info", {})
         current_metrics = report_data.get("current_metrics", {})
         timestamp = report_data.get("timestamp", datetime.now().isoformat())
-        
+
         # Convert metrics to the expected format
         metrics = []
         for key, value in current_metrics.items():
-            metrics.append({
-                "name": key.replace("_", " ").title(),
-                "value": f"{value:.4f}" if isinstance(value, (int, float)) else str(value),
-                "description": self._get_metric_description(key)
-            })
-        
+            metrics.append(
+                {
+                    "name": key.replace("_", " ").title(),
+                    "value": f"{value:.4f}" if isinstance(value, (int, float)) else str(value),
+                    "description": self._get_metric_description(key),
+                }
+            )
+
         # Create basic HTML report
         html_content = f"""
         <!DOCTYPE html>
@@ -750,32 +752,32 @@ class ReportGenerator:
             <div class="header">
                 <h1>🏛️ {protocol_name.upper()} Governance Token Analysis</h1>
                 <p><strong>Generated:</strong> {timestamp}</p>
-                <p><strong>Total Holders:</strong> {report_data.get('holders_count', 'N/A'):,}</p>
-                <p><strong>Total Supply:</strong> {report_data.get('total_supply', 'N/A'):,.2f} tokens</p>
+                <p><strong>Total Holders:</strong> {report_data.get("holders_count", "N/A"):,}</p>
+                <p><strong>Total Supply:</strong> {report_data.get("total_supply", "N/A"):,.2f} tokens</p>
             </div>
 
             <div class="protocol-info">
                 <h2>📋 Protocol Information</h2>
-                <p><strong>Name:</strong> {protocol_info.get('name', protocol_name.title())}</p>
-                <p><strong>Description:</strong> {protocol_info.get('description', 'Decentralized governance protocol')}</p>
-                <p><strong>Website:</strong> <a href="{protocol_info.get('website', '#')}">{protocol_info.get('website', 'N/A')}</a></p>
+                <p><strong>Name:</strong> {protocol_info.get("name", protocol_name.title())}</p>
+                <p><strong>Description:</strong> {protocol_info.get("description", "Decentralized governance protocol")}</p>
+                <p><strong>Website:</strong> <a href="{protocol_info.get("website", "#")}">{protocol_info.get("website", "N/A")}</a></p>
             </div>
 
             <div class="metrics">
                 <h2>📊 Key Concentration Metrics</h2>
                 <div class="metric-grid">
         """
-        
+
         # Add metric cards
         for metric in metrics:
             html_content += f"""
                     <div class="metric-card">
-                        <h3>{metric['name']}</h3>
-                        <div class="metric-value">{metric['value']}</div>
-                        <p>{metric['description']}</p>
+                        <h3>{metric["name"]}</h3>
+                        <div class="metric-value">{metric["value"]}</div>
+                        <p>{metric["description"]}</p>
                     </div>
             """
-        
+
         html_content += """
                 </div>
             </div>
@@ -789,22 +791,22 @@ class ReportGenerator:
                         <th>Interpretation</th>
                     </tr>
         """
-        
+
         # Add analysis rows based on metrics
-        gini = current_metrics.get('gini_coefficient', 0)
-        nakamoto = current_metrics.get('nakamoto_coefficient', 0)
-        
+        gini = current_metrics.get("gini_coefficient", 0)
+        nakamoto = current_metrics.get("nakamoto_coefficient", 0)
+
         # Gini coefficient analysis
         if gini < 0.5:
             gini_assessment = "Low Concentration"
             gini_interpretation = "Token distribution is relatively decentralized"
         elif gini < 0.7:
-            gini_assessment = "Moderate Concentration" 
+            gini_assessment = "Moderate Concentration"
             gini_interpretation = "Token distribution shows moderate concentration"
         else:
             gini_assessment = "High Concentration"
             gini_interpretation = "Token distribution is highly concentrated"
-            
+
         html_content += f"""
                     <tr>
                         <td>Token Distribution (Gini)</td>
@@ -812,7 +814,7 @@ class ReportGenerator:
                         <td>{gini_interpretation}</td>
                     </tr>
         """
-        
+
         # Nakamoto coefficient analysis
         if nakamoto >= 50:
             nakamoto_assessment = "Highly Decentralized"
@@ -823,7 +825,7 @@ class ReportGenerator:
         else:
             nakamoto_assessment = "Centralized"
             nakamoto_interpretation = "Few entities could potentially control the protocol"
-            
+
         html_content += f"""
                     <tr>
                         <td>Governance Decentralization</td>
@@ -833,17 +835,17 @@ class ReportGenerator:
                 </table>
             </div>
         """
-        
+
         # Add historical analysis if available
         if report_data.get("include_historical"):
             html_content += f"""
             <div class="historical">
                 <h2>📈 Historical Analysis</h2>
-                <p>Historical data shows {report_data.get('historical_snapshots', 0)} snapshots analyzed.</p>
+                <p>Historical data shows {report_data.get("historical_snapshots", 0)} snapshots analyzed.</p>
                 <p>Historical trend analysis helps understand how token concentration has evolved over time.</p>
             </div>
             """
-        
+
         html_content += f"""
             <div class="footer">
                 <p>Generated using Governance Token Distribution Analyzer v1.0.0</p>
@@ -852,9 +854,9 @@ class ReportGenerator:
         </body>
         </html>
         """
-        
+
         return html_content
-    
+
     def _generate_html_report(
         self,
         protocol_name: str,

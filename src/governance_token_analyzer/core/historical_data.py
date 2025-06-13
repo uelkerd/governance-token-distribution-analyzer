@@ -325,11 +325,11 @@ class HistoricalDataManager:
 
         try:
             # Convert timestamp to filename format
-            if 'T' in timestamp:  # ISO format
-                dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            if "T" in timestamp:  # ISO format
+                dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
             else:
                 dt = datetime.fromisoformat(timestamp)
-            
+
             timestamp_str = dt.strftime("%Y%m%d_%H%M%S")
             filename = f"{protocol}_snapshot_{timestamp_str}.json"
             filepath = os.path.join(protocol_dir, filename)

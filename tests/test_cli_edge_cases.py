@@ -203,7 +203,9 @@ class TestCLIEdgeCases:
         result = cli_runner.invoke(cli, ["analyze", "--protocol", "compound", "--output-dir", long_path])
 
         # Should handle long paths appropriately
-        assert result.exit_code == 0 or any(keyword in result.output.lower() for keyword in ["path", "file name too long", "directory"])
+        assert result.exit_code == 0 or any(
+            keyword in result.output.lower() for keyword in ["path", "file name too long", "directory"]
+        )
 
     # OUTPUT FORMAT VALIDATION TESTS
 
@@ -348,7 +350,18 @@ class TestCLIEdgeCases:
         """Test historical data analysis workflow."""
         # Generate historical data
         result = cli_runner.invoke(
-            cli, ["simulate-historical", "--protocol", "compound", "--snapshots", "10", "--data-dir", temp_dir, "--output-dir", temp_dir]
+            cli,
+            [
+                "simulate-historical",
+                "--protocol",
+                "compound",
+                "--snapshots",
+                "10",
+                "--data-dir",
+                temp_dir,
+                "--output-dir",
+                temp_dir,
+            ],
         )
 
         assert result.exit_code == 0
