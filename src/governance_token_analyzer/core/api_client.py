@@ -753,10 +753,10 @@ class APIClient:
 
     def _normalize_holder_balances(self, holders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Normalize holder balances to consistent string format and sort by balance.
-        
+
         Args:
             holders: List of token holder dictionaries
-            
+
         Returns:
             List of normalized and sorted token holder dictionaries
         """
