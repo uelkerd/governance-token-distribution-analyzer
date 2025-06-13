@@ -322,7 +322,7 @@ def compare(protocols, metric, format, output_dir, charts, detailed):
 
             # Get data for each protocol
             holders_data = api_client.get_token_holders(protocol, limit=100, use_real_data=True)
-            balances = [float(h.get("balance", 0)) for h in holders_data if h.get("balance")]
+            balances = [float(h.get("balance", 0)) for h in holders_data if h.get("balance") is not None]
 
             if not balances:
                 simulator = TokenDistributionSimulator()
