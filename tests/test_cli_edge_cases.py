@@ -451,7 +451,8 @@ class TestCLIEdgeCases:
                 ],
                 capture_output=True,
                 text=True,
-            check=True)
+                check=True,
+            )
             return result
 
         # Run analyses sequentially (simulating concurrent operations)
