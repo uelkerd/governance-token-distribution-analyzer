@@ -112,13 +112,13 @@ class LiveDataValidator:
             )
             return True
 
-        except Exception as e:
-            error_msg = f"Error fetching token holders for {protocol}: {e}"
+        except Exception as exception:
+            error_msg = f"Error fetching token holders for {protocol}: {exception}"
             logger.error(error_msg)
             self.results["errors"].append(error_msg)
             self.results["token_holders"][protocol] = {
                 "success": False,
-                "error": str(e),
+                "error": str(exception),
             }
             return False
 
@@ -211,8 +211,8 @@ def main():
     except KeyboardInterrupt:
         logger.info("\nValidation interrupted by user")
         sys.exit(1)
-    except Exception as e:
-        logger.error(f"Unexpected error during validation: {e}")
+    except Exception as exception:
+        logger.error(f"Unexpected error during validation: {exception}")
         sys.exit(1)
 
 

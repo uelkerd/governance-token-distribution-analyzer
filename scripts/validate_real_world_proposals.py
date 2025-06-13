@@ -156,9 +156,9 @@ def run_cli_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
     except subprocess.TimeoutExpired:
         logger.error(f"CLI analysis for {protocol} timed out")
         return {"error": "Analysis timed out"}
-    except Exception as e:
-        logger.error(f"Error running CLI analysis: {str(e)}")
-        return {"error": str(e)}
+    except Exception as exception:
+        logger.error(f"Error running CLI analysis: {str(exception)}")
+        return {"error": str(exception)}
 
 
 def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
@@ -222,8 +222,8 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
                             json_data = json.load(f)
                             logger.info(f"Successfully parsed JSON from {latest_file}")
                             return json_data
-                    except (json.JSONDecodeError, IOError) as e:
-                        logger.warning(f"Failed to parse JSON from {latest_file}: {e}")
+                    except (json.JSONDecodeError, IOError) as exception:
+                        logger.warning(f"Failed to parse JSON from {latest_file}: {exception}")
                         continue
 
         # If JSON parsing failed, return the raw output
@@ -239,9 +239,9 @@ def run_python_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
     except subprocess.TimeoutExpired:
         logger.error(f"Python analysis for {protocol} timed out")
         return {"error": "Analysis timed out"}
-    except Exception as e:
-        logger.error(f"Error running Python analysis: {str(e)}")
-        return {"error": str(e)}
+    except Exception as exception:
+        logger.error(f"Error running Python analysis: {str(exception)}")
+        return {"error": str(exception)}
 
 
 def validate_proposal(protocol: str, proposal: Dict[str, Any]) -> Dict[str, Any]:
