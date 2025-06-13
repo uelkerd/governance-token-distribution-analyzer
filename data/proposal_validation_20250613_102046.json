@@ -1,0 +1,85 @@
+{
+  "validation_metadata": {
+    "timestamp": "2025-06-13T10:20:38.001506",
+    "protocols_validated": [
+      "compound"
+    ],
+    "total_proposals": 2
+  },
+  "results": {
+    "compound": [
+      {
+        "proposal_id": 32,
+        "proposal_name": "Add COMP as Collateral Asset",
+        "protocol": "compound",
+        "timestamp": "2025-06-13T10:20:44.212412",
+        "analysis_results": {
+          "token": "COMP",
+          "contract_address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+          "timestamp": "2025-06-13T10:20:44.113540",
+          "metrics": {
+            "gini_coefficient": 0.46451612903225814,
+            "herfindahl_index": 3548.3870967741927,
+            "concentration": {
+              "top_5_pct": 100.0,
+              "top_10_pct": 0,
+              "top_20_pct": 0,
+              "top_50_pct": 0
+            }
+          },
+          "holders": []
+        },
+        "expected_outcomes": {
+          "status": "executed",
+          "participation_rate": "~5-10%",
+          "top_voters": [
+            "Compound Labs",
+            "a16z",
+            "Polychain Capital"
+          ]
+        },
+        "validation_notes": [
+          "Using current token distribution as proxy for historical data",
+          "Full validation requires historical snapshot at proposal block height",
+          "Proposal: Proposal to add COMP token as collateral in Compound protocol"
+        ]
+      },
+      {
+        "proposal_id": 64,
+        "proposal_name": "Update COMP Distribution",
+        "protocol": "compound",
+        "timestamp": "2025-06-13T10:20:46.696960",
+        "analysis_results": {
+          "token": "COMP",
+          "contract_address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+          "timestamp": "2025-06-13T10:20:46.534800",
+          "metrics": {
+            "gini_coefficient": 0.46451612903225814,
+            "herfindahl_index": 3548.3870967741927,
+            "concentration": {
+              "top_5_pct": 100.0,
+              "top_10_pct": 0,
+              "top_20_pct": 0,
+              "top_50_pct": 0
+            }
+          },
+          "holders": []
+        },
+        "expected_outcomes": {
+          "status": "executed",
+          "participation_rate": "~3-8%",
+          "top_voters": [
+            "Compound Labs",
+            "Gauntlet",
+            "OpenZeppelin"
+          ]
+        },
+        "validation_notes": [
+          "Using current token distribution as proxy for historical data",
+          "Full validation requires historical snapshot at proposal block height",
+          "Proposal: Proposal to adjust COMP token distribution parameters"
+        ]
+      }
+    ]
+  }
+}
