@@ -42,7 +42,7 @@ gova --help
 To analyze the distribution of a single token:
 
 ```bash
-gova analyze compound --limit 100
+gova analyze --protocol compound --limit 100
 ```
 
 Parameters:
