@@ -99,14 +99,18 @@ commands:
 # Define jobs that will be used in the workflow
 jobs:
   security-scan:
-    executor: python-312
+    docker:
+      - image: cimg/go:1.21
     steps:
       - checkout
       - run:
-          name: Skip security scan for now
+          name: Install TruffleHog
           command: |
-            echo "Security scan skipped - TruffleHog installation requires Go runtime"
-            echo "This can be re-enabled once proper TruffleHog setup is configured"
+            go install github.com/trufflesecurity/trufflehog/v3@latest
+      - run:
+          name: Run TruffleHog secret scan
+          command: |
+            ~/go/bin/trufflehog filesystem . --no-update --fail
 
   code-quality:
     executor: python-312
