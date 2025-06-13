@@ -170,21 +170,47 @@ def test_multiple_protocol_errors():
         # Create client
         client = APIClient()
 
-        # Attempt to fetch data for all protocols
-        protocols = ["compound", "uniswap", "aave"]
-        for protocol in protocols:
-            # Should get sample data for all protocols
-            holders = client.get_token_holders(protocol, limit=5, use_real_data=True)
-            try:
-                proposals = client.get_governance_proposals(protocol, limit=3, use_real_data=True)
-            except Exception:
-                proposals = []
-
-            # Verify fallback data
-            assert len(holders) == 5
-            assert "address" in holders[0]
-            # Proposals may be empty if all APIs fail, but should not raise
-            assert isinstance(proposals, list) or proposals == []
+        # Test compound protocol
+        holders_compound = client.get_token_holders("compound", limit=5, use_real_data=True)
+        proposals_compound = []
+        try:
+            proposals_compound = client.get_governance_proposals("compound", limit=3, use_real_data=True)
+        except Exception:
+            pass
+        
+        # Verify fallback data for compound
+        assert len(holders_compound) == 5
+        assert "address" in holders_compound[0]
+        assert isinstance(proposals_compound, list)
+        assert not proposals_compound  # Check if empty instead of comparing to []
+        
+        # Test uniswap protocol
+        holders_uniswap = client.get_token_holders("uniswap", limit=5, use_real_data=True)
+        proposals_uniswap = []
+        try:
+            proposals_uniswap = client.get_governance_proposals("uniswap", limit=3, use_real_data=True)
+        except Exception:
+            pass
+            
+        # Verify fallback data for uniswap
+        assert len(holders_uniswap) == 5
+        assert "address" in holders_uniswap[0]
+        assert isinstance(proposals_uniswap, list)
+        assert not proposals_uniswap  # Check if empty instead of comparing to []
+        
+        # Test aave protocol
+        holders_aave = client.get_token_holders("aave", limit=5, use_real_data=True)
+        proposals_aave = []
+        try:
+            proposals_aave = client.get_governance_proposals("aave", limit=3, use_real_data=True)
+        except Exception:
+            pass
+            
+        # Verify fallback data for aave
+        assert len(holders_aave) == 5
+        assert "address" in holders_aave[0]
+        assert isinstance(proposals_aave, list)
+        assert not proposals_aave  # Check if empty instead of comparing to []
 
 
 def test_rate_limit_handling():

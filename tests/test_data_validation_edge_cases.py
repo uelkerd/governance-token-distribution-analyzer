@@ -477,7 +477,7 @@ class TestDataValidationEdgeCases:
             data2 = mock_api_client.get_protocol_data("compound", use_real_data=True)
 
             assert data1["protocol"] == data2["protocol"]
-            assert len(data1["holders"]) == len(data2["holders"])
+            assert len(data1["token_holders"]) == len(data2["token_holders"])
             assert len(data1["proposals"]) == len(data2["proposals"])
 
     # MEMORY AND PERFORMANCE TESTS

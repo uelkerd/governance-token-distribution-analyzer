@@ -25,6 +25,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
+class NetworkError(Exception):
+    """Custom exception for network-related errors."""
+    pass
+
+
 class LiveDataValidator:
     """Validates live data integration functionality."""
 
@@ -106,8 +111,10 @@ class LiveDataValidator:
             return True
 
         except (requests.ConnectionError, requests.Timeout, OSError) as net_err:
-            print(f"network error: {net_err}", file=sys.stderr)
-            sys.exit(1)
+            logger.error(f"Network error: {net_err}")
+            self.results["errors"].append(f"Network error for {protocol}: {str(net_err)}")
+            self.results["token_holders"][protocol] = {"success": False, "error": str(net_err)}
+            raise NetworkError(f"Network error: {net_err}")
         except Exception as e:
             error_msg = f"Error fetching token holders for {protocol}: {e}"
             logger.error(error_msg)
@@ -195,17 +202,16 @@ def main():
         else:
             sys.exit(1)  # Some failures
 
-    except (requests.ConnectionError, requests.Timeout, OSError) as net_err:
-        print(f"network error: {net_err}", file=sys.stderr)
+    except NetworkError as net_err:
+        logger.error(f"Network error occurred: {net_err}")
         sys.exit(1)
     except KeyboardInterrupt:
         logger.info("\nValidation interrupted by user")
         sys.exit(1)
     except Exception as e:
         logger.error(f"Unexpected error during validation: {e}")
-        print(f"network error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    print(f"network error: {net_err}", file=sys.stderr)
+    main()

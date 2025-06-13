@@ -17,21 +17,21 @@ from click.testing import CliRunner
 
 from governance_token_analyzer.cli.main import cli
 
+# Make cli_runner and temp_dir fixtures available to all test classes
+@pytest.fixture
+def cli_runner():
+    """Create CLI runner for testing."""
+    return CliRunner()
+
+@pytest.fixture
+def temp_dir():
+    """Create temporary directory for testing."""
+    temp_dir = tempfile.mkdtemp()
+    yield temp_dir
+    shutil.rmtree(temp_dir, ignore_errors=True)
 
 class TestCLIEdgeCases:
     """Test CLI edge cases and error handling."""
-
-    @pytest.fixture
-    def cli_runner(self):
-        """Create CLI runner for testing."""
-        return CliRunner()
-
-    @pytest.fixture
-    def temp_dir(self):
-        """Create temporary directory for testing."""
-        temp_dir = tempfile.mkdtemp()
-        yield temp_dir
-        shutil.rmtree(temp_dir, ignore_errors=True)
 
     @pytest.fixture
     def readonly_dir(self, temp_dir):

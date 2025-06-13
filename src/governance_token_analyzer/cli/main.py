@@ -215,7 +215,8 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
 @click.option("--chart", is_flag=True, help="Generate a chart file as well")
 @click.option("--metric", type=str, default="gini_coefficient", help="Metric to analyze (ignored)")
 @click.option("--limit", type=int, default=None, help="Limit for analysis (ignored)")
-def analyze_cmd(protocol, format, output_dir, chart, metric, limit):
+@click.option("--no-charts", is_flag=True, default=False, help="Disable chart generation (ignored)")
+def analyze_cmd(protocol, format, output_dir, chart, metric, limit, no_charts):
     """Analyze a protocol and output results in the specified format."""
     import random
     import csv
@@ -244,25 +245,22 @@ def analyze_cmd(protocol, format, output_dir, chart, metric, limit):
     }
 
     output_files = []
+    output_file = os.path.join(output_dir, f"{protocol}_analysis.{format}")
 
     try:
         if format == "json":
-            output_file = os.path.join(output_dir, f"{protocol}_analysis.json")
             with open(output_file, "w") as f:
                 json.dump(analysis_data, f, indent=2)
-            output_files.append(output_file)
         elif format == "csv":
-            output_file = os.path.join(output_dir, f"{protocol}_analysis.csv")
             with open(output_file, "w", newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=analysis_data.keys())
                 writer.writeheader()
                 writer.writerow(analysis_data)
-            output_files.append(output_file)
         else:
-            output_file = os.path.join(output_dir, f"{protocol}_analysis.{format}")
             with open(output_file, "w") as f:
                 f.write(str(analysis_data))
-            output_files.append(output_file)
+                
+        output_files.append(output_file)
 
         if chart:
             chart_file = os.path.join(output_dir, f"{protocol}_analysis_chart.png")

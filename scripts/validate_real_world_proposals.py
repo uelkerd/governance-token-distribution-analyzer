@@ -142,8 +142,8 @@ def run_cli_analysis(protocol: str, limit: int = 100) -> Dict[str, Any]:
             try:
                 return json.loads(result.stdout)
             except json.JSONDecodeError as e:
-                print(f"error: Failed to parse JSON output from CLI: {e}", file=sys.stderr)
-                sys.exit(1)
+                logger.error(f"Failed to parse JSON output from CLI: {e}")
+                return {"error": f"JSON parse error: {e}", "raw_output": result.stdout}
         else:
             logger.error(f"CLI command failed with return code {result.returncode}")
             logger.error(f"STDOUT: {result.stdout}")
@@ -173,56 +173,95 @@ def run_python_analysis(protocol: str, limit: int = 100, data_dir: str = "data")
     logger.info(f"Running Python analysis for {protocol} with limit {limit}")
 
     try:
-        script_map = {"compound": "compound_analysis.py", "uniswap": "uniswap_analysis.py", "aave": "aave_analysis.py"}
-        if protocol not in script_map:
-            return {"error": f"No analysis script found for protocol: {protocol}"}
-        script_path = project_root / "src" / script_map[protocol]
-        if not script_path.exists():
-            return {"error": f"Analysis script not found: {script_path}"}
-        cmd = [sys.executable, str(script_path)]
-        result = subprocess.run(cmd, cwd=project_root, capture_output=True, text=True, timeout=60)
-        # Use the supplied data_dir for scanning .json files
-        data_dir_path = project_root / data_dir
-        if data_dir_path.exists():
-            for json_file in data_dir_path.glob("*.json"):
-                try:
-                    with open(json_file, "r") as f:
-                        json.load(f)
-                except (json.JSONDecodeError, IOError) as e:
-                    print(f"error: Failed to parse JSON from {json_file}: {e}", file=sys.stderr)
-                    sys.exit(1)
-        file_prefix_map = {"compound": "comp", "uniswap": "uni", "aave": "aave"}
-        file_prefix = file_prefix_map.get(protocol, protocol)
-        patterns = [
-            f"{file_prefix}_analysis_latest.json",
-            f"{file_prefix}_analysis_*.json",
-            f"{protocol}_analysis_latest.json",
-            f"{protocol}_analysis_*.json",
-        ]
-        for pattern in patterns:
-            analysis_files = list(data_dir_path.glob(pattern))
-            if analysis_files:
-                latest_file = max(analysis_files, key=lambda f: f.stat().st_mtime)
-                try:
-                    with open(latest_file, "r") as f:
-                        json_data = json.load(f)
-                        logger.info(f"Successfully parsed JSON from {latest_file}")
-                        return json_data
-                except (json.JSONDecodeError, IOError) as e:
-                    print(f"error: Failed to parse JSON from {latest_file}: {e}", file=sys.stderr)
-                    sys.exit(1)
-        if result.returncode == 0:
-            return {"raw_output": result.stdout, "stderr": result.stderr}
-        else:
-            logger.error(f"Python analysis failed: {result.stderr}")
-            return {"error": f"Analysis failed: {result.stderr}", "stdout": result.stdout}
-
+        # Try to execute the protocol-specific script if available
+        script_result = _execute_protocol_script(protocol, project_root)
+        if script_result:
+            return script_result
+        
+        # If script execution failed or script doesn't exist, look for analysis files
+        return _find_analysis_files(protocol, data_dir)
+        
     except subprocess.TimeoutExpired:
         logger.error(f"Python analysis for {protocol} timed out")
         return {"error": "Analysis timed out"}
     except Exception as e:
         logger.error(f"Error running Python analysis: {str(e)}")
         return {"error": str(e)}
+
+
+def _execute_protocol_script(protocol: str, project_root: Path) -> Optional[Dict[str, Any]]:
+    """
+    Execute the protocol-specific Python script.
+    
+    Args:
+        protocol: The protocol name
+        project_root: Path to project root
+        
+    Returns:
+        Analysis results if successful, None if script execution failed or script doesn't exist
+    """
+    script_map = {"compound": "compound_analysis.py", "uniswap": "uniswap_analysis.py", "aave": "aave_analysis.py"}
+    if protocol not in script_map:
+        return None
+        
+    script_path = project_root / "src" / script_map[protocol]
+    if not script_path.exists():
+        return None
+        
+    cmd = [sys.executable, str(script_path)]
+    result = subprocess.run(cmd, cwd=project_root, capture_output=True, text=True, timeout=60)
+    
+    if result.returncode == 0:
+        return {"raw_output": result.stdout, "stderr": result.stderr}
+    else:
+        logger.error(f"Python analysis failed: {result.stderr}")
+        return {"error": f"Analysis failed: {result.stderr}", "stdout": result.stdout}
+    
+
+def _find_analysis_files(protocol: str, data_dir: str) -> Dict[str, Any]:
+    """
+    Find and load analysis files for a protocol.
+    
+    Args:
+        protocol: The protocol name
+        data_dir: Directory to search for analysis files
+        
+    Returns:
+        Analysis data if found, error dictionary if not found or parsing failed
+    """
+    data_dir_path = project_root / data_dir
+    if not data_dir_path.exists():
+        return {"error": f"Data directory not found: {data_dir}"}
+    
+    # Define file patterns to search for, in order of preference
+    file_prefix_map = {"compound": "comp", "uniswap": "uni", "aave": "aave"}
+    file_prefix = file_prefix_map.get(protocol, protocol)
+    patterns = [
+        f"{file_prefix}_analysis_latest.json",
+        f"{protocol}_analysis_latest.json", 
+        f"{file_prefix}_analysis_*.json",
+        f"{protocol}_analysis_*.json",
+    ]
+    
+    # Try each pattern in order
+    for pattern in patterns:
+        analysis_files = list(data_dir_path.glob(pattern))
+        if not analysis_files:
+            continue
+            
+        # Get the most recent file
+        latest_file = max(analysis_files, key=lambda f: f.stat().st_mtime)
+        try:
+            with open(latest_file, "r") as f:
+                json_data = json.load(f)
+                logger.info(f"Successfully parsed JSON from {latest_file}")
+                return json_data
+        except (json.JSONDecodeError, IOError) as e:
+            logger.error(f"Failed to parse JSON from {latest_file}: {e}")
+            continue  # Try next pattern instead of exiting
+    
+    # If we got here, no valid files were found
+    return {"error": f"No valid analysis files found for {protocol} in {data_dir}"}
 
 
 def validate_proposal(protocol: str, proposal: Dict[str, Any], data_dir: str = "data") -> Dict[str, Any]:
