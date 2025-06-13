@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 class NetworkError(Exception):
     """Custom exception for network-related errors."""
+
     pass
 
 

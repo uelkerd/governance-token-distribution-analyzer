@@ -98,7 +98,9 @@ class TestLiveDataIntegration:
     @pytest.mark.parametrize("protocol", ["compound", "uniswap", "aave"])
     def test_complete_api_failure_fallback(self, protocol, mock_api_client):
         """Test complete API failure scenario with fallback to simulation."""
-        with patch.object(mock_api_client, "_fetch_token_holders_with_fallback", side_effect=ConnectionError("All APIs failed")):
+        with patch.object(
+            mock_api_client, "_fetch_token_holders_with_fallback", side_effect=ConnectionError("All APIs failed")
+        ):
             # Should fall back to simulation
             holders = mock_api_client.get_token_holders(protocol, limit=10, use_real_data=True)
             assert isinstance(holders, list)
@@ -194,10 +196,13 @@ class TestLiveDataIntegration:
     def test_fallback_chain_progression(self, mock_api_client):
         """Test the complete fallback chain: Alchemy → The Graph → Moralis → Etherscan → Simulation."""
         # Mock all APIs to fail in sequence
-        with patch.object(mock_api_client, "_fetch_token_holders_alchemy", side_effect=HTTPError("Alchemy failed")), \
-             patch.object(mock_api_client, "_fetch_token_holders_graph", side_effect=HTTPError("Graph failed")), \
-             patch.object(mock_api_client, "_fetch_token_holders_moralis", side_effect=HTTPError("Moralis failed")), \
-             patch.object(mock_api_client, "get_etherscan_token_holders", side_effect=HTTPError("Etherscan failed")):
+        with patch.object(
+            mock_api_client, "_fetch_token_holders_alchemy", side_effect=HTTPError("Alchemy failed")
+        ), patch.object(
+            mock_api_client, "_fetch_token_holders_graph", side_effect=HTTPError("Graph failed")
+        ), patch.object(
+            mock_api_client, "_fetch_token_holders_moralis", side_effect=HTTPError("Moralis failed")
+        ), patch.object(mock_api_client, "get_etherscan_token_holders", side_effect=HTTPError("Etherscan failed")):
             holders = mock_api_client.get_token_holders("compound", limit=10, use_real_data=True)
             assert isinstance(holders, list)
             assert len(holders) > 0

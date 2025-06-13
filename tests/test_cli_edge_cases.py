@@ -17,11 +17,13 @@ from click.testing import CliRunner
 
 from governance_token_analyzer.cli.main import cli
 
+
 # Make cli_runner and temp_dir fixtures available to all test classes
 @pytest.fixture
 def cli_runner():
     """Create CLI runner for testing."""
     return CliRunner()
+
 
 @pytest.fixture
 def temp_dir():
@@ -29,6 +31,7 @@ def temp_dir():
     temp_dir = tempfile.mkdtemp()
     yield temp_dir
     shutil.rmtree(temp_dir, ignore_errors=True)
+
 
 class TestCLIEdgeCases:
     """Test CLI edge cases and error handling."""

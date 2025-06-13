@@ -368,7 +368,7 @@ class APIClient:
             holders = self._get_token_holder_data(protocol, use_real_data)
             proposals = self._get_proposal_data(protocol, use_real_data)
             votes = self._extract_votes_from_proposals(proposals)
-            
+
             # Calculate metrics
             protocol_info = PROTOCOL_INFO.get(protocol, {})
             participation_rate = self._calculate_participation_rate(proposals)
@@ -392,37 +392,37 @@ class APIClient:
         except Exception as e:
             logger.error(f"Error fetching protocol data for {protocol}: {e}")
             return {}
-            
+
     def _get_token_holder_data(self, protocol: str, use_real_data: bool) -> List[Dict[str, Any]]:
         """Get token holder data for a protocol.
-        
+
         Args:
             protocol: Protocol name
             use_real_data: Whether to use real data from APIs
-            
+
         Returns:
             List of token holder dictionaries
         """
         return self.get_token_holders(protocol, 100, use_real_data)
-        
+
     def _get_proposal_data(self, protocol: str, use_real_data: bool) -> List[Dict[str, Any]]:
         """Get proposal data for a protocol.
-        
+
         Args:
             protocol: Protocol name
             use_real_data: Whether to use real data from APIs
-            
+
         Returns:
             List of proposal dictionaries
         """
         return self.get_governance_proposals(protocol, 20, use_real_data)
-        
+
     def _extract_votes_from_proposals(self, proposals: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Extract all votes from proposal data.
-        
+
         Args:
             proposals: List of proposal dictionaries
-            
+
         Returns:
             List of vote dictionaries
         """
@@ -432,26 +432,26 @@ class APIClient:
                 if isinstance(proposal, dict) and "votes" in proposal and isinstance(proposal["votes"], list):
                     votes.extend(proposal["votes"])
         return votes
-        
+
     def _calculate_holder_concentration(self, holders: List[Dict[str, Any]], protocol_info: Dict[str, Any]) -> float:
         """Calculate holder concentration (percentage held by top 10 holders).
-        
+
         Args:
             holders: List of holder dictionaries
             protocol_info: Protocol information dictionary
-            
+
         Returns:
             Holder concentration as a percentage
         """
         if not holders:
             return 0.0
-            
+
         total_supply = protocol_info.get("total_supply", 0)
         total_tokens_held = sum(float(holder.get("balance", 0)) for holder in holders)
-        
+
         if total_tokens_held <= 0:
             return 0.0
-            
+
         top_holders_total = sum(float(holder.get("balance", 0)) for holder in holders[:10])
         return (top_holders_total / total_tokens_held) * 100
 
@@ -1038,18 +1038,16 @@ class APIClient:
         start_idx = (page - 1) * offset
 
         # Generate holder data based on protocol parameters
-        holders = self._generate_holders(
-            start_idx, offset, total_supply, params
-        )
+        holders = self._generate_holders(start_idx, offset, total_supply, params)
 
         return {"status": "1", "message": "OK", "result": holders}
-        
+
     def _get_simulation_params(self, token_address: str) -> Dict[str, Any]:
         """Get protocol-specific parameters for simulation.
-        
+
         Args:
             token_address: The token contract address
-            
+
         Returns:
             Dictionary containing simulation parameters
         """
@@ -1096,18 +1094,18 @@ class APIClient:
                 "seed_offset": 789,
             },
         )
-        
+
     def _generate_holders(
         self, start_idx: int, offset: int, total_supply: int, params: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """Generate simulated holder data based on parameters.
-        
+
         Args:
             start_idx: Starting index for holder generation
             offset: Maximum number of holders to generate
             total_supply: Total token supply
             params: Protocol-specific parameters
-            
+
         Returns:
             List of simulated holder dictionaries
         """
@@ -1147,24 +1145,24 @@ class APIClient:
                 break
 
         return holders
-        
+
     def _calculate_holder_allocation(
         self, idx: int, whale_count: int, institution_count: int, total_supply: int, params: Dict[str, Any]
     ) -> tuple:
         """Calculate token allocation for a holder.
-        
+
         Args:
             idx: Holder index
             whale_count: Number of whale holders
             institution_count: Number of institutional holders
             total_supply: Total token supply
             params: Protocol-specific parameters
-            
+
         Returns:
             Tuple of (quantity, percentage)
         """
         seed_offset = params["seed_offset"]
-        
+
         if idx < whale_count:
             # Whale - protocol-specific percentage range
             min_pct, max_pct = params["whale_pct_range"]
@@ -1182,7 +1180,7 @@ class APIClient:
             base_pct = 0.1 * (seed_offset / 1000)  # Protocol-specific base
             pct = base_pct * (0.9**idx_retail)  # Exponential decay
             quantity = int(total_supply * pct / 100)
-            
+
         return quantity, pct
 
     def get_token_balance(self, token_address: str, address: str) -> Dict[str, Any]:
