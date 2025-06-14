@@ -11,7 +11,7 @@ import sys
 import json
 import csv
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any, Union
 
 import click
 
@@ -26,6 +26,8 @@ try:
     from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
     from governance_token_analyzer.core import historical_data
     from governance_token_analyzer.visualization.report_generator import ReportGenerator
+    from governance_token_analyzer.visualization.chart_generator import ChartGenerator
+    from governance_token_analyzer.analysis.voting_block import VotingBlockAnalyzer
 except ImportError as e:
     click.echo(f"Error importing modules: {e}", err=True)
     sys.exit(1)
@@ -40,6 +42,52 @@ SUPPORTED_METRICS = [
     "participation_rate",
 ]
 SUPPORTED_FORMATS = ["json", "csv", "html", "png"]
+
+
+def extract_balances_from_holders(holders_data: List[Dict[str, Any]], click_obj: Any) -> List[float]:
+    """
+    Helper function to extract token balances from holder data.
+    Works with both live API data and simulated data.
+    
+    Args:
+        holders_data: List of holder dictionaries
+        click_obj: Click context for error logging
+        
+    Returns:
+        List of float balances
+    """
+    balances = []
+    for holder in holders_data:
+        try:
+            # Make sure we're dealing with a dictionary
+            if not isinstance(holder, dict):
+                continue
+                
+            # Try multiple possible balance field names and formats
+            balance_value = (
+                holder.get("balance") or 
+                holder.get("TokenHolderQuantity") or 
+                holder.get("voting_power") or 
+                holder.get("value") or 
+                0
+            )
+            
+            if balance_value is not None and balance_value != "":
+                # Convert to float, handling various string formats
+                if isinstance(balance_value, str):
+                    # Remove common formatting characters
+                    clean_value = balance_value.replace(",", "").replace("$", "").strip()
+                    balance_float = float(clean_value)
+                else:
+                    balance_float = float(balance_value)
+
+                if balance_float > 0:
+                    balances.append(balance_float)
+        except (ValueError, TypeError, AttributeError) as e:
+            click_obj.echo(f"⚠️ Error processing balance: {e}", err=True)
+            continue
+    
+    return balances
 
 
 class ProtocolChoice(click.Choice):
@@ -135,29 +183,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
             holders_data = api_client.get_token_holders(protocol, limit=limit, use_real_data=True)
 
             # Extract and convert balances with robust error handling
-            balances = []
-            for h in holders_data:
-                if isinstance(h, dict):
-                    # Try multiple possible balance field names and formats
-                    balance_value = (
-                        h.get("balance") or h.get("TokenHolderQuantity") or h.get("voting_power") or h.get("value") or 0
-                    )
-
-                    if balance_value is not None and balance_value != "":
-                        try:
-                            # Convert to float, handling various string formats
-                            if isinstance(balance_value, str):
-                                # Remove common formatting characters
-                                clean_value = balance_value.replace(",", "").replace("$", "").strip()
-                                balance_float = float(clean_value)
-                            else:
-                                balance_float = float(balance_value)
-
-                            if balance_float > 0:
-                                balances.append(balance_float)
-                        except (ValueError, TypeError, AttributeError):
-                            # Skip invalid balance values silently
-                            continue
+            balances = extract_balances_from_holders(holders_data, click)
 
             if not balances:
                 click.echo("⚠️  No valid live data found, falling back to simulated data", err=True)
@@ -166,18 +192,10 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
         if not live_data or not balances:
             click.echo("🎲 Generating simulated data...")
             simulator = TokenDistributionSimulator()
-            # Fix: The simulator returns a list of dicts, not just balances
-            simulated_holders = simulator.generate_power_law_distribution(1000)
+            # Use the user-specified limit parameter
+            simulated_holders = simulator.generate_power_law_distribution(limit)
             # Extract just the balances from the simulated data
-            balances = []
-            for holder in simulated_holders:
-                try:
-                    balance_str = holder.get("TokenHolderQuantity", "0")
-                    balance = float(balance_str)
-                    balances.append(balance)
-                except (ValueError, TypeError) as e:
-                    click.echo(f"⚠️ Error processing simulated balance: {e}", err=True)
-                    continue
+            balances = extract_balances_from_holders(simulated_holders, click)
 
         click.echo(f"✅ Processed {len(balances):,} token holders")
 
@@ -227,8 +245,6 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
         # Generate charts if requested
         if chart:
             try:
-                from governance_token_analyzer.visualization.chart_generator import ChartGenerator
-
                 chart_gen = ChartGenerator()
                 chart_file = os.path.join(output_dir, f"{protocol}_distribution_analysis.png")
                 chart_gen.plot_distribution_analysis(balances, protocol, chart_file)
@@ -323,45 +339,17 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
 
             # Get data for each protocol with robust type conversion
             holders_data = api_client.get_token_holders(protocol, limit=100, use_real_data=True)
-            balances = []
-
-            for h in holders_data:
-                if isinstance(h, dict):
-                    # Try multiple possible balance field names
-                    balance_value = h.get("balance") or h.get("TokenHolderQuantity") or h.get("voting_power") or 0
-
-                    if balance_value is not None and balance_value != "":
-                        try:
-                            # Convert to float, handling string values properly
-                            if isinstance(balance_value, str):
-                                # Remove formatting and convert
-                                clean_value = balance_value.replace(",", "").replace("$", "").strip()
-                                balance_float = float(clean_value)
-                            else:
-                                balance_float = float(balance_value)
-
-                            if balance_float > 0:
-                                balances.append(balance_float)
-                        except (ValueError, TypeError, AttributeError):
-                            # Skip invalid balance values silently
-                            continue
+            balances = extract_balances_from_holders(holders_data, click)
 
             if not balances:
                 # Fallback to simulated data if no valid balances found
                 click.echo(f"⚠️  No valid balance data for {protocol}, using simulated data", err=True)
                 simulator = TokenDistributionSimulator()
-                # Fix: The simulator returns a list of dicts, not just balances
+                # Use an appropriate limit (100 is typical for comparative analysis)
+                # Could enhance in future to accept a limit parameter for simulation
                 simulated_holders = simulator.generate_power_law_distribution(100)
                 # Extract just the balances from the simulated data
-                balances = []
-                for holder in simulated_holders:
-                    try:
-                        balance_str = holder.get("TokenHolderQuantity", "0")
-                        balance = float(balance_str)
-                        balances.append(balance)
-                    except (ValueError, TypeError) as e:
-                        click.echo(f"⚠️ Error processing simulated balance: {e}", err=True)
-                        continue
+                balances = extract_balances_from_holders(simulated_holders, click)
 
             # Calculate metrics
             metrics = calculate_all_concentration_metrics(balances)
@@ -406,8 +394,6 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
         elif format == "png":
             # Generate PNG chart
             try:
-                from governance_token_analyzer.visualization.chart_generator import ChartGenerator
-
                 chart_gen = ChartGenerator()
                 output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.png")
 
@@ -642,8 +628,6 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
         if format == "png" or plot:
             # Generate plot
             try:
-                from governance_token_analyzer.visualization.chart_generator import ChartGenerator
-
                 chart_gen = ChartGenerator()
                 plot_file = os.path.join(output_dir, f"{protocol}_{metric}.png")
 
@@ -727,40 +711,16 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
 
         # Get current data with improved error handling
         holders_data = api_client.get_token_holders(protocol, limit=1000, use_real_data=True)
-        balances = []
-
-        for h in holders_data:
-            if isinstance(h, dict):
-                balance_value = h.get("balance")
-                if balance_value is not None and balance_value != "":
-                    try:
-                        # Robust balance conversion
-                        if isinstance(balance_value, str):
-                            clean_value = balance_value.replace(",", "").replace("$", "").strip()
-                            balance_float = float(clean_value)
-                        else:
-                            balance_float = float(balance_value)
-
-                        if balance_float > 0:
-                            balances.append(balance_float)
-                    except (ValueError, TypeError, AttributeError):
-                        continue
+        balances = extract_balances_from_holders(holders_data, click)
 
         if not balances:
             click.echo("⚠️  No live data available, using simulated data", err=True)
             simulator = TokenDistributionSimulator()
-            # Fix: The simulator returns a list of dicts, not just balances
+            # Use a sensible default for reports (1000 data points)
+            # Could enhance in future to accept a limit parameter for simulation
             simulated_holders = simulator.generate_power_law_distribution(1000)
             # Extract just the balances from the simulated data
-            balances = []
-            for holder in simulated_holders:
-                try:
-                    balance_str = holder.get("TokenHolderQuantity", "0")
-                    balance = float(balance_str)
-                    balances.append(balance)
-                except (ValueError, TypeError) as e:
-                    click.echo(f"⚠️ Error processing simulated balance: {e}", err=True)
-                    continue
+            balances = extract_balances_from_holders(simulated_holders, click)
 
         # Calculate current metrics
         current_metrics = calculate_all_concentration_metrics(balances)

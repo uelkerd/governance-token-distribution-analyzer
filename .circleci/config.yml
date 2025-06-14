@@ -116,7 +116,6 @@ commands:
           flags: << parameters.flags >>
           upload_name: ${CIRCLE_BUILD_NUM}
           when: always
-          codecov_yml_path: codecov.yml
 
 # Define jobs that will be used in the workflow
 jobs:
