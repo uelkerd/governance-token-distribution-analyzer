@@ -166,7 +166,18 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
         if not live_data or not balances:
             click.echo("🎲 Generating simulated data...")
             simulator = TokenDistributionSimulator()
-            balances = simulator.generate_power_law_distribution(limit)
+            # Fix: The simulator returns a list of dicts, not just balances
+            simulated_holders = simulator.generate_power_law_distribution(1000)
+            # Extract just the balances from the simulated data
+            balances = []
+            for holder in simulated_holders:
+                try:
+                    balance_str = holder.get("TokenHolderQuantity", "0")
+                    balance = float(balance_str)
+                    balances.append(balance)
+                except (ValueError, TypeError) as e:
+                    click.echo(f"⚠️ Error processing simulated balance: {e}", err=True)
+                    continue
 
         click.echo(f"✅ Processed {len(balances):,} token holders")
 
@@ -339,7 +350,18 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
                 # Fallback to simulated data if no valid balances found
                 click.echo(f"⚠️  No valid balance data for {protocol}, using simulated data", err=True)
                 simulator = TokenDistributionSimulator()
-                balances = simulator.generate_power_law_distribution(100)
+                # Fix: The simulator returns a list of dicts, not just balances
+                simulated_holders = simulator.generate_power_law_distribution(100)
+                # Extract just the balances from the simulated data
+                balances = []
+                for holder in simulated_holders:
+                    try:
+                        balance_str = holder.get("TokenHolderQuantity", "0")
+                        balance = float(balance_str)
+                        balances.append(balance)
+                    except (ValueError, TypeError) as e:
+                        click.echo(f"⚠️ Error processing simulated balance: {e}", err=True)
+                        continue
 
             # Calculate metrics
             metrics = calculate_all_concentration_metrics(balances)
@@ -727,7 +749,18 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
         if not balances:
             click.echo("⚠️  No live data available, using simulated data", err=True)
             simulator = TokenDistributionSimulator()
-            balances = simulator.generate_power_law_distribution(1000)
+            # Fix: The simulator returns a list of dicts, not just balances
+            simulated_holders = simulator.generate_power_law_distribution(1000)
+            # Extract just the balances from the simulated data
+            balances = []
+            for holder in simulated_holders:
+                try:
+                    balance_str = holder.get("TokenHolderQuantity", "0")
+                    balance = float(balance_str)
+                    balances.append(balance)
+                except (ValueError, TypeError) as e:
+                    click.echo(f"⚠️ Error processing simulated balance: {e}", err=True)
+                    continue
 
         # Calculate current metrics
         current_metrics = calculate_all_concentration_metrics(balances)
