@@ -612,8 +612,9 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
         click.echo(f"📊 Found {len(proposals)} governance proposals")
 
         # Get votes for each proposal
+        PROPOSAL_VOTE_FETCH_LIMIT = 10  # Limit number of proposals to fetch votes for performance
         all_votes = []
-        for proposal in proposals[:10]:  # Limit to first 10 proposals for performance
+        for proposal in proposals[:PROPOSAL_VOTE_FETCH_LIMIT]:
             proposal_id = proposal.get("id")
             if proposal_id:
                 click.echo(f"🗳️ Fetching votes for proposal {proposal_id}")
