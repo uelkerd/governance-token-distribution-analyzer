@@ -483,6 +483,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
                     try:
                         date_str = pd.Timestamp(date).strftime("%Y-%m-%d")
                     except (ValueError, TypeError) as e:
+                        click.echo(f"⚠️ Warning: Failed to parse date '{date}' due to error: {e}")
                         date_str = str(date)
 
                 # Extract the metric value
