@@ -50,6 +50,44 @@ SUPPORTED_METRICS = [
 ]
 SUPPORTED_FORMATS = ["json", "csv", "html", "png"]
 
+# CLI Group Configuration
+@click.group(context_settings={"max_content_width": 120})
+@click.version_option(version="1.0.0", prog_name="gova")
+@click.pass_context
+def cli(ctx):
+    """🏛️ Governance Token Distribution Analyzer
+
+    A comprehensive tool for analyzing token concentration,
+    governance participation, and voting power distribution
+    across DeFi protocols.
+
+    Examples:
+    
+    [1] gova analyze -p compound -f json
+    
+    [2] gova compare-protocols -p compound,uniswap -m gini_coefficient
+    
+    [3] gova generate-report -p compound -f html
+    
+    [4] gova status -a -t
+
+    Common Arguments:
+    
+    [A] -p, --protocol       Protocol to analyze (compound, uniswap, aave)
+    
+    [B] -f, --format         Output format (json, csv, html, png)
+    
+    [C] -o, --output-dir     Directory to save output files
+    
+    [D] -v, --verbose        Enable verbose output
+    
+    [E] -c, --chart          Generate charts/visualizations
+    
+    [F] -h, --help           Show command help
+    """
+    # Ensure context object exists
+    ctx.ensure_object(dict)
+
 
 class ProtocolChoice(click.Choice):
     """Custom choice class for protocol selection."""
@@ -76,29 +114,8 @@ def validate_positive_int(ctx, param, value):
     return value
 
 
-# CLI Group Configuration
-@click.group()
-@click.version_option(version="1.0.0", prog_name="gova")
-@click.pass_context
-def cli(ctx):
-    """🏛️ Governance Token Distribution Analyzer
-
-    A comprehensive tool for analyzing token concentration,
-    governance participation, and voting power distribution
-    across DeFi protocols.
-
-    Examples:
-      gova analyze -p compound -f json
-      gova compare-protocols -p compound,uniswap -m gini_coefficient
-      gova generate-report -p compound -f html
-      gova status -a -t
-    """
-    # Ensure context object exists
-    ctx.ensure_object(dict)
-
-
 # ANALYZE COMMAND
-@cli.command()
+@cli.command(help="📊 Analyze token distribution for a specific protocol (-p) with concentration metrics and distribution charts.")
 @click.option("--protocol", "-p", type=ProtocolChoice(), required=True, help="Protocol to analyze (compound, uniswap, aave)")
 @click.option(
     "--limit", "-l", type=int, default=1000, callback=validate_positive_int, help="Maximum number of token holders to analyze (default: 1000)",
@@ -149,7 +166,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
 
 
 # COMPARE PROTOCOLS COMMAND
-@cli.command("compare-protocols")
+@cli.command("compare-protocols", help="🔍 Compare token distribution metrics (-m) across multiple protocols (-p) with visualization options.")
 @click.option("--protocols", "-p", type=str, required=True, help='Comma-separated list of protocols to compare (e.g., compound,uniswap,aave) or "all"',)
 @click.option("--metric", "-m", type=click.Choice(SUPPORTED_METRICS), default="gini_coefficient", help="Primary metric for comparison (default: gini_coefficient)",)
 @click.option("--format", "-f", type=click.Choice(["json", "html"]), default="json", help="Output format (default: json)")
@@ -197,7 +214,7 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
 
 
 # EXPORT HISTORICAL DATA COMMAND
-@cli.command("export-historical-data")
+@cli.command("export-historical-data", help="📤 Export token distribution data (-p) in various formats (-f) for further analysis.")
 @click.option("--protocol", "-p", type=ProtocolChoice(), required=True, help="Protocol to export data for")
 @click.option("--format", "-f", type=click.Choice(["json", "csv"]), default="json", help="Export format (default: json)")
 @click.option("--output-dir", "-o", type=str, default="exports", callback=validate_output_dir, help="Directory to save exported files (default: exports)",)
@@ -296,7 +313,7 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
 
 
 # HISTORICAL ANALYSIS COMMAND
-@cli.command("historical-analysis")
+@cli.command("historical-analysis", help="📈 Analyze historical trends (-p) in token distribution metrics (-m) with time series visualization.")
 @click.option("--protocol", "-p", type=ProtocolChoice(), required=True, help="Protocol to analyze historical data for")
 @click.option("--metric", "-m", type=click.Choice(SUPPORTED_METRICS), default="gini_coefficient", help="Metric to analyze over time (default: gini_coefficient)",)
 @click.option("--data-dir", "-D", type=str, default="data/historical", help="Directory containing historical data (default: data/historical)",)
@@ -432,7 +449,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
 
 
 # GENERATE REPORT COMMAND
-@cli.command("generate-report")
+@cli.command("generate-report", help="📑 Generate a comprehensive analysis report (-p) with visualizations and detailed metrics.")
 @click.option("--protocol", "-p", type=ProtocolChoice(), required=True, help="Protocol to generate report for")
 @click.option("--format", "-f", type=click.Choice(["html"]), default="html", help="Report format (default: html)")
 @click.option("--output-dir", "-o", type=str, default="reports", callback=validate_output_dir, help="Directory to save report files (default: reports)",)
@@ -550,7 +567,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
 
 
 # SIMULATE HISTORICAL DATA COMMAND
-@cli.command("simulate-historical")
+@cli.command("simulate-historical", help="🎲 Generate simulated historical data (-p) with configurable snapshots (-s) and intervals (-i).")
 @click.option("--protocol", "-p", type=ProtocolChoice(), required=True, help="Protocol to simulate historical data for")
 @click.option("--snapshots", "-s", type=int, default=10, help="Number of historical snapshots to generate (default: 10)")
 @click.option("--interval", "-i", type=int, default=7, help="Interval between snapshots in days (default: 7)")
@@ -674,7 +691,7 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
 
 
 # STATUS COMMAND
-@cli.command()
+@cli.command(help="ℹ️ Check system status, API connectivity (-a), and protocol data availability (-t).")
 @click.option("--check-apis", "-a", is_flag=True, help="Check API key configuration and connectivity")
 @click.option("--test-protocols", "-t", is_flag=True, help="Test data retrieval for all supported protocols")
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed status information")
@@ -759,7 +776,7 @@ def status(check_apis, test_protocols, verbose):
 
 
 # VALIDATE COMMAND
-@cli.command()
+@cli.command(help="🔍 Validate analysis results against benchmarks with detailed validation reporting (-v).")
 @click.argument("input_file", type=click.Path(exists=True))
 @click.option("--output-dir", "-o", type=str, default="validation", callback=validate_output_dir, help="Directory to save validation results (default: validation)")
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed validation results")
