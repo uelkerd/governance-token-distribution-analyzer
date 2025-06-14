@@ -26,7 +26,7 @@ from governance_token_analyzer.core.data_simulator import TokenDistributionSimul
 from governance_token_analyzer.core import historical_data
 from governance_token_analyzer.visualization.report_generator import ReportGenerator
 from governance_token_analyzer.visualization.chart_generator import ChartGenerator
-from governance_token_analyzer.analysis.voting_block import VotingBlockAnalyzer
+from governance_token_analyzer.core.voting_block_analysis import VotingBlockAnalyzer
 
 # Configuration constants
 SUPPORTED_PROTOCOLS = list(PROTOCOLS.keys())
@@ -142,7 +142,7 @@ def cli(ctx):
         from governance_token_analyzer.core import historical_data
         from governance_token_analyzer.visualization.report_generator import ReportGenerator
         from governance_token_analyzer.visualization.chart_generator import ChartGenerator
-        from governance_token_analyzer.analysis.voting_block import VotingBlockAnalyzer
+        from governance_token_analyzer.core.voting_block_analysis import VotingBlockAnalyzer
     except ImportError as e:
         click.echo(f"Error importing modules: {e}", err=True)
         ctx.exit(1)
