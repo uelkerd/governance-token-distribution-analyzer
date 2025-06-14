@@ -181,7 +181,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
         raise click.UsageError(
             "Options --live-data and --simulated-data are mutually exclusive. Please specify only one."
         )
-    
+
     # Set live_data based on simulated_data flag
     if simulated_data:
         live_data = False
@@ -507,7 +507,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
                 # Extract first and last data points for old and new distribution
                 old_data = pd.DataFrame([trend_data[0]])
                 new_data = pd.DataFrame([trend_data[-1]])
-                
+
                 trend_metrics = calculate_distribution_change(old_data, new_data)
 
                 # Display trend metrics
@@ -707,7 +707,7 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
     """
     dates = []
     gini_values = []
-    
+
     # Ensure directories exist
     try:
         os.makedirs(protocol_dir, exist_ok=True)
@@ -730,9 +730,7 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
 
         # Calculate metrics if not present or if token holders are available
         if token_holders:
-            balances = [
-                balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0
-            ]
+            balances = [balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0]
 
             if balances:
                 # Calculate metrics
@@ -755,7 +753,9 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
                     # Collect data for visualization
                     dates.append(date_str)
                     gini_values.append(metrics.get("gini_coefficient", 0))
-                    click.echo(f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics")
+                    click.echo(
+                        f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics"
+                    )
                 except (IOError, OSError) as e:
                     click.echo(f"  ❌ Error saving snapshot {i + 1} to {snapshot_file}: {e}")
             else:
