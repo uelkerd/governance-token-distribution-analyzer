@@ -344,8 +344,9 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
         if include_historical:
             click.echo("📜 Loading historical snapshots...")
             try:
-                snapshots = historical_data.load_historical_snapshots(protocol, data_dir)
-                if snapshots:
+                if snapshots := historical_data.load_historical_snapshots(
+                    protocol, data_dir
+                ):
                     click.echo(f"✅ Loaded {len(snapshots)} historical snapshots")
                     export_data["historical_snapshots"] = snapshots
                 else:
