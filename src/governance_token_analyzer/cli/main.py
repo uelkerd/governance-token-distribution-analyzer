@@ -177,8 +177,8 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
       gova analyze -p aave -S
     """
     # Handle mutually exclusive options
-    if simulated_data:
-        live_data = False
+    if simulated_data and live_data:
+        raise click.BadParameter("The options '--simulated-data' and '--live-data' are mutually exclusive. Please specify only one.")
     try:
         execute_analyze_command(
             protocol=protocol,
