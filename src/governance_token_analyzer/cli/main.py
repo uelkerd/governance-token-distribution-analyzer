@@ -50,6 +50,7 @@ SUPPORTED_METRICS = [
 ]
 SUPPORTED_FORMATS = ["json", "csv", "html", "png"]
 
+
 # CLI Group Configuration
 @click.group(context_settings={"max_content_width": 120})
 @click.version_option(version="1.0.0", prog_name="gova")
@@ -142,10 +143,17 @@ def validate_positive_int(ctx, param, value):
 )
 @click.option("--chart", "-c", is_flag=True, help="Generate distribution charts")
 @click.option(
-    "--live-data", "-L", is_flag=True, default=True, help="Use live blockchain data (default)",
+    "--live-data",
+    "-L",
+    is_flag=True,
+    default=True,
+    help="Use live blockchain data (default)",
 )
 @click.option(
-    "--simulated-data", "-S", is_flag=True, help="Use simulated data instead of live data",
+    "--simulated-data",
+    "-S",
+    is_flag=True,
+    help="Use simulated data instead of live data",
 )
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output with detailed metrics")
 def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_data, verbose):
@@ -734,13 +742,13 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
             period_days=interval,
             num_holders=1000,
         )
-        
+
         if not historical_snapshots_dict:
             click.echo("❌ Failed to generate historical snapshots")
             sys.exit(1)
-            
+
         click.echo(f"✅ Generated {len(historical_snapshots_dict)} historical snapshots")
-        
+
         # Prepare for time series visualization
         dates = []
         gini_values = []
