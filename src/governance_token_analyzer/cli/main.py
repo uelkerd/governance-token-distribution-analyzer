@@ -695,105 +695,6 @@ def generate_report(protocol, output_format, output_dir, include_historical, dat
         sys.exit(1)
 
 
-def _extract_token_holders(snapshot_data, idx):
-    """Extract token holders from a snapshot or convert balances to token holder format.
-
-    Args:
-        snapshot_data: The snapshot data dictionary
-        idx: Index for generating addresses if needed
-
-    Returns:
-        List of token holder dictionaries
-    """
-    if "token_holders" in snapshot_data:
-        return snapshot_data["token_holders"]
-    elif "balances" in snapshot_data:
-        # Convert balances to token holders format
-        return [{"address": f"0x{i:040x}", "balance": balance} for i, balance in enumerate(snapshot_data["balances"])]
-    return []
-
-
-def _extract_positive_balances(token_holders):
-    """Extract positive balances from token holders.
-
-    Args:
-        token_holders: List of token holder dictionaries
-
-    Returns:
-        List of positive balance values
-    """
-    return [balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0]
-
-
-def _save_snapshot(snapshot, snapshot_file, date_str, metrics):
-    """Save a snapshot to a file and return visualization data.
-
-    Args:
-        snapshot: The snapshot dictionary to save
-        snapshot_file: Path to save the snapshot
-        date_str: Date string for the snapshot
-        metrics: Metrics dictionary
-
-    Returns:
-        tuple: (date_str, gini_coefficient) if successful, (None, None) if failed
-    """
-    try:
-        with open(snapshot_file, "w") as f:
-            json.dump(snapshot, f, indent=2)
-        return date_str, metrics.get("gini_coefficient", 0)
-    except OSError as e:
-        click.echo(f"  ❌ Error saving snapshot to {snapshot_file}: {e}")
-        return None, None
-
-
-def _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir):
-    """Process a single snapshot and save it to disk.
-
-    Args:
-        i: Snapshot index
-        date_str: Date string for the snapshot
-        snapshot_data: The snapshot data dictionary
-        protocol: Protocol name
-        protocol_dir: Directory to save the snapshot file
-
-    Returns:
-        tuple: (date_str, gini_coefficient) if successful, (None, None) if failed
-    """
-    # Extract token holders
-    token_holders = _extract_token_holders(snapshot_data, i)
-    if not token_holders:
-        click.echo(f"  ⚠️ No token holders in snapshot {i + 1}, skipping")
-        return None, None
-
-    # Extract positive balances
-    balances = _extract_positive_balances(token_holders)
-    if not balances:
-        click.echo(f"  ⚠️ No positive balances in snapshot {i + 1}, skipping")
-        return None, None
-
-    # Calculate metrics
-    metrics = calculate_all_concentration_metrics(balances)
-
-    # Create snapshot in the expected format
-    snapshot = {
-        "timestamp": date_str,
-        "date": date_str,
-        "protocol": protocol,
-        "token_holders": token_holders,
-        "metrics": metrics,
-    }
-
-    # Save snapshot
-    snapshot_file = os.path.join(protocol_dir, f"snapshot_{i + 1}.json")
-    date, gini = _save_snapshot(snapshot, snapshot_file, date_str, metrics)
-
-    if date and gini is not None:
-        click.echo(f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics")
-        return date, gini
-
-    return None, None
-
-
 def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, protocol_dir, output_dir):
     """
     Process and save historical snapshots to disk.
@@ -818,12 +719,52 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
         click.echo(f"❌ Error creating directories: {e}")
         return dates, gini_values
 
-    # Process each snapshot
+    # Save snapshots in the correct format for HistoricalDataManager
     for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items()):
-        date, gini = _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir)
-        if date and gini is not None:
-            dates.append(date)
-            gini_values.append(gini)
+        # Extract token holders from the snapshot
+        token_holders = []
+        if "token_holders" in snapshot_data:
+            token_holders = snapshot_data["token_holders"]
+        elif "balances" in snapshot_data:
+            # Convert balances to token holders format
+            token_holders = [
+                {"address": f"0x{i:040x}", "balance": balance} for i, balance in enumerate(snapshot_data["balances"])
+            ]
+
+        # Calculate metrics if not present or if token holders are available
+        if token_holders:
+            balances = [
+                balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0
+            ]
+
+            if balances:
+                # Calculate metrics
+                metrics = calculate_all_concentration_metrics(balances)
+
+                # Create snapshot in the expected format
+                snapshot = {
+                    "timestamp": date_str,
+                    "date": date_str,
+                    "protocol": protocol,
+                    "token_holders": token_holders,
+                    "metrics": metrics,
+                }
+
+                # Save snapshot
+                snapshot_file = os.path.join(protocol_dir, f"snapshot_{i + 1}.json")
+                try:
+                    with open(snapshot_file, "w") as f:
+                        json.dump(snapshot, f, indent=2)
+                    # Collect data for visualization
+                    dates.append(date_str)
+                    gini_values.append(metrics.get("gini_coefficient", 0))
+                    click.echo(f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics")
+                except (IOError, OSError) as e:
+                    click.echo(f"  ❌ Error saving snapshot {i + 1} to {snapshot_file}: {e}")
+            else:
+                click.echo(f"  ⚠️ No positive balances in snapshot {i + 1}, skipping")
+        else:
+            click.echo(f"  ⚠️ No token holders in snapshot {i + 1}, skipping")
 
     return dates, gini_values
 
