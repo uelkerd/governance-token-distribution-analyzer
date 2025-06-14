@@ -48,11 +48,11 @@ def extract_balances_from_holders(holders_data: List[Dict[str, Any]], click_obj:
     """
     Helper function to extract token balances from holder data.
     Works with both live API data and simulated data.
-    
+
     Args:
         holders_data: List of holder dictionaries
         click_obj: Click context for error logging
-        
+
     Returns:
         List of float balances
     """
@@ -62,16 +62,16 @@ def extract_balances_from_holders(holders_data: List[Dict[str, Any]], click_obj:
             # Make sure we're dealing with a dictionary
             if not isinstance(holder, dict):
                 continue
-                
+
             # Try multiple possible balance field names and formats
             balance_value = (
-                holder.get("balance") or 
-                holder.get("TokenHolderQuantity") or 
-                holder.get("voting_power") or 
-                holder.get("value") or 
-                0
+                holder.get("balance")
+                or holder.get("TokenHolderQuantity")
+                or holder.get("voting_power")
+                or holder.get("value")
+                or 0
             )
-            
+
             if balance_value is not None and balance_value != "":
                 # Convert to float, handling various string formats
                 if isinstance(balance_value, str):
@@ -86,7 +86,7 @@ def extract_balances_from_holders(holders_data: List[Dict[str, Any]], click_obj:
         except (ValueError, TypeError, AttributeError) as e:
             click_obj.echo(f"⚠️ Error processing balance: {e}", err=True)
             continue
-    
+
     return balances
 
 
