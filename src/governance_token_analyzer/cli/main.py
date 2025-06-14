@@ -177,10 +177,11 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
       gova analyze -p aave -S
     """
     # Handle mutually exclusive options
-    if simulated_data and live_data:
-        raise click.BadParameter(
-            "The options '--simulated-data' and '--live-data' are mutually exclusive. Please specify only one."
-        )
+    if simulated_data:
+        live_data = False
+    # Handle mutually exclusive options
+    if live_data and simulated_data:
+        raise click.UsageError("Options --live-data and --simulated-data are mutually exclusive. Please specify only one.")
     try:
         execute_analyze_command(
             protocol=protocol,
@@ -320,7 +321,7 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
       -f, --format               Export format (default: json)
       -o, --output-dir           Directory to save exported files (default: exports)
       -l, --limit                Maximum number of records to export (default: 1000)
-      -h, --include-historical   Include historical snapshots in export
+      -H, --include-historical   Include historical snapshots in export
       -m, --metric               Metric to focus on for historical export
       -D, --data-dir             Directory containing historical data
 
@@ -585,7 +586,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
       -p, --protocol             Protocol to generate report for
       -f, --format               Report format (default: html)
       -o, --output-dir           Directory to save report files (default: reports)
-      -h, --include-historical   Include historical analysis in report
+      -H, --include-historical   Include historical analysis in report
       -D, --data-dir             Directory containing historical data
 
     Examples:
@@ -684,7 +685,74 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
         sys.exit(1)
 
 
-# SIMULATE HISTORICAL DATA COMMAND
+def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, protocol_dir, output_dir):
+    """
+    Process and save historical snapshots to disk.
+    
+    Args:
+        historical_snapshots_dict: Dictionary of historical snapshots
+        protocol: Protocol name
+        protocol_dir: Directory to save snapshot files
+        output_dir: Directory to save visualization outputs
+        
+    Returns:
+        tuple: Lists of dates and gini values for visualization
+    """
+    dates = []
+    gini_values = []
+    
+    # Save snapshots in the correct format for HistoricalDataManager
+    for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items()):
+        # Extract token holders from the snapshot
+        token_holders = []
+        if "token_holders" in snapshot_data:
+            token_holders = snapshot_data["token_holders"]
+        elif "balances" in snapshot_data:
+            # Convert balances to token holders format
+            token_holders = [
+                {"address": f"0x{i:040x}", "balance": balance}
+                for i, balance in enumerate(snapshot_data["balances"])
+            ]
+
+        # Calculate metrics if not present or if token holders are available
+        if token_holders:
+            balances = [
+                float(holder.get("balance", 0)) for holder in token_holders if float(holder.get("balance", 0)) > 0
+            ]
+
+            if balances:
+                # Calculate metrics
+                metrics = calculate_all_concentration_metrics(balances)
+
+                # Create snapshot in the expected format
+                snapshot = {
+                    "timestamp": date_str,
+                    "date": date_str,
+                    "protocol": protocol,
+                    "token_holders": token_holders,
+                    "metrics": metrics,
+                }
+
+                # Save snapshot
+                snapshot_file = os.path.join(protocol_dir, f"snapshot_{i + 1}.json")
+                with open(snapshot_file, "w") as f:
+                    json.dump(snapshot, f, indent=2)
+
+                # Collect data for visualization
+                dates.append(date_str)
+                gini_values.append(metrics.get("gini_coefficient", 0))
+
+                click.echo(
+                    f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics"
+                )
+            else:
+                click.echo(f"  ⚠️ No positive balances in snapshot {i + 1}, skipping")
+        else:
+            click.echo(f"  ⚠️ No token holders in snapshot {i + 1}, skipping")
+    
+    return dates, gini_values
+
+
 @cli.command(
     "simulate-historical",
     help="🎲 Generate simulated historical data (-p) with configurable snapshots (-s) and intervals (-i).",
@@ -751,59 +819,11 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
             sys.exit(1)
 
         click.echo(f"✅ Generated {len(historical_snapshots_dict)} historical snapshots")
-
-        # Prepare for time series visualization
-        dates = []
-        gini_values = []
-
-        # Save snapshots in the correct format for HistoricalDataManager
-        for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items()):
-            # Extract token holders from the snapshot
-            token_holders = []
-            if "token_holders" in snapshot_data:
-                token_holders = snapshot_data["token_holders"]
-            elif "balances" in snapshot_data:
-                # Convert balances to token holders format
-                token_holders = [
-                    {"address": f"0x{i:040x}", "balance": balance}
-                    for i, balance in enumerate(snapshot_data["balances"])
-                ]
-
-            # Calculate metrics if not present or if token holders are available
-            if token_holders:
-                balances = [
-                    float(holder.get("balance", 0)) for holder in token_holders if float(holder.get("balance", 0)) > 0
-                ]
-
-                if balances:
-                    # Calculate metrics
-                    metrics = calculate_all_concentration_metrics(balances)
-
-                    # Create snapshot in the expected format
-                    snapshot = {
-                        "timestamp": date_str,
-                        "date": date_str,
-                        "protocol": protocol,
-                        "token_holders": token_holders,
-                        "metrics": metrics,
-                    }
-
-                    # Save snapshot
-                    snapshot_file = os.path.join(protocol_dir, f"snapshot_{i + 1}.json")
-                    with open(snapshot_file, "w") as f:
-                        json.dump(snapshot, f, indent=2)
-
-                    # Collect data for visualization
-                    dates.append(date_str)
-                    gini_values.append(metrics.get("gini_coefficient", 0))
-
-                    click.echo(
-                        f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics"
-                    )
-                else:
-                    click.echo(f"  ⚠️ No positive balances in snapshot {i + 1}, skipping")
-            else:
-                click.echo(f"  ⚠️ No token holders in snapshot {i + 1}, skipping")
+        
+        # Process and save snapshots, getting dates and gini values for visualization
+        dates, gini_values = process_and_save_historical_snapshots(
+            historical_snapshots_dict, protocol, protocol_dir, output_dir
+        )
 
         click.echo(f"💾 Saved {len(dates)} valid snapshots to {protocol_dir}")
 
