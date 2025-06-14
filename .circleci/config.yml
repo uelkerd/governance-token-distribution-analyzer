@@ -112,7 +112,7 @@ commands:
     steps:
       - codecov/upload:
           file: << parameters.coverage_file >>
-          token: ${CODECOV_TOKEN}
+          token: CODECOV_TOKEN
           flags: << parameters.flags >>
           upload_name: ${CIRCLE_BUILD_NUM}
           when: always
