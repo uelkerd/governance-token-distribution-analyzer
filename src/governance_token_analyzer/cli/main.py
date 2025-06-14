@@ -508,6 +508,12 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
                 old_data = pd.DataFrame([trend_data[0]])
                 new_data = pd.DataFrame([trend_data[-1]])
                 
+                # Add required columns for calculate_distribution_change
+                old_data['address'] = old_data['date']  # Use date as address for compatibility
+                new_data['address'] = new_data['date']  # Use date as address for compatibility
+                old_data['balance'] = old_data['value']  # Use value as balance for compatibility
+                new_data['balance'] = new_data['value']  # Use value as balance for compatibility
+                
                 trend_metrics = calculate_distribution_change(old_data, new_data)
 
                 # Display trend metrics
@@ -674,18 +680,25 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
             "timestamp": datetime.now().isoformat(),
         }
 
-        # Generate report
+        # Generate the report
         click.echo("🔧 Generating report...")
-        output_file = os.path.join(output_dir, f"{protocol}_report.{format}")
-
         try:
-            report_path = report_gen.generate_full_report(
-                protocol_data=protocol_data, output_file=output_file, output_format=format
+            # Get current date for the report filename
+            current_date = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = os.path.join(output_dir, f"{protocol}_report_{current_date}.{format}")
+
+            # Generate the report using snapshot_report method
+            report_gen.generate_snapshot_report(
+                protocol_data=protocol_data,
+                protocol_name=protocol,
+                output_format=format,
+                include_visualizations=True
             )
-            click.echo(f"✅ Report generated: {report_path}")
+
+            click.echo(f"✅ Report generated and saved to {output_file}")
         except Exception as e:
             click.echo(f"❌ Error generating report: {e}")
-            raise
+            sys.exit(1)
 
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
