@@ -50,12 +50,6 @@ SUPPORTED_METRICS = [
 ]
 SUPPORTED_FORMATS = ["json", "csv", "html", "png"]
 
-# CLI Group Configuration
-@click.group(context_settings={"max_content_width": 120})
-@click.version_option(version="1.0.0", prog_name="gova")
-@click.pass_context
-def cli(ctx):
-    """🏛️ Governance Token Distribution Analyzer
 
 # CLI Group Configuration
 @click.group(context_settings={"max_content_width": 120})
@@ -149,13 +143,20 @@ def validate_positive_int(ctx, param, value):
 )
 @click.option("--chart", "-c", is_flag=True, help="Generate distribution charts")
 @click.option(
-    "--live-data/--simulated-data",
-    "-L/-S",
+    "--live-data",
+    "-L",
+    is_flag=True,
     default=True,
-    help="Use live blockchain data or simulated data (default: live)",
+    help="Use live blockchain data (default)",
+)
+@click.option(
+    "--simulated-data",
+    "-S",
+    is_flag=True,
+    help="Use simulated data instead of live data",
 )
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output with detailed metrics")
-def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
+def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_data, verbose):
     """📊 Analyze token distribution for a specific protocol.
 
     Calculates concentration metrics and generates detailed analysis reports.
@@ -166,7 +167,8 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
       -f, --format               Output format (default: json)
       -o, --output-dir           Directory to save output files (default: outputs)
       -c, --chart                Generate distribution charts
-      -L/S, --live-data/--simulated-data  Use live blockchain data or simulated data (default: live)
+      -L, --live-data            Use live blockchain data (default)
+      -S, --simulated-data       Use simulated data instead of live data
       -v, --verbose              Enable verbose output with detailed metrics
 
     Examples:
@@ -174,6 +176,11 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, verbose):
       gova analyze -p uniswap -c -v
       gova analyze -p aave -S
     """
+    # Handle mutually exclusive options
+    if simulated_data and live_data:
+        raise click.BadParameter(
+            "The options '--simulated-data' and '--live-data' are mutually exclusive. Please specify only one."
+        )
     try:
         execute_analyze_command(
             protocol=protocol,
@@ -294,7 +301,7 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
     callback=validate_positive_int,
     help="Maximum number of records to export (default: 1000)",
 )
-@click.option("--include-historical", "-h", is_flag=True, help="Include historical snapshots in export")
+@click.option("--include-historical", "-H", is_flag=True, help="Include historical snapshots in export")
 @click.option(
     "--metric",
     "-m",
@@ -478,7 +485,8 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
                     # Try to parse the date if it's a string
                     try:
                         date_str = pd.Timestamp(date).strftime("%Y-%m-%d")
-                    except:
+                    except (ValueError, TypeError) as e:
+                        click.echo(f"⚠️ Warning: Failed to parse date '{date}' due to error: {e}")
                         date_str = str(date)
 
                 # Extract the metric value
@@ -568,7 +576,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
     callback=validate_output_dir,
     help="Directory to save report files (default: reports)",
 )
-@click.option("--include-historical", "-h", is_flag=True, help="Include historical analysis in report")
+@click.option("--include-historical", "-H", is_flag=True, help="Include historical analysis in report")
 @click.option("--data-dir", "-D", type=str, default="data/historical", help="Directory containing historical data")
 def generate_report(protocol, format, output_dir, include_historical, data_dir):
     """📑 Generate a comprehensive analysis report for a protocol.
@@ -739,60 +747,6 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
             period_days=interval,
             num_holders=1000,
         )
-        
-        if not historical_snapshots_dict:
-            click.echo("❌ Failed to generate historical snapshots")
-            sys.exit(1)
-            
-        click.echo(f"✅ Generated {len(historical_snapshots_dict)} historical snapshots")
-        
-        # Prepare for time series visualization
-        dates = []
-        gini_values = []
-        
-        # Save snapshots in the correct format for HistoricalDataManager
-        for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items()):
-            # Extract token holders from the snapshot
-            token_holders = []
-            if "token_holders" in snapshot_data:
-                token_holders = snapshot_data["token_holders"]
-            elif "balances" in snapshot_data:
-                # Convert balances to token holders format
-                token_holders = [{"address": f"0x{i:040x}", "balance": balance} for i, balance in enumerate(snapshot_data["balances"])]
-            
-            # Calculate metrics if not present or if token holders are available
-            if token_holders:
-                balances = [float(holder.get("balance", 0)) for holder in token_holders if float(holder.get("balance", 0)) > 0]
-                
-                if balances:
-                    # Calculate metrics
-                    metrics = calculate_all_concentration_metrics(balances)
-                    
-                    # Create snapshot in the expected format
-                    snapshot = {
-                        "timestamp": date_str,
-                        "date": date_str,
-                        "protocol": protocol,
-                        "token_holders": token_holders,
-                        "metrics": metrics
-                    }
-                    
-                    # Save snapshot
-                    snapshot_file = os.path.join(protocol_dir, f"snapshot_{i+1}.json")
-                    with open(snapshot_file, "w") as f:
-                        json.dump(snapshot, f, indent=2)
-                    
-                    # Collect data for visualization
-                    dates.append(date_str)
-                    gini_values.append(metrics.get("gini_coefficient", 0))
-                    
-                    click.echo(f"  ✓ Saved snapshot {i+1} with {len(token_holders)} holders and {len(metrics)} metrics")
-                else:
-                    click.echo(f"  ⚠️ No positive balances in snapshot {i+1}, skipping")
-            else:
-                click.echo(f"  ⚠️ No token holders in snapshot {i+1}, skipping")
-                
-        click.echo(f"💾 Saved {len(dates)} valid snapshots to {protocol_dir}")
 
         if not historical_snapshots_dict:
             click.echo("❌ Failed to generate historical snapshots")
