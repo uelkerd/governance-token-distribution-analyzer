@@ -2,6 +2,8 @@ codecov:
   require_ci_to_pass: true
   notify:
     wait_for_ci: true
+  repository:
+    name: governance-token-distribution-analyzer
 
 coverage:
   precision: 2
@@ -37,9 +39,9 @@ comment:
 flags:
   unittests:
     paths:
-      - governance_token_analyzer/
+      - src/governance_token_analyzer/
     carryforward: true
   integration:
     paths:
-      - governance_token_analyzer/
+      - src/governance_token_analyzer/
     carryforward: true 
