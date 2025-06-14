@@ -602,7 +602,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
         report_gen = ReportGenerator(output_dir=output_dir)
 
         # Get current data
-        click.echo(f"📡 Fetching current data...")
+        click.echo("📡 Fetching current data...")
         holders_data = api_client.get_token_holders(protocol, limit=1000, use_real_data=True)
 
         # Extract balances
@@ -617,7 +617,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
                     continue
 
         # Get governance data
-        click.echo(f"🏛️ Fetching governance data...")
+        click.echo("🏛️ Fetching governance data...")
         proposals = api_client.get_governance_proposals(protocol)
         click.echo(f"📊 Found {len(proposals)} governance proposals")
 
@@ -635,7 +635,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
         # Get historical data if requested
         historical_data = None
         if include_historical:
-            click.echo(f"📜 Loading historical data...")
+            click.echo("📜 Loading historical data...")
             try:
                 # Load historical snapshots
                 from governance_token_analyzer.core.historical_data import HistoricalDataManager
@@ -669,7 +669,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
         }
 
         # Generate report
-        click.echo(f"🔧 Generating report...")
+        click.echo("🔧 Generating report...")
         output_file = os.path.join(output_dir, f"{protocol}_report.{format}")
 
         try:
