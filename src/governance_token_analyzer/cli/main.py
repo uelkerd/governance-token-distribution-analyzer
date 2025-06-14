@@ -177,13 +177,14 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
       gova analyze -p aave -S
     """
     # Handle mutually exclusive options
-    if simulated_data:
-        live_data = False
-    # Handle mutually exclusive options
     if live_data and simulated_data:
         raise click.UsageError(
             "Options --live-data and --simulated-data are mutually exclusive. Please specify only one."
         )
+    
+    # Set live_data based on simulated_data flag
+    if simulated_data:
+        live_data = False
     try:
         execute_analyze_command(
             protocol=protocol,
@@ -221,7 +222,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
     help="Primary metric for comparison (default: gini_coefficient)",
 )
 @click.option(
-    "--format", "-f", type=click.Choice(["json", "html"]), default="json", help="Output format (default: json)"
+    "--format", "-f", type=click.Choice(["json", "html", "png"]), default="json", help="Output format (default: json)"
 )
 @click.option(
     "--output-dir",
@@ -503,7 +504,11 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
 
             # Calculate trend metrics
             if len(trend_data) >= 2:
-                trend_metrics = calculate_distribution_change(trend_data)
+                # Extract first and last data points for old and new distribution
+                old_data = pd.DataFrame([trend_data[0]])
+                new_data = pd.DataFrame([trend_data[-1]])
+                
+                trend_metrics = calculate_distribution_change(old_data, new_data)
 
                 # Display trend metrics
                 click.echo("\n📊 Trend Analysis Results:")
@@ -628,7 +633,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
             proposal_id = proposal.get("id")
             if proposal_id:
                 click.echo(f"🗳️ Fetching votes for proposal {proposal_id}")
-                votes = api_client.get_proposal_votes(protocol, proposal_id)
+                votes = api_client.get_governance_votes(protocol, proposal_id)
                 all_votes.extend(votes)
 
         click.echo(f"✅ Fetched {len(all_votes)} total votes across all proposals")
@@ -702,6 +707,14 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
     """
     dates = []
     gini_values = []
+    
+    # Ensure directories exist
+    try:
+        os.makedirs(protocol_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
+    except OSError as e:
+        click.echo(f"❌ Error creating directories: {e}")
+        return dates, gini_values
 
     # Save snapshots in the correct format for HistoricalDataManager
     for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items()):
@@ -718,7 +731,7 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
         # Calculate metrics if not present or if token holders are available
         if token_holders:
             balances = [
-                float(holder.get("balance", 0)) for holder in token_holders if float(holder.get("balance", 0)) > 0
+                balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0
             ]
 
             if balances:
@@ -736,14 +749,15 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
 
                 # Save snapshot
                 snapshot_file = os.path.join(protocol_dir, f"snapshot_{i + 1}.json")
-                with open(snapshot_file, "w") as f:
-                    json.dump(snapshot, f, indent=2)
-
-                # Collect data for visualization
-                dates.append(date_str)
-                gini_values.append(metrics.get("gini_coefficient", 0))
-
-                click.echo(f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics")
+                try:
+                    with open(snapshot_file, "w") as f:
+                        json.dump(snapshot, f, indent=2)
+                    # Collect data for visualization
+                    dates.append(date_str)
+                    gini_values.append(metrics.get("gini_coefficient", 0))
+                    click.echo(f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics")
+                except (IOError, OSError) as e:
+                    click.echo(f"  ❌ Error saving snapshot {i + 1} to {snapshot_file}: {e}")
             else:
                 click.echo(f"  ⚠️ No positive balances in snapshot {i + 1}, skipping")
         else:
