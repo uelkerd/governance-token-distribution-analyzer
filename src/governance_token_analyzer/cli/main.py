@@ -130,7 +130,7 @@ def cli(ctx):
     """
     # Ensure context object exists
     ctx.ensure_object(dict)
-    
+
     # Verify imports are available - moved here from module level
     try:
         # These imports are already done at the module level, but we check here
