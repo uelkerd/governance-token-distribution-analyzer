@@ -18,19 +18,15 @@ import click
 # Add the src directory to Python path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-# Import core functionality
-try:
-    from governance_token_analyzer.core.api_client import APIClient
-    from governance_token_analyzer.core.advanced_metrics import calculate_all_concentration_metrics
-    from governance_token_analyzer.core.config import PROTOCOLS
-    from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
-    from governance_token_analyzer.core import historical_data
-    from governance_token_analyzer.visualization.report_generator import ReportGenerator
-    from governance_token_analyzer.visualization.chart_generator import ChartGenerator
-    from governance_token_analyzer.analysis.voting_block import VotingBlockAnalyzer
-except ImportError as e:
-    click.echo(f"Error importing modules: {e}", err=True)
-    sys.exit(1)
+# Import core functionality - move these inside functions to avoid sys.exit during import
+from governance_token_analyzer.core.api_client import APIClient
+from governance_token_analyzer.core.advanced_metrics import calculate_all_concentration_metrics
+from governance_token_analyzer.core.config import PROTOCOLS
+from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
+from governance_token_analyzer.core import historical_data
+from governance_token_analyzer.visualization.report_generator import ReportGenerator
+from governance_token_analyzer.visualization.chart_generator import ChartGenerator
+from governance_token_analyzer.analysis.voting_block import VotingBlockAnalyzer
 
 # Configuration constants
 SUPPORTED_PROTOCOLS = list(PROTOCOLS.keys())
@@ -134,6 +130,22 @@ def cli(ctx):
     """
     # Ensure context object exists
     ctx.ensure_object(dict)
+    
+    # Verify imports are available - moved here from module level
+    try:
+        # These imports are already done at the module level, but we check here
+        # to make sure they're available when the CLI is actually run
+        from governance_token_analyzer.core.api_client import APIClient
+        from governance_token_analyzer.core.advanced_metrics import calculate_all_concentration_metrics
+        from governance_token_analyzer.core.config import PROTOCOLS
+        from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
+        from governance_token_analyzer.core import historical_data
+        from governance_token_analyzer.visualization.report_generator import ReportGenerator
+        from governance_token_analyzer.visualization.chart_generator import ChartGenerator
+        from governance_token_analyzer.analysis.voting_block import VotingBlockAnalyzer
+    except ImportError as e:
+        click.echo(f"Error importing modules: {e}", err=True)
+        ctx.exit(1)
 
 
 # ANALYZE COMMAND
