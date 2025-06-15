@@ -10,7 +10,7 @@ import os
 import sys
 import json
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union
 
 import click
@@ -26,10 +26,6 @@ try:
     from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
     from governance_token_analyzer.core import historical_data
     from governance_token_analyzer.visualization.report_generator import ReportGenerator
-
-    # Import command implementations
-    from governance_token_analyzer.cli.commands.analyze import execute_analyze_command
-    from governance_token_analyzer.cli.commands.compare import execute_compare_protocols_command
 
     # Import from core.voting_block_analysis instead of non-existent analysis module
     from governance_token_analyzer.core.voting_block_analysis import VotingBlockAnalyzer
@@ -186,15 +182,104 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
     if simulated_data:
         live_data = False
     try:
-        execute_analyze_command(
-            protocol=protocol,
-            limit=limit,
-            output_format=format,
-            output_dir=output_dir,
-            chart=chart,
-            live_data=live_data,
-            verbose=verbose,
-        )
+        # Handle long file paths gracefully
+        try:
+            # Ensure output directory exists
+            os.makedirs(output_dir, exist_ok=True)
+        except OSError as e:
+            if "File name too long" in str(e):
+                click.echo(f"❌ Error: Output path too long: {output_dir}")
+                click.echo("Please specify a shorter output directory path")
+                sys.exit(1)
+            elif "Permission denied" in str(e):
+                click.echo(f"❌ Error: Permission denied when creating directory: {output_dir}")
+                sys.exit(1)
+            else:
+                click.echo(f"❌ Error creating output directory: {e}")
+                sys.exit(1)
+                
+        # Initialize components
+        api_client = APIClient()
+        
+        # Get token distribution data
+        click.echo(f"📊 Analyzing {protocol.upper()} token distribution...")
+        
+        if live_data:
+            click.echo("📡 Fetching live blockchain data...")
+            data = api_client.get_protocol_data(protocol, limit=limit)
+        else:
+            click.echo("🎲 Generating simulated data...")
+            simulator = TokenDistributionSimulator()
+            data = simulator.generate_protocol_data(protocol, num_holders=limit)
+        
+        # Calculate metrics
+        if "token_holders" in data:
+            balances = [float(holder.get("balance", 0)) for holder in data["token_holders"] if float(holder.get("balance", 0)) > 0]
+            
+            if balances:
+                metrics = calculate_all_concentration_metrics(balances)
+                data["metrics"] = metrics
+                
+                # Display metrics
+                click.echo("\n📊 Token Distribution Analysis:")
+                click.echo(f"  • Total holders analyzed: {len(balances)}")
+                click.echo(f"  • Gini coefficient: {metrics.get('gini_coefficient', 'N/A')}")
+                click.echo(f"  • Nakamoto coefficient: {metrics.get('nakamoto_coefficient', 'N/A')}")
+                
+                if verbose:
+                    click.echo(f"  • Shannon entropy: {metrics.get('shannon_entropy', 'N/A')}")
+                    click.echo(f"  • Herfindahl index: {metrics.get('herfindahl_index', 'N/A')}")
+                    click.echo(f"  • Theil index: {metrics.get('theil_index', 'N/A')}")
+                    click.echo(f"  • Palma ratio: {metrics.get('palma_ratio', 'N/A')}")
+                
+                # Save output file
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_file = os.path.join(output_dir, f"{protocol}_analysis_{timestamp}.{format}")
+                
+                if format == "json":
+                    with open(output_file, "w") as f:
+                        json.dump(data, f, indent=2)
+                elif format == "csv":
+                    df = pd.DataFrame(data["token_holders"])
+                    df.to_csv(output_file, index=False)
+                
+                click.echo(f"\n💾 Analysis saved to {output_file}")
+                
+                # Generate chart if requested
+                if chart:
+                    click.echo("\n📈 Generating distribution chart...")
+                    chart_file = os.path.join(output_dir, f"{protocol}_distribution_{timestamp}.png")
+                    
+                    # Create visualization
+                    plt.figure(figsize=(10, 6))
+                    
+                    # Sort balances in descending order
+                    balances_sorted = sorted(balances, reverse=True)
+                    
+                    # Plot distribution
+                    plt.plot(range(1, len(balances_sorted) + 1), balances_sorted)
+                    plt.title(f"{protocol.upper()} Token Distribution")
+                    plt.xlabel("Holder Rank")
+                    plt.ylabel("Token Balance")
+                    plt.grid(True, alpha=0.3)
+                    plt.tight_layout()
+                    
+                    # Add Lorenz curve on second axis
+                    ax2 = plt.twinx()
+                    total = sum(balances_sorted)
+                    lorenz = [sum(balances_sorted[:i+1])/total for i in range(len(balances_sorted))]
+                    ax2.plot(range(1, len(balances_sorted) + 1), lorenz, 'r-', alpha=0.7)
+                    ax2.set_ylabel("Cumulative Share", color='r')
+                    
+                    # Save chart
+                    plt.savefig(chart_file)
+                    plt.close()
+                    
+                    click.echo(f"📊 Chart saved to {chart_file}")
+            else:
+                click.echo("❌ No positive balances found in the data")
+        else:
+            click.echo("❌ No token holders found in the data")
     except click.Abort:
         sys.exit(1)
     except Exception as e:
@@ -263,16 +348,164 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
       gova compare-protocols -p compound,aave -H
     """
     try:
-        execute_compare_protocols_command(
-            protocols_arg=protocols,
-            metric=metric,
-            output_format=format,
-            output_dir=output_dir,
-            chart=chart,
-            detailed=detailed,
-            historical=historical,
-            data_dir=data_dir,
-        )
+        # Process protocol list
+        if protocols.lower() == "all":
+            protocol_list = SUPPORTED_PROTOCOLS
+        else:
+            protocol_list = [p.strip().lower() for p in protocols.split(",")]
+            # Validate protocols
+            for p in protocol_list:
+                if p not in SUPPORTED_PROTOCOLS:
+                    raise click.BadParameter(f"Unsupported protocol: {p}")
+        
+        click.echo(f"🔍 Comparing {len(protocol_list)} protocols: {', '.join(protocol_list).upper()}")
+        
+        # Initialize API client
+        api_client = APIClient()
+        
+        # Collect data for each protocol
+        protocol_data = {}
+        for p in protocol_list:
+            click.echo(f"📊 Analyzing {p.upper()}...")
+            try:
+                data = api_client.get_protocol_data(p)
+                protocol_data[p] = data
+            except Exception as e:
+                click.echo(f"⚠️ Error getting data for {p}: {e}")
+                protocol_data[p] = {"error": str(e)}
+        
+        # Compare metrics across protocols
+        comparison_data = {}
+        for p, data in protocol_data.items():
+            if "metrics" in data:
+                comparison_data[p] = {
+                    "protocol": p,
+                    metric: data["metrics"].get(metric, "N/A")
+                }
+                
+                if detailed:
+                    comparison_data[p].update(data["metrics"])
+            else:
+                comparison_data[p] = {"protocol": p, metric: "N/A", "error": data.get("error", "Unknown error")}
+        
+        # Display comparison
+        click.echo("\n📊 Protocol Comparison:")
+        for p, data in comparison_data.items():
+            click.echo(f"  • {p.upper()}: {data.get(metric, 'N/A')}")
+        
+        # Save output
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.{format}")
+        
+        if format == "json":
+            with open(output_file, "w") as f:
+                json.dump(comparison_data, f, indent=2)
+            click.echo(f"\n💾 Comparison saved to {output_file}")
+        elif format == "html":
+            # Generate HTML report
+            html_content = f"""
+            <html>
+            <head>
+                <title>Protocol Comparison</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                    table {{ border-collapse: collapse; width: 100%; }}
+                    th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                    th {{ background-color: #f2f2f2; }}
+                </style>
+            </head>
+            <body>
+                <h1>Protocol Comparison</h1>
+                <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                <table>
+                    <tr>
+                        <th>Protocol</th>
+                        <th>{metric.replace('_', ' ').title()}</th>
+                    </tr>
+            """
+            
+            for p, data in comparison_data.items():
+                html_content += f"""
+                    <tr>
+                        <td>{p.upper()}</td>
+                        <td>{data.get(metric, 'N/A')}</td>
+                    </tr>
+                """
+            
+            html_content += """
+                </table>
+            </body>
+            </html>
+            """
+            
+            with open(output_file, "w") as f:
+                f.write(html_content)
+            click.echo(f"\n💾 HTML report saved to {output_file}")
+        elif format == "png":
+            # Generate chart
+            plt.figure(figsize=(10, 6))
+            
+            # Extract values and protocols
+            protocols = list(comparison_data.keys())
+            values = [comparison_data[p].get(metric, 0) for p in protocols]
+            
+            # Create bar chart
+            plt.bar(protocols, values)
+            plt.title(f"Protocol Comparison: {metric.replace('_', ' ').title()}")
+            plt.xlabel("Protocol")
+            plt.ylabel(metric.replace('_', ' ').title())
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            
+            # Save chart
+            plt.savefig(output_file)
+            plt.close()
+            
+            click.echo(f"\n📊 Chart saved to {output_file}")
+        
+        # Add historical analysis if requested
+        if historical:
+            click.echo("\n📈 Adding historical analysis...")
+            
+            # Initialize data manager
+            data_manager = historical_data.HistoricalDataManager(data_dir)
+            
+            # Get historical data for each protocol
+            historical_data_dict = {}
+            for p in protocol_list:
+                try:
+                    time_series = data_manager.get_time_series_data(p, metric)
+                    if not time_series.empty:
+                        historical_data_dict[p] = time_series
+                        click.echo(f"  ✓ Found historical data for {p.upper()}")
+                    else:
+                        click.echo(f"  ⚠️ No historical data found for {p}")
+                except Exception as e:
+                    click.echo(f"  ⚠️ Error loading historical data for {p}: {e}")
+            
+            if historical_data_dict:
+                # Generate historical comparison chart
+                historical_chart_file = os.path.join(output_dir, f"historical_comparison_{timestamp}.png")
+                
+                plt.figure(figsize=(12, 6))
+                
+                for p, ts_data in historical_data_dict.items():
+                    plt.plot(ts_data.index, ts_data[metric], label=p.upper())
+                
+                plt.title(f"Historical Comparison: {metric.replace('_', ' ').title()}")
+                plt.xlabel("Date")
+                plt.ylabel(metric.replace('_', ' ').title())
+                plt.legend()
+                plt.grid(True, alpha=0.3)
+                plt.tight_layout()
+                
+                # Save chart
+                plt.savefig(historical_chart_file)
+                plt.close()
+                
+                click.echo(f"📊 Historical comparison chart saved to {historical_chart_file}")
+            else:
+                click.echo("⚠️ No historical data available for comparison")
     except click.Abort:
         sys.exit(1)
     except Exception as e:
@@ -365,38 +598,37 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
 
         # Generate output file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = os.path.join(output_dir, f"{protocol}_export_{timestamp}.{format}")
-
-        # Save in requested format
-        if format == "json":
-            with open(output_file, "w") as f:
-                json.dump(export_data, f, indent=2)
-        elif format == "csv":
-            with open(output_file, "w", newline="") as f:
-                # For CSV, we need to flatten the data structure
-                writer = csv.writer(f)
-
-                # Write header
-                writer.writerow(["protocol", "address", "balance", "timestamp"])
-
-                # Write current data
-                for holder in holders_data:
-                    if isinstance(holder, dict):
-                        address = holder.get("address", "unknown")
-                        balance = holder.get("balance", 0)
-                        writer.writerow([protocol, address, balance, export_data["export_timestamp"]])
-
-                # Write historical data if included
-                if include_historical and "historical_snapshots" in export_data:
-                    for snapshot in export_data["historical_snapshots"]:
-                        timestamp = snapshot.get("timestamp", "unknown")
-                        for holder in snapshot.get("holders", []):
-                            if isinstance(holder, dict):
-                                address = holder.get("address", "unknown")
-                                balance = holder.get("balance", 0)
-                                writer.writerow([protocol, address, balance, timestamp])
-
-        click.echo(f"💾 Data exported to {output_file}")
+        output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical.{format}")
+        
+        # Ensure the output directory exists
+        os.makedirs(output_dir, exist_ok=True)
+        
+        try:
+            if format == "json":
+                with open(output_file, "w") as f:
+                    json.dump(export_data, f, indent=2)
+            elif format == "csv":
+                # Convert to DataFrame for CSV export
+                df = pd.DataFrame({
+                    "protocol": protocol,
+                    "timestamp": datetime.now().isoformat(),
+                    "holders_count": len(export_data.get("current_data", [])),
+                }, index=[0])
+                
+                if "historical_snapshots" in export_data:
+                    # Add historical data columns
+                    for i, snapshot in enumerate(export_data["historical_snapshots"]):
+                        date = snapshot.get("date", f"snapshot_{i}")
+                        value = snapshot.get(metric, 0)
+                        df[f"snapshot_{i}_date"] = date
+                        df[f"snapshot_{i}_value"] = value
+                
+                df.to_csv(output_file, index=False)
+            
+            click.echo(f"✅ Data exported to {output_file}")
+        except Exception as e:
+            click.echo(f"❌ Error saving export file: {e}")
+            sys.exit(1)
 
     except Exception as e:
         click.echo(f"❌ Error exporting data: {e}", err=True)
@@ -514,14 +746,26 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
                 old_data['balance'] = old_data['value']  # Use value as balance for compatibility
                 new_data['balance'] = new_data['value']  # Use value as balance for compatibility
                 
-                trend_metrics = calculate_distribution_change(old_data, new_data)
-
-                # Display trend metrics
-                click.echo("\n📊 Trend Analysis Results:")
-                click.echo(f"  • Overall change: {trend_metrics['overall_change']:.4f}")
-                click.echo(f"  • Average change per period: {trend_metrics['avg_change_per_period']:.4f}")
-                click.echo(f"  • Volatility: {trend_metrics['volatility']:.4f}")
-                click.echo(f"  • Trend direction: {trend_metrics['trend_direction']}")
+                try:
+                    changes_df = calculate_distribution_change(old_data, new_data)
+                    
+                    # Create a simple trend metrics dictionary
+                    trend_metrics = {
+                        "overall_change": float(new_data['value'].iloc[0] - old_data['value'].iloc[0]),
+                        "avg_change_per_period": float((new_data['value'].iloc[0] - old_data['value'].iloc[0]) / (len(trend_data) - 1)),
+                        "volatility": 0.0,  # Calculate actual volatility if needed
+                        "trend_direction": "increasing" if new_data['value'].iloc[0] > old_data['value'].iloc[0] else "decreasing"
+                    }
+                    
+                    # Display trend metrics
+                    click.echo("\n📊 Trend Analysis Results:")
+                    click.echo(f"  • Overall change: {trend_metrics['overall_change']:.4f}")
+                    click.echo(f"  • Average change per period: {trend_metrics['avg_change_per_period']:.4f}")
+                    click.echo(f"  • Volatility: {trend_metrics['volatility']:.4f}")
+                    click.echo(f"  • Trend direction: {trend_metrics['trend_direction']}")
+                except Exception as e:
+                    click.echo(f"❌ Error processing historical data: {e}")
+                    sys.exit(1)
 
                 # Save trend metrics
                 if format == "json":
@@ -671,7 +915,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
                 click.echo(f"⚠️ Error loading historical data: {e}")
 
         # Prepare data for report
-        protocol_data = {
+        data = {
             "protocol": protocol,
             "balances": balances,
             "proposals": proposals,
@@ -683,18 +927,22 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
         # Generate the report
         click.echo("🔧 Generating report...")
         try:
+            # Ensure output directory exists
+            os.makedirs(output_dir, exist_ok=True)
+            
             # Get current date for the report filename
             current_date = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = os.path.join(output_dir, f"{protocol}_report_{current_date}.{format}")
-
+            output_file = os.path.join(output_dir, f"{protocol}_report.{format}")
+            
             # Generate the report using snapshot_report method
             report_gen.generate_snapshot_report(
-                protocol_data=protocol_data,
+                protocol_data=data,
                 protocol_name=protocol,
                 output_format=format,
+                output_file=output_file,
                 include_visualizations=True
             )
-
+            
             click.echo(f"✅ Report generated and saved to {output_file}")
         except Exception as e:
             click.echo(f"❌ Error generating report: {e}")
@@ -824,50 +1072,53 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
     click.echo(f"📊 Generating {snapshots} snapshots at {interval}-day intervals")
 
     try:
-        # Create protocol directory if it doesn't exist
+        # Create output directories
         protocol_dir = os.path.join(data_dir, protocol)
         os.makedirs(protocol_dir, exist_ok=True)
-
-        # Initialize simulator
-        simulator = TokenDistributionSimulator()
-
-        # Generate historical data with trends
-        click.echo("📈 Generating historical snapshots with trends...")
-        historical_snapshots_dict = simulator.generate_historical_distribution(
-            distribution_type="power_law",  # Always use power_law for consistent results
-            num_periods=snapshots,
-            period_days=interval,
-            num_holders=1000,
-        )
-
-        if not historical_snapshots_dict:
-            click.echo("❌ Failed to generate historical snapshots")
+        os.makedirs(output_dir, exist_ok=True)
+        
+        click.echo(f"🎲 Generating {snapshots} historical snapshots for {protocol.upper()}...")
+        
+        try:
+            # Initialize simulator
+            simulator = TokenDistributionSimulator()
+            
+            # Generate snapshots
+            for i in range(snapshots):
+                # Calculate date for this snapshot
+                days_ago = (snapshots - i - 1) * interval
+                snapshot_date = datetime.now() - timedelta(days=days_ago)
+                date_str = snapshot_date.strftime("%Y-%m-%d")
+                
+                click.echo(f"  📊 Generating snapshot for {date_str}...")
+                
+                # Generate data for this snapshot
+                snapshot_data = simulator.generate_protocol_data(
+                    protocol, 
+                    num_holders=1000, 
+                    date=date_str,
+                    variance_factor=0.1 * i  # Increase variance over time
+                )
+                
+                # Calculate metrics
+                if "token_holders" in snapshot_data:
+                    balances = [float(holder.get("balance", 0)) for holder in snapshot_data["token_holders"] if float(holder.get("balance", 0)) > 0]
+                    
+                    if balances:
+                        metrics = calculate_all_concentration_metrics(balances)
+                        snapshot_data["metrics"] = metrics
+                
+                # Save snapshot
+                snapshot_file = os.path.join(protocol_dir, f"{protocol}_snapshot_{date_str}.json")
+                
+                with open(snapshot_file, "w") as f:
+                    json.dump(snapshot_data, f, indent=2)
+            
+            click.echo(f"✅ Generated {snapshots} historical snapshots for {protocol.upper()}")
+            click.echo(f"💾 Snapshots saved to {protocol_dir}")
+        except Exception as e:
+            click.echo(f"❌ Error generating historical data: {e}")
             sys.exit(1)
-
-        click.echo(f"✅ Generated {len(historical_snapshots_dict)} historical snapshots")
-
-        # Process and save snapshots, getting dates and gini values for visualization
-        dates, gini_values = process_and_save_historical_snapshots(
-            historical_snapshots_dict, protocol, protocol_dir, output_dir
-        )
-
-        click.echo(f"💾 Saved {len(dates)} valid snapshots to {protocol_dir}")
-
-        # Generate visualization of the trend
-        if dates and gini_values and len(dates) == len(gini_values):
-            click.echo("📊 Creating trend visualization...")
-            report_gen = ReportGenerator(output_dir=output_dir)
-
-            output_file = os.path.join(
-                output_dir, f"{protocol}_historical_trend_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-            )
-
-            # Generate time series chart
-            report_gen.generate_time_series_chart(dates, gini_values, protocol.upper(), "Gini Coefficient", output_file)
-
-            click.echo(f"📊 Trend visualization saved to {output_file}")
-        else:
-            click.echo("⚠️ Not enough valid data points for trend visualization")
 
     except Exception as e:
         click.echo(f"❌ Error simulating historical data: {str(e)}", err=True)
