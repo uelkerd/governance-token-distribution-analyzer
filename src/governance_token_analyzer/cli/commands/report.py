@@ -59,7 +59,7 @@ def execute_generate_report_command(
             for i, proposal in enumerate(governance_data, 1):
                 proposal_id = proposal.get("id")
                 click.echo(f"🗳️ Fetching votes for proposal {i}")
-                votes = api_client.get_proposal_votes(protocol, proposal_id)
+                votes = api_client.get_governance_votes(protocol, proposal_id)
                 all_votes.extend(votes)
                 
             click.echo(f"✅ Fetched {len(all_votes)} total votes across all proposals")

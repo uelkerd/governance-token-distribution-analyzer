@@ -116,6 +116,9 @@ class MetricsCollector:
             
         # Calculate metrics if token holders data is available
         if "token_holders" in data:
+            # Add total_holders field for compatibility with tests
+            data["total_holders"] = len(data["token_holders"])
+            
             balances = [float(holder.get("balance", 0)) for holder in data["token_holders"] 
                        if float(holder.get("balance", 0)) > 0]
             
