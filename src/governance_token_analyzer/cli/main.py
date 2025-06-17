@@ -695,6 +695,24 @@ def generate_report(protocol, output_format, output_dir, include_historical, dat
         sys.exit(1)
 
 
+def _ensure_directories(dirs):
+    """Ensure all required directories exist.
+    
+    Args:
+        dirs: List of directory paths to create
+        
+    Returns:
+        bool: True if successful, False if error occurred
+    """
+    try:
+        for dir_path in dirs:
+            os.makedirs(dir_path, exist_ok=True)
+        return True
+    except OSError as e:
+        click.echo(f"❌ Error creating directories: {e}")
+        return False
+
+
 def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, protocol_dir, output_dir):
     """
     Process and save historical snapshots to disk.
@@ -708,65 +726,21 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
     Returns:
         tuple: Lists of dates and gini values for visualization
     """
-    dates = []
-    gini_values = []
-
-    # Ensure directories exist
-    try:
-        os.makedirs(protocol_dir, exist_ok=True)
-        os.makedirs(output_dir, exist_ok=True)
-    except OSError as e:
-        click.echo(f"❌ Error creating directories: {e}")
-        return dates, gini_values
-
-    # Save snapshots in the correct format for HistoricalDataManager
-    for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items()):
-        # Extract token holders from the snapshot
-        token_holders = []
-        if "token_holders" in snapshot_data:
-            token_holders = snapshot_data["token_holders"]
-        elif "balances" in snapshot_data:
-            # Convert balances to token holders format
-            token_holders = [
-                {"address": f"0x{i:040x}", "balance": balance} for i, balance in enumerate(snapshot_data["balances"])
-            ]
-
-        # Calculate metrics if not present or if token holders are available
-        if token_holders:
-            balances = [
-                balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0
-            ]
-
-            if balances:
-                # Calculate metrics
-                metrics = calculate_all_concentration_metrics(balances)
-
-                # Create snapshot in the expected format
-                snapshot = {
-                    "timestamp": date_str,
-                    "date": date_str,
-                    "protocol": protocol,
-                    "token_holders": token_holders,
-                    "metrics": metrics,
-                }
-
-                # Save snapshot
-                snapshot_file = os.path.join(protocol_dir, f"snapshot_{i + 1}.json")
-                try:
-                    with open(snapshot_file, "w") as f:
-                        json.dump(snapshot, f, indent=2)
-                    # Collect data for visualization
-                    dates.append(date_str)
-                    gini_values.append(metrics.get("gini_coefficient", 0))
-                    click.echo(f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics")
-                except (IOError, OSError) as e:
-                    click.echo(f"  ❌ Error saving snapshot {i + 1} to {snapshot_file}: {e}")
-            else:
-                click.echo(f"  ⚠️ No positive balances in snapshot {i + 1}, skipping")
-        else:
-            click.echo(f"  ⚠️ No token holders in snapshot {i + 1}, skipping")
-
-    return dates, gini_values
+    # Ensure required directories exist
+    if not _ensure_directories([protocol_dir, output_dir]):
+        return [], []
+    
+    # Process all snapshots and collect visualization data
+    visualization_data = [
+        _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir)
+        for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items())
+    ]
+    
+    # Filter out None values and unzip the valid data points
+    valid_data = [(d, g) for d, g in visualization_data if d and g is not None]
+    dates, gini_values = zip(*valid_data) if valid_data else ([], [])
+    
+    return list(dates), list(gini_values)
 
 
 @cli.command(
