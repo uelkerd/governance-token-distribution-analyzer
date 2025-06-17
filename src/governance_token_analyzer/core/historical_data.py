@@ -735,6 +735,12 @@ def load_historical_snapshots(protocol: str, data_dir: str = "data/historical") 
 
         # Get snapshots
         return data_manager.get_snapshots(protocol)
-    except Exception as e:
-        logger.error(f"Failed to load historical snapshots for {protocol}: {e}")
+    try:
+        # ... same code ...
+        return data_manager.get_snapshots(protocol)
+    except (DataAccessError, ProtocolNotSupportedError, DataStorageError) as e:
+        logger.warning(f"Failed to load historical snapshots for {protocol} due to a known issue: {e}")
+        return []
+    except Exception as e: # Catch any other unexpected error
+        logger.error(f"An unexpected error occurred while loading historical snapshots for {protocol}: {e}", exc_info=True)
         return []
