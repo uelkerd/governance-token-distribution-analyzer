@@ -508,42 +508,62 @@ def historical_analysis(protocol, metric, data_dir, output_dir, output_format, p
                 # Extract token holder data from first and last snapshots for distribution change calculation
                 old_snapshot = data_manager.get_snapshot_by_date(protocol, trend_data[0]["date"])
                 new_snapshot = data_manager.get_snapshot_by_date(protocol, trend_data[-1]["date"])
-                
+
                 if old_snapshot and new_snapshot:
                     old_token_holders = old_snapshot.get("token_holders", [])
                     new_token_holders = new_snapshot.get("token_holders", [])
-                    
+
                     if old_token_holders and new_token_holders:
                         old_data = pd.DataFrame(old_token_holders)
                         new_data = pd.DataFrame(new_token_holders)
-                        
+
                         # Ensure 'balance' column is numeric and handle potential errors/NaNs
-                        if 'balance' in old_data.columns:
-                            old_data['balance'] = pd.to_numeric(old_data['balance'], errors='coerce').fillna(0)
-                        if 'balance' in new_data.columns:
-                            new_data['balance'] = pd.to_numeric(new_data['balance'], errors='coerce').fillna(0)
-                        
+                        if "balance" in old_data.columns:
+                            old_data["balance"] = pd.to_numeric(old_data["balance"], errors="coerce").fillna(0)
+                        if "balance" in new_data.columns:
+                            new_data["balance"] = pd.to_numeric(new_data["balance"], errors="coerce").fillna(0)
+
                         # Proceed only if essential columns are present
-                        if ('address' in old_data.columns and 'balance' in old_data.columns and
-                                'address' in new_data.columns and 'balance' in new_data.columns):
+                        if (
+                            "address" in old_data.columns
+                            and "balance" in old_data.columns
+                            and "address" in new_data.columns
+                            and "balance" in new_data.columns
+                        ):
                             trend_metrics = calculate_distribution_change(old_data, new_data)
-                            
+
                             # Display trend metrics
                             click.echo("\n📊 Trend Analysis Results:")
                             click.echo(f"  • Overall change: {trend_metrics.get('overall_change', 'N/A')}")
-                            click.echo(f"  • Average change per period: {trend_metrics.get('avg_change_per_period', 'N/A')}")
+                            click.echo(
+                                f"  • Average change per period: {trend_metrics.get('avg_change_per_period', 'N/A')}"
+                            )
                             click.echo(f"  • Volatility: {trend_metrics.get('volatility', 'N/A')}")
                             click.echo(f"  • Trend direction: {trend_metrics.get('trend_direction', 'N/A')}")
                         else:
-                            click.echo(click.style("⚠️ Warning: Could not calculate trend metrics due to missing 'address' or 'balance' columns in token holder data.", fg='yellow'))
+                            click.echo(
+                                click.style(
+                                    "⚠️ Warning: Could not calculate trend metrics due to missing 'address' or 'balance' columns in token holder data.",
+                                    fg="yellow",
+                                )
+                            )
                             trend_metrics = {}  # Default to empty if data is insufficient
                     else:
-                        click.echo(click.style("⚠️ Warning: Not enough token holder data in snapshots to calculate trend metrics.", fg='yellow'))
+                        click.echo(
+                            click.style(
+                                "⚠️ Warning: Not enough token holder data in snapshots to calculate trend metrics.",
+                                fg="yellow",
+                            )
+                        )
                         trend_metrics = {}  # Default to empty if data is insufficient
                 else:
-                    click.echo(click.style("⚠️ Warning: Could not retrieve complete snapshot data for trend analysis.", fg='yellow'))
+                    click.echo(
+                        click.style(
+                            "⚠️ Warning: Could not retrieve complete snapshot data for trend analysis.", fg="yellow"
+                        )
+                    )
                     trend_metrics = {}  # Default to empty if data is insufficient
-                
+
                 # Save trend metrics
                 if output_format == "json" and trend_metrics:
                     output_file = os.path.join(output_dir, f"{protocol}_{metric}_trends.json")
@@ -735,14 +755,14 @@ def _ensure_directories(dirs):
 def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
     """
     Process a single historical snapshot and save to disk.
-    
+
     Args:
         index: Snapshot index
         date_str: Date string for the snapshot
         snapshot_data: The snapshot data to process
         protocol: Protocol name
         protocol_dir: Directory to save the snapshot
-        
+
     Returns:
         tuple: Date string and gini coefficient value, or (None, None) if processing fails
     """
@@ -752,10 +772,10 @@ def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
         if not token_holders:
             click.echo(f"⚠️ Warning: No token holders in snapshot {date_str}")
             return None, None
-            
+
         # Convert to DataFrame for consistency
         df = pd.DataFrame(token_holders)
-        
+
         # Calculate metrics
         gini = None
         if "balance" in df.columns and len(df) > 0:
@@ -763,18 +783,19 @@ def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
                 # Convert balance column to numeric, handling errors gracefully
                 df["balance"] = pd.to_numeric(df["balance"], errors="coerce")
                 df = df.dropna(subset=["balance"])
-                
+
                 # Calculate Gini coefficient if we have valid balances
                 if not df.empty and df["balance"].sum() > 0:
                     from governance_token_analyzer.core.advanced_metrics import calculate_gini_coefficient
+
                     gini = calculate_gini_coefficient(df["balance"].values)
             except Exception as e:
                 click.echo(f"⚠️ Warning: Error calculating metrics for {date_str}: {e}")
-                
+
         # Save snapshot to file
         filename = f"{protocol}_snapshot_{date_str.replace('-', '')}.json"
         filepath = os.path.join(protocol_dir, filename)
-        
+
         # Add metadata to snapshot
         enhanced_data = {
             "timestamp": date_str,
@@ -783,18 +804,18 @@ def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
                 "metrics": {
                     "gini_coefficient": gini,
                     "total_tokens": df["balance"].sum() if "balance" in df.columns else 0,
-                    "num_holders": len(df)
-                }
-            }
+                    "num_holders": len(df),
+                },
+            },
         }
-        
+
         # Save to file
         with open(filepath, "w") as f:
             json.dump(enhanced_data, f, indent=2)
-            
+
         # Return values for visualization
         return date_str, gini
-        
+
     except Exception as e:
         click.echo(f"⚠️ Warning: Failed to process snapshot {date_str}: {e}")
         return None, None
@@ -816,17 +837,17 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
     # Ensure required directories exist
     if not _ensure_directories([protocol_dir, output_dir]):
         return [], []
-    
+
     # Process all snapshots and collect visualization data
     visualization_data = [
         _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir)
         for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items())
     ]
-    
+
     # Filter out None values and unzip the valid data points
     valid_data = [(d, g) for d, g in visualization_data if d is not None and g is not None]
     dates, gini_values = zip(*valid_data) if valid_data else ([], [])
-    
+
     return list(dates), list(gini_values)
 
 
