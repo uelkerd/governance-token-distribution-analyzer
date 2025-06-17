@@ -58,9 +58,20 @@ def execute_generate_report_command(
             all_votes = []
             for i, proposal in enumerate(governance_data, 1):
                 proposal_id = proposal.get("id")
-                click.echo(f"🗳️ Fetching votes for proposal {i}")
-                votes = api_client.get_governance_votes(protocol, proposal_id)
-                all_votes.extend(votes)
+                if not proposal_id:
+                    click.secho(f"⚠️ Skipping proposal {i}: No proposal ID found", fg="yellow")
+                    continue
+                    
+                click.echo(f"🗳️ Fetching votes for proposal {i} (ID: {proposal_id})")
+                try:
+                    votes = api_client.get_governance_votes(protocol, proposal_id)
+                    if votes:
+                        all_votes.extend(votes)
+                        click.echo(f"  ✓ Found {len(votes)} votes")
+                    else:
+                        click.secho(f"  ⚠️ No votes found for proposal {i}", fg="yellow")
+                except Exception as e:
+                    click.secho(f"  ⚠️ Error fetching votes for proposal {i}: {e}", fg="yellow")
 
             click.echo(f"✅ Fetched {len(all_votes)} total votes across all proposals")
         else:
