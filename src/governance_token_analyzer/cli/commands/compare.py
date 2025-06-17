@@ -35,7 +35,7 @@ def execute_compare_protocols_command(
 ) -> None:
     """
     Execute the compare-protocols command to compare metrics across multiple protocols.
-    
+
     Args:
         protocols_arg: Comma-separated list of protocols to compare or "all"
         metric: Primary metric for comparison
@@ -55,24 +55,24 @@ def execute_compare_protocols_command(
         for p in protocol_list:
             if p not in PROTOCOLS:
                 raise click.BadParameter(f"Unsupported protocol: {p}")
-    
+
     click.echo(f"🔍 Comparing {len(protocol_list)} protocols: {', '.join(protocol_list).upper()}")
-    
+
     # Initialize metrics collector
     metrics_collector = MetricsCollector(use_live_data=True)
-    
+
     # Compare protocols
     comparison_data = metrics_collector.compare_protocols(protocol_list, metric)
-    
+
     # Display comparison
     click.echo("\n📊 Protocol Comparison:")
     for p, data in comparison_data.items():
         click.echo(f"  • {p.upper()}: {data.get(metric, 'N/A')}")
-    
+
     # Save output
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.{output_format}")
-    
+
     if output_format == "json":
         with open(output_file, "w") as f:
             json.dump(comparison_data, f, indent=2)
@@ -92,60 +92,60 @@ def execute_compare_protocols_command(
         </head>
         <body>
             <h1>Protocol Comparison</h1>
-            <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
             <table>
                 <tr>
                     <th>Protocol</th>
-                    <th>{metric.replace('_', ' ').title()}</th>
+                    <th>{metric.replace("_", " ").title()}</th>
                 </tr>
         """
-        
+
         for p, data in comparison_data.items():
             html_content += f"""
                 <tr>
                     <td>{p.upper()}</td>
-                    <td>{data.get(metric, 'N/A')}</td>
+                    <td>{data.get(metric, "N/A")}</td>
                 </tr>
             """
-        
+
         html_content += """
             </table>
         </body>
         </html>
         """
-        
+
         with open(output_file, "w") as f:
             f.write(html_content)
         click.echo(f"\n💾 HTML report saved to {output_file}")
     elif output_format == "png":
         # Generate chart
         plt.figure(figsize=(10, 6))
-        
+
         # Extract values and protocols
         protocols = list(comparison_data.keys())
         values = [comparison_data[p].get(metric, 0) for p in protocols]
-        
+
         # Create bar chart
         plt.bar(protocols, values)
         plt.title(f"Protocol Comparison: {metric.replace('_', ' ').title()}")
         plt.xlabel("Protocol")
-        plt.ylabel(metric.replace('_', ' ').title())
+        plt.ylabel(metric.replace("_", " ").title())
         plt.xticks(rotation=45)
         plt.tight_layout()
-        
+
         # Save chart
         plt.savefig(output_file)
         plt.close()
-        
+
         click.echo(f"\n📊 Chart saved to {output_file}")
-    
+
     # Add historical analysis if requested
     if historical:
         click.echo("\n📈 Adding historical analysis...")
-        
+
         # Initialize data manager
         data_manager = HistoricalDataManager(data_dir)
-        
+
         # Get historical data for each protocol
         historical_data_dict = {}
         for p in protocol_list:
@@ -158,27 +158,27 @@ def execute_compare_protocols_command(
                     click.echo(f"  ⚠️ No historical data found for {p}")
             except Exception as e:
                 click.echo(f"  ⚠️ Error loading historical data for {p}: {e}")
-        
+
         if historical_data_dict:
             # Generate historical comparison chart
             historical_chart_file = os.path.join(output_dir, f"historical_comparison_{timestamp}.png")
-            
+
             plt.figure(figsize=(12, 6))
-            
+
             for p, ts_data in historical_data_dict.items():
                 plt.plot(ts_data.index, ts_data[metric], label=p.upper())
-            
+
             plt.title(f"Historical Comparison: {metric.replace('_', ' ').title()}")
             plt.xlabel("Date")
-            plt.ylabel(metric.replace('_', ' ').title())
+            plt.ylabel(metric.replace("_", " ").title())
             plt.legend()
             plt.grid(True, alpha=0.3)
             plt.tight_layout()
-            
+
             # Save chart
             plt.savefig(historical_chart_file)
             plt.close()
-            
+
             click.echo(f"📊 Historical comparison chart saved to {historical_chart_file}")
         else:
-            click.echo("⚠️ No historical data available for comparison") 
+            click.echo("⚠️ No historical data available for comparison")

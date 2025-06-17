@@ -183,7 +183,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
         raise click.UsageError(
             "Options --live-data and --simulated-data are mutually exclusive. Please specify only one."
         )
-    
+
     # Set live_data based on simulated_data flag
     if simulated_data:
         live_data = False
@@ -368,22 +368,25 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
         # Generate output file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical.{format}")
-        
+
         # Ensure the output directory exists
         os.makedirs(output_dir, exist_ok=True)
-        
+
         try:
             if format == "json":
                 with open(output_file, "w") as f:
                     json.dump(export_data, f, indent=2)
             elif format == "csv":
                 # Convert to DataFrame for CSV export
-                df = pd.DataFrame({
-                    "protocol": protocol,
-                    "timestamp": datetime.now().isoformat(),
-                    "holders_count": len(export_data.get("current_data", [])),
-                }, index=[0])
-                
+                df = pd.DataFrame(
+                    {
+                        "protocol": protocol,
+                        "timestamp": datetime.now().isoformat(),
+                        "holders_count": len(export_data.get("current_data", [])),
+                    },
+                    index=[0],
+                )
+
                 if "historical_snapshots" in export_data:
                     # Add historical data columns
                     for i, snapshot in enumerate(export_data["historical_snapshots"]):
@@ -391,9 +394,9 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
                         value = snapshot.get(metric, 0)
                         df[f"snapshot_{i}_date"] = date
                         df[f"snapshot_{i}_value"] = value
-                
+
                 df.to_csv(output_file, index=False)
-            
+
             click.echo(f"✅ Data exported to {output_file}")
         except Exception as e:
             click.echo(f"❌ Error saving export file: {e}")
@@ -531,7 +534,7 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
     """
     dates = []
     gini_values = []
-    
+
     # Ensure directories exist
     try:
         os.makedirs(protocol_dir, exist_ok=True)
@@ -554,9 +557,7 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
 
         # Calculate metrics if not present or if token holders are available
         if token_holders:
-            balances = [
-                balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0
-            ]
+            balances = [balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0]
 
             if balances:
                 # Calculate metrics
@@ -579,7 +580,9 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
                     # Collect data for visualization
                     dates.append(date_str)
                     gini_values.append(metrics.get("gini_coefficient", 0))
-                    click.echo(f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics")
+                    click.echo(
+                        f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics"
+                    )
                 except (IOError, OSError) as e:
                     click.echo(f"  ❌ Error saving snapshot {i + 1} to {snapshot_file}: {e}")
             else:
@@ -639,44 +642,48 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
         protocol_dir = os.path.join(data_dir, protocol)
         os.makedirs(protocol_dir, exist_ok=True)
         os.makedirs(output_dir, exist_ok=True)
-        
+
         click.echo(f"🎲 Generating {snapshots} historical snapshots for {protocol.upper()}...")
-        
+
         try:
             # Initialize simulator
             simulator = TokenDistributionSimulator()
-            
+
             # Generate snapshots
             for i in range(snapshots):
                 # Calculate date for this snapshot
                 days_ago = (snapshots - i - 1) * interval
                 snapshot_date = datetime.now() - timedelta(days=days_ago)
                 date_str = snapshot_date.strftime("%Y-%m-%d")
-                
+
                 click.echo(f"  📊 Generating snapshot for {date_str}...")
-                
+
                 # Generate data for this snapshot
                 snapshot_data = simulator.generate_protocol_data(
-                    protocol, 
-                    num_holders=1000, 
+                    protocol,
+                    num_holders=1000,
                     date=date_str,
-                    variance_factor=0.1 * i  # Increase variance over time
+                    variance_factor=0.1 * i,  # Increase variance over time
                 )
-                
+
                 # Calculate metrics
                 if "token_holders" in snapshot_data:
-                    balances = [float(holder.get("balance", 0)) for holder in snapshot_data["token_holders"] if float(holder.get("balance", 0)) > 0]
-                    
+                    balances = [
+                        float(holder.get("balance", 0))
+                        for holder in snapshot_data["token_holders"]
+                        if float(holder.get("balance", 0)) > 0
+                    ]
+
                     if balances:
                         metrics = calculate_all_concentration_metrics(balances)
                         snapshot_data["metrics"] = metrics
-                
+
                 # Save snapshot
                 snapshot_file = os.path.join(protocol_dir, f"{protocol}_snapshot_{date_str}.json")
-                
+
                 with open(snapshot_file, "w") as f:
                     json.dump(snapshot_data, f, indent=2)
-            
+
             click.echo(f"✅ Generated {snapshots} historical snapshots for {protocol.upper()}")
             click.echo(f"💾 Snapshots saved to {protocol_dir}")
         except Exception as e:

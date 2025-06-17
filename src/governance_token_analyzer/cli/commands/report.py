@@ -24,7 +24,7 @@ def execute_generate_report_command(
 ) -> None:
     """
     Execute the generate-report command to create a comprehensive analysis report.
-    
+
     Args:
         protocol: Protocol to generate report for
         output_format: Report format (html)
@@ -34,26 +34,26 @@ def execute_generate_report_command(
     """
     # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
-    
+
     click.echo(f"📑 Generating report for {protocol.upper()}...")
-    
+
     try:
         # Initialize components
         metrics_collector = MetricsCollector(use_live_data=True)
         report_generator = ReportGenerator()
-        
+
         # Get current data
         click.echo("📡 Fetching current data...")
         current_data = metrics_collector.collect_protocol_data(protocol)
-        
+
         # Get governance data
         click.echo("🏛️ Fetching governance data...")
         api_client = metrics_collector.api_client
         governance_data = api_client.get_governance_proposals(protocol)
-        
+
         if governance_data:
             click.echo(f"📊 Found {len(governance_data)} governance proposals")
-            
+
             # Fetch votes for each proposal
             all_votes = []
             for i, proposal in enumerate(governance_data, 1):
@@ -61,19 +61,19 @@ def execute_generate_report_command(
                 click.echo(f"🗳️ Fetching votes for proposal {i}")
                 votes = api_client.get_governance_votes(protocol, proposal_id)
                 all_votes.extend(votes)
-                
+
             click.echo(f"✅ Fetched {len(all_votes)} total votes across all proposals")
         else:
             click.echo("⚠️ No governance proposals found")
             all_votes = []
-            
+
         # Generate timestamp for output file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_file = os.path.join(output_dir, f"{protocol}_report_{timestamp}.{output_format}")
-        
+
         # Generate report
         click.echo("🔧 Generating report...")
-        
+
         # Get historical data if requested
         historical_data = None
         if include_historical:
@@ -81,7 +81,7 @@ def execute_generate_report_command(
             try:
                 data_manager = HistoricalDataManager(data_dir)
                 historical_data = {}
-                
+
                 for metric in ["gini_coefficient", "nakamoto_coefficient", "participation_rate"]:
                     try:
                         time_series = data_manager.get_time_series_data(protocol, metric)
@@ -92,7 +92,7 @@ def execute_generate_report_command(
             except Exception as e:
                 click.echo(f"⚠️ Error loading historical data: {e}")
                 historical_data = None
-        
+
         # Generate the report
         report_generator.generate_report(
             protocol=protocol,
@@ -102,9 +102,9 @@ def execute_generate_report_command(
             historical_data=historical_data,
             output_path=output_file,
         )
-        
+
         click.echo(f"✅ Report saved to {output_file}")
-        
+
     except Exception as e:
         click.echo(f"❌ Error generating report: {e}")
-        sys.exit(1) 
+        sys.exit(1)
