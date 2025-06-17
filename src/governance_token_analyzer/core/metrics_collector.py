@@ -17,34 +17,58 @@ from governance_token_analyzer.core.data_simulator import TokenDistributionSimul
 logger = logging.getLogger(__name__)
 
 
-def measure_api_call(func: Callable) -> Callable:
+def measure_api_call(func=None, **kwargs):
     """
     Decorator to measure API call performance and log results.
     
+    Can be used in two ways:
+    1. As a simple decorator: @measure_api_call
+    2. With parameters: @measure_api_call(protocol="compound", method="get_holders")
+    
     Args:
-        func: The function to measure
+        func: The function to measure (when used as a simple decorator)
+        **kwargs: Additional metadata to include in the logs and result
         
     Returns:
         Wrapped function with performance measurement
     """
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        elapsed_time = time.time() - start_time
-        
-        # Log the performance metrics
-        function_name = func.__name__
-        logger.info(f"API call to {function_name} completed in {elapsed_time:.2f} seconds")
-        
-        # Add performance metadata to result if it's a dict
-        if isinstance(result, dict):
-            if "_metadata" not in result:
-                result["_metadata"] = {}
-            result["_metadata"]["execution_time"] = elapsed_time
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **inner_kwargs):
+            start_time = time.time()
+            result = func(*args, **inner_kwargs)
+            elapsed_time = time.time() - start_time
             
-        return result
-    return wrapper
+            # Log the performance metrics
+            function_name = func.__name__
+            
+            # Include any additional metadata in the log
+            metadata_str = ""
+            if kwargs:
+                metadata_str = " ".join(f"{k}={v}" for k, v in kwargs.items())
+                
+            logger.info(f"API call to {function_name} completed in {elapsed_time:.2f} seconds {metadata_str}")
+            
+            # Add performance metadata to result if it's a dict
+            if isinstance(result, dict):
+                if "_metadata" not in result:
+                    result["_metadata"] = {}
+                result["_metadata"]["execution_time"] = elapsed_time
+                
+                # Add any additional metadata
+                for key, value in kwargs.items():
+                    result["_metadata"][key] = value
+                    
+            return result
+        return wrapper
+    
+    # Handle both @measure_api_call and @measure_api_call(protocol="compound")
+    if func is None:
+        # Called with parameters
+        return decorator
+    else:
+        # Called without parameters
+        return decorator(func)
 
 
 class MetricsCollector:
