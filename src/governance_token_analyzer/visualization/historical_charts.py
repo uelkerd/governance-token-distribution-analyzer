@@ -276,7 +276,7 @@ def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple
 
         # Extract top holder concentration data over time
         data = []
-        min_holders_count = float('inf')  # Track the minimum number of holders across snapshots
+        min_holders_count = float("inf")  # Track the minimum number of holders across snapshots
 
         for i, snapshot in enumerate(snapshots):
             # Validate snapshot format
@@ -301,14 +301,14 @@ def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple
                     key=lambda x: x["balance"],
                     reverse=True,
                 )[:10]  # Top 10 holders
-                
+
                 # Update minimum holders count
                 min_holders_count = min(min_holders_count, len(holders))
-                
+
             except (KeyError, TypeError) as e:
                 logger.warning(f"Skipping snapshot {i}: Error sorting token holders: {e}")
                 continue
-                
+
             if not holders:
                 logger.warning(f"Skipping snapshot {i}: No valid token holders found")
                 continue
@@ -336,10 +336,10 @@ def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple
                 transform=ax.transAxes,
             )
             return fig
-            
+
         # Convert to DataFrame
         df = pd.DataFrame(data)
-        
+
         # Check if we have any holder columns
         holder_columns = [col for col in df.columns if col.startswith("Holder ")]
         if not holder_columns:
@@ -355,10 +355,10 @@ def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple
                 transform=ax.transAxes,
             )
             return fig
-            
+
         # Set timestamp as index
         df.set_index("timestamp", inplace=True)
-        
+
         # Make sure all rows have the same number of columns
         # This is important for the heatmap to work correctly
         for i in range(1, min(10, min_holders_count) + 1):
@@ -372,20 +372,20 @@ def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple
         # Plot heatmap
         try:
             im = ax.imshow(df.values, aspect="auto", cmap="YlOrRd")
-            
+
             # Set labels
             ax.set_yticks(range(len(df.index)))
             ax.set_yticklabels([ts.strftime("%Y-%m-%d") for ts in df.index])
             ax.set_xticks(range(len(df.columns)))
             ax.set_xticklabels(df.columns)
-            
+
             # Add colorbar
             cbar = fig.colorbar(im, ax=ax)
             cbar.set_label("Percentage of Total Supply")
-            
+
             # Set title
             ax.set_title("Top 10 Holder Concentration Over Time")
-            
+
             # Rotate x-axis labels for better readability
             plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
         except Exception as e:
@@ -393,8 +393,9 @@ def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple
             # Clear the figure and create a simple error message
             plt.clf()
             fig, ax = plt.subplots(figsize=figsize)
-            ax.text(0.5, 0.5, f"Error creating heatmap: {str(e)[:100]}...",
-                    ha="center", va="center", transform=ax.transAxes)
+            ax.text(
+                0.5, 0.5, f"Error creating heatmap: {str(e)[:100]}...", ha="center", va="center", transform=ax.transAxes
+            )
             ax.set_title("Token Concentration Over Time (Error)")
             return fig
 
@@ -705,38 +706,37 @@ def create_multi_metric_dashboard(
         if not isinstance(metrics, list) or not metrics:
             logger.error("Invalid input: metrics must be a non-empty list")
             raise DataFormatError("metrics must be a non-empty list of metric names")
-            
+
         # Validate that we have data for each metric
         valid_metrics = []
         for metric in metrics:
             if metric not in time_series_data:
                 logger.warning(f"No data found for metric '{metric}', skipping")
                 continue
-                
+
             df = time_series_data[metric]
             if not isinstance(df, pd.DataFrame):
                 logger.warning(f"Data for metric '{metric}' is not a DataFrame, skipping")
                 continue
-                
+
             if df.empty:
                 logger.warning(f"Empty DataFrame for metric '{metric}', skipping")
                 continue
-                
+
             # Check if the metric column exists in the DataFrame
             if metric not in df.columns:
                 logger.warning(f"Metric '{metric}' not found in its DataFrame, skipping")
                 continue
-                
+
             valid_metrics.append(metric)
-            
+
         if not valid_metrics:
             logger.error("No valid metrics found for dashboard")
             fig, ax = plt.subplots(figsize=(10, 6))
-            ax.text(0.5, 0.5, "No valid metric data available", 
-                    ha='center', va='center', transform=ax.transAxes)
+            ax.text(0.5, 0.5, "No valid metric data available", ha="center", va="center", transform=ax.transAxes)
             ax.set_title(title)
             return fig
-            
+
         # Use only valid metrics
         metrics = valid_metrics
         n_metrics = len(metrics)

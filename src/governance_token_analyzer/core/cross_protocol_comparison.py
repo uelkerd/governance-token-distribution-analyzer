@@ -13,21 +13,21 @@ logger = get_logger(__name__)
 def compare_protocols(protocols: List[str], metric: str = "gini_coefficient") -> Dict[str, Any]:
     """
     Compare metrics across multiple protocols.
-    
+
     Args:
         protocols: List of protocols to compare
         metric: Primary metric for comparison
-        
+
     Returns:
         Dictionary containing comparison data
     """
     try:
         logger.info(f"Comparing {len(protocols)} protocols using {metric} metric")
-        
+
         # This is a placeholder implementation
         # In a real implementation, we would collect data for each protocol
         # and calculate the metrics
-        
+
         comparison_data = {}
         for protocol in protocols:
             comparison_data[protocol] = {
@@ -35,7 +35,7 @@ def compare_protocols(protocols: List[str], metric: str = "gini_coefficient") ->
                 metric: 0.5,  # Placeholder value
                 "timestamp": pd.Timestamp.now().isoformat(),
             }
-            
+
         return comparison_data
     except Exception as e:
         logger.error(f"Error comparing protocols: {e}")

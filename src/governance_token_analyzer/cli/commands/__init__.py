@@ -8,8 +8,8 @@ from governance_token_analyzer.cli.commands.historical import execute_historical
 from governance_token_analyzer.cli.commands.report import execute_generate_report_command
 
 __all__ = [
-    "execute_analyze_command", 
+    "execute_analyze_command",
     "execute_compare_protocols_command",
     "execute_historical_analysis_command",
-    "execute_generate_report_command"
-] 
+    "execute_generate_report_command",
+]

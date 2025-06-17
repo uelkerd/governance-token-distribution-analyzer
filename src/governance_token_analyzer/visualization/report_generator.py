@@ -270,6 +270,7 @@ class ReportGenerator:
             latest_metrics = self._extract_metrics(snapshots[-1]["data"])
         except (KeyError, IndexError, TypeError) as e:
             import logging
+
             logging.warning(f"Could not extract latest metrics: {e}")
             latest_metrics = []
 
@@ -279,6 +280,7 @@ class ReportGenerator:
         # Check if we have any visualizations
         if not historical_visualizations:
             import logging
+
             logging.warning("No historical visualizations were generated")
 
         # Generate report based on format
@@ -576,7 +578,7 @@ class ReportGenerator:
                     # Rename the column to match what the function expects
                     metric_df.columns = [metric]
                     metrics_data[metric] = metric_df
-                
+
                 fig = historical_charts.create_multi_metric_dashboard(
                     metrics_data,
                     metrics=metrics_to_include,
@@ -596,6 +598,7 @@ class ReportGenerator:
             except Exception as e:
                 # Log the error but continue with other visualizations
                 import logging
+
                 logging.error(f"Failed to create multi-metric dashboard: {e}")
                 # Don't add this visualization to the list
 
@@ -1009,6 +1012,7 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
     except Exception as e:
         # Log and re-raise other exceptions
         import logging
+
         logging.error(f"Failed to generate historical analysis report: {e}")
         raise Exception(f"Failed to generate historical analysis report: {e}") from e
 
