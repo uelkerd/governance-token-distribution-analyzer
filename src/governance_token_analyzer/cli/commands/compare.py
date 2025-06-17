@@ -5,19 +5,11 @@ Compare protocols command implementation for the Governance Token Distribution A
 
 import os
 import json
-import sys
 from typing import Dict, Any, List, Optional
-import csv
 from datetime import datetime
 
 import click
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-
-from governance_token_analyzer.core.api_client import APIClient
-from governance_token_analyzer.core.advanced_metrics import calculate_all_concentration_metrics
-from governance_token_analyzer.core.cross_protocol_comparison import compare_protocols as compare_protocols_core
 from governance_token_analyzer.core.config import PROTOCOLS
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
 from governance_token_analyzer.core.metrics_collector import MetricsCollector

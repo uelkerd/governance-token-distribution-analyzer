@@ -68,15 +68,12 @@ def measure_api_call(func=None, **kwargs):
     if func is None:
         # Called with parameters
         return decorator
-    else:
-        # Called without parameters
-        return decorator(func)
+    # Called without parameters
+    return decorator(func)
 
 
 class MetricsCollector:
-    """
-    Collects and processes metrics for governance token analysis.
-    """
+    """Collects and processes metrics for governance token analysis."""
 
     def __init__(self, use_live_data: bool = True):
         """

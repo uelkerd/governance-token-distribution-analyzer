@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
-"""
-Analyze command implementation for the Governance Token Distribution Analyzer CLI.
-"""
+"""Analyze command implementation for the Governance Token Distribution Analyzer CLI."""
 
 import os
 import json
 import sys
 from typing import Dict, Any, List, Optional
-import csv
 from datetime import datetime
 
 import click
 import matplotlib.pyplot as plt
 import pandas as pd
-
-from governance_token_analyzer.core.api_client import APIClient
-from governance_token_analyzer.core.advanced_metrics import calculate_all_concentration_metrics
 from governance_token_analyzer.core.metrics_collector import MetricsCollector
 
 
