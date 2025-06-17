@@ -103,7 +103,13 @@ class MetricsCollector:
         
         if self.use_live_data:
             logger.info("Using live blockchain data")
-            data = self.api_client.get_protocol_data(protocol, limit=limit)
+            # APIClient.get_protocol_data doesn't accept a limit parameter
+            data = self.api_client.get_protocol_data(protocol, use_real_data=True)
+            
+            # If we need to limit the token holders, do it here
+            if "token_holders" in data and len(data["token_holders"]) > limit:
+                data["token_holders"] = data["token_holders"][:limit]
+                logger.info(f"Limited token holders to {limit}")
         else:
             logger.info("Using simulated data")
             data = self.simulator.generate_protocol_data(protocol, num_holders=limit)
