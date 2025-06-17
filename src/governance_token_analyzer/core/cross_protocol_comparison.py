@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 import pandas as pd
 
 from .logging_config import get_logger
-from .metrics_collector import measure_api_call
+from .metrics_collector import measure_api_call, MetricsCollector
 
 # Configure logger
 logger = get_logger(__name__)
@@ -24,19 +24,9 @@ def compare_protocols(protocols: List[str], metric: str = "gini_coefficient") ->
     try:
         logger.info(f"Comparing {len(protocols)} protocols using {metric} metric")
 
-        # This is a placeholder implementation
-        # In a real implementation, we would collect data for each protocol
-        # and calculate the metrics
-
-        comparison_data = {}
-        for protocol in protocols:
-            comparison_data[protocol] = {
-                "protocol": protocol,
-                metric: 0.5,  # Placeholder value
-                "timestamp": pd.Timestamp.now().isoformat(),
-            }
-
-        return comparison_data
+        # Use MetricsCollector to get real data
+        metrics_collector = MetricsCollector(use_live_data=True)
+        return metrics_collector.compare_protocols(protocols, metric)
     except Exception as e:
         logger.error(f"Error comparing protocols: {e}")
         return {"error": str(e)}

@@ -65,11 +65,7 @@ def measure_api_call(func=None, **kwargs):
         return wrapper
 
     # Handle both @measure_api_call and @measure_api_call(protocol="compound")
-    if func is None:
-        # Called with parameters
-        return decorator
-    # Called without parameters
-    return decorator(func)
+    return decorator if func is None else decorator(func)
 
 
 class MetricsCollector:
@@ -119,9 +115,9 @@ class MetricsCollector:
             data["total_holders"] = len(data["token_holders"])
 
             balances = [
-                float(holder.get("balance", 0))
+                balance
                 for holder in data["token_holders"]
-                if float(holder.get("balance", 0)) > 0
+                if (balance := float(holder.get("balance", 0))) > 0
             ]
 
             if balances:

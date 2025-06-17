@@ -63,6 +63,16 @@ def execute_analyze_command(
 
     # Collect protocol data
     data = metrics_collector.collect_protocol_data(protocol, limit=limit)
+    
+    # Replace with error handling
+    try:
+        data = metrics_collector.collect_protocol_data(protocol, limit=limit)
+        if not data:
+            click.secho(f"❌ Failed to collect data for {protocol}", fg="red")
+            sys.exit(1)
+    except Exception as e:
+        click.secho(f"❌ Error collecting data for {protocol}: {e}", fg="red")
+        sys.exit(1)
 
     # Calculate metrics
     if "token_holders" in data and "metrics" in data:
@@ -107,7 +117,12 @@ def execute_analyze_command(
 
                 # Sort balances in descending order
                 balances_sorted = sorted(balances, reverse=True)
-
+                
+                if not balances_sorted:
+                    click.secho("⚠️ No balances to plot", fg="yellow")
+                    plt.close()
+                    return
+                
                 # Plot distribution
                 plt.plot(range(1, len(balances_sorted) + 1), balances_sorted)
                 plt.title(f"{protocol.upper()} Token Distribution")
@@ -119,9 +134,12 @@ def execute_analyze_command(
                 # Add Lorenz curve on second axis
                 ax2 = plt.twinx()
                 total = sum(balances_sorted)
-                lorenz = [sum(balances_sorted[: i + 1]) / total for i in range(len(balances_sorted))]
-                ax2.plot(range(1, len(balances_sorted) + 1), lorenz, "r-", alpha=0.7)
-                ax2.set_ylabel("Cumulative Share", color="r")
+                if total > 0:  # Prevent division by zero
+                    lorenz = [sum(balances_sorted[: i + 1]) / total for i in range(len(balances_sorted))]
+                    ax2.plot(range(1, len(balances_sorted) + 1), lorenz, "r-", alpha=0.7)
+                    ax2.set_ylabel("Cumulative Share", color="r")
+                else:
+                    click.secho("⚠️ Cannot create Lorenz curve: Total balance is zero", fg="yellow")
 
                 # Save chart
                 plt.savefig(chart_file)
