@@ -348,6 +348,67 @@ class HistoricalDataManager:
             logger.error(f"Failed to load snapshot for {protocol} at {timestamp}: {e}")
             raise DataAccessError(f"Failed to load snapshot for {protocol} at {timestamp}: {e}") from e
 
+    def get_snapshot_by_date(self, protocol: str, date_str: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a snapshot for a specific date.
+        
+        Args:
+            protocol: Name of the protocol
+            date_str: Date string in any standard format (YYYY-MM-DD, etc.)
+            
+        Returns:
+            Snapshot data for the given date or None if not found
+            
+        Raises:
+            ProtocolNotSupportedError: If the protocol is not supported
+            DataAccessError: If there's an issue accessing the data
+        """
+        self._validate_protocol(protocol)
+        
+        try:
+            # Convert the date string to datetime object for comparison
+            target_date = None
+            try:
+                # First try ISO format (YYYY-MM-DD)
+                target_date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            except ValueError:
+                # Try other common formats
+                for fmt in ('%Y-%m-%d', '%Y%m%d', '%d-%m-%Y', '%m/%d/%Y', '%Y/%m/%d'):
+                    try:
+                        target_date = datetime.strptime(date_str, fmt)
+                        break
+                    except ValueError:
+                        continue
+            
+            if not target_date:
+                logger.warning(f"Could not parse date string: {date_str}")
+                return None
+                
+            # Get all snapshots and find the closest one to the target date
+            snapshots = self.get_snapshots(protocol)
+            if not snapshots:
+                return None
+                
+            # Find the snapshot with date closest to target_date
+            closest_snapshot = None
+            min_delta = timedelta.max
+            
+            for snapshot in snapshots:
+                snapshot_date = datetime.fromisoformat(snapshot["timestamp"].replace('Z', '+00:00'))
+                delta = abs(snapshot_date - target_date)
+                
+                if delta < min_delta:
+                    min_delta = delta
+                    closest_snapshot = snapshot
+            
+            # Return the data portion of the closest snapshot
+            return closest_snapshot.get("data", {}) if closest_snapshot else None
+            
+        except Exception as e:
+            if isinstance(e, ProtocolNotSupportedError):
+                raise
+            logger.error(f"Failed to get snapshot by date for {protocol} at {date_str}: {e}")
+            raise DataAccessError(f"Failed to get snapshot by date for {protocol} at {date_str}: {e}") from e
+
 
 def calculate_distribution_change(
     old_distribution: pd.DataFrame,
@@ -734,9 +795,6 @@ def load_historical_snapshots(protocol: str, data_dir: str = "data/historical") 
         data_manager = HistoricalDataManager(data_dir)
 
         # Get snapshots
-        return data_manager.get_snapshots(protocol)
-    try:
-        # ... same code ...
         return data_manager.get_snapshots(protocol)
     except (DataAccessError, ProtocolNotSupportedError, DataStorageError) as e:
         logger.warning(f"Failed to load historical snapshots for {protocol} due to a known issue: {e}")

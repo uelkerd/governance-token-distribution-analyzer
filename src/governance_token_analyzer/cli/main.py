@@ -722,21 +722,82 @@ def generate_report(protocol, output_format, output_dir, include_historical, dat
 
 
 def _ensure_directories(dirs):
-    """Ensure all required directories exist.
-
-    Args:
-        dirs: List of directory paths to create
-
-    Returns:
-        bool: True if successful, False if error occurred
-    """
+    """Ensure directories exist."""
     try:
-        for dir_path in dirs:
-            os.makedirs(dir_path, exist_ok=True)
+        for d in dirs:
+            os.makedirs(d, exist_ok=True)
         return True
     except OSError as e:
-        click.echo(f"❌ Error creating directories: {e}")
+        click.echo(f"❌ Error creating directories: {e}", err=True)
         return False
+
+
+def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
+    """
+    Process a single historical snapshot and save to disk.
+    
+    Args:
+        index: Snapshot index
+        date_str: Date string for the snapshot
+        snapshot_data: The snapshot data to process
+        protocol: Protocol name
+        protocol_dir: Directory to save the snapshot
+        
+    Returns:
+        tuple: Date string and gini coefficient value, or (None, None) if processing fails
+    """
+    try:
+        # Extract token holder data
+        token_holders = snapshot_data.get("token_holders", [])
+        if not token_holders:
+            click.echo(f"⚠️ Warning: No token holders in snapshot {date_str}")
+            return None, None
+            
+        # Convert to DataFrame for consistency
+        df = pd.DataFrame(token_holders)
+        
+        # Calculate metrics
+        gini = None
+        if "balance" in df.columns and len(df) > 0:
+            try:
+                # Convert balance column to numeric, handling errors gracefully
+                df["balance"] = pd.to_numeric(df["balance"], errors="coerce")
+                df = df.dropna(subset=["balance"])
+                
+                # Calculate Gini coefficient if we have valid balances
+                if not df.empty and df["balance"].sum() > 0:
+                    from governance_token_analyzer.core.advanced_metrics import calculate_gini_coefficient
+                    gini = calculate_gini_coefficient(df["balance"].values)
+            except Exception as e:
+                click.echo(f"⚠️ Warning: Error calculating metrics for {date_str}: {e}")
+                
+        # Save snapshot to file
+        filename = f"{protocol}_snapshot_{date_str.replace('-', '')}.json"
+        filepath = os.path.join(protocol_dir, filename)
+        
+        # Add metadata to snapshot
+        enhanced_data = {
+            "timestamp": date_str,
+            "data": {
+                "token_holders": token_holders,
+                "metrics": {
+                    "gini_coefficient": gini,
+                    "total_tokens": df["balance"].sum() if "balance" in df.columns else 0,
+                    "num_holders": len(df)
+                }
+            }
+        }
+        
+        # Save to file
+        with open(filepath, "w") as f:
+            json.dump(enhanced_data, f, indent=2)
+            
+        # Return values for visualization
+        return date_str, gini
+        
+    except Exception as e:
+        click.echo(f"⚠️ Warning: Failed to process snapshot {date_str}: {e}")
+        return None, None
 
 
 def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, protocol_dir, output_dir):
