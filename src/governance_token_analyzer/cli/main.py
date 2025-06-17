@@ -27,6 +27,10 @@ try:
     from governance_token_analyzer.core import historical_data
     from governance_token_analyzer.visualization.report_generator import ReportGenerator
 
+    # Import command implementations
+    from governance_token_analyzer.cli.commands.analyze import execute_analyze_command
+    from governance_token_analyzer.cli.commands.compare import execute_compare_protocols_command
+
     # Import from core.voting_block_analysis instead of non-existent analysis module
     from governance_token_analyzer.core.voting_block_analysis import VotingBlockAnalyzer
 except ImportError as e:
@@ -183,104 +187,15 @@ def analyze(protocol, limit, output_format, output_dir, chart, live_data, simula
         live_data = False
 
     try:
-        # Handle long file paths gracefully
-        try:
-            # Ensure output directory exists
-            os.makedirs(output_dir, exist_ok=True)
-        except OSError as e:
-            if "File name too long" in str(e):
-                click.echo(f"❌ Error: Output path too long: {output_dir}")
-                click.echo("Please specify a shorter output directory path")
-                sys.exit(1)
-            elif "Permission denied" in str(e):
-                click.echo(f"❌ Error: Permission denied when creating directory: {output_dir}")
-                sys.exit(1)
-            else:
-                click.echo(f"❌ Error creating output directory: {e}")
-                sys.exit(1)
-                
-        # Initialize components
-        api_client = APIClient()
-        
-        # Get token distribution data
-        click.echo(f"📊 Analyzing {protocol.upper()} token distribution...")
-        
-        if live_data:
-            click.echo("📡 Fetching live blockchain data...")
-            data = api_client.get_protocol_data(protocol, limit=limit)
-        else:
-            click.echo("🎲 Generating simulated data...")
-            simulator = TokenDistributionSimulator()
-            data = simulator.generate_protocol_data(protocol, num_holders=limit)
-        
-        # Calculate metrics
-        if "token_holders" in data:
-            balances = [float(holder.get("balance", 0)) for holder in data["token_holders"] if float(holder.get("balance", 0)) > 0]
-            
-            if balances:
-                metrics = calculate_all_concentration_metrics(balances)
-                data["metrics"] = metrics
-                
-                # Display metrics
-                click.echo("\n📊 Token Distribution Analysis:")
-                click.echo(f"  • Total holders analyzed: {len(balances)}")
-                click.echo(f"  • Gini coefficient: {metrics.get('gini_coefficient', 'N/A')}")
-                click.echo(f"  • Nakamoto coefficient: {metrics.get('nakamoto_coefficient', 'N/A')}")
-                
-                if verbose:
-                    click.echo(f"  • Shannon entropy: {metrics.get('shannon_entropy', 'N/A')}")
-                    click.echo(f"  • Herfindahl index: {metrics.get('herfindahl_index', 'N/A')}")
-                    click.echo(f"  • Theil index: {metrics.get('theil_index', 'N/A')}")
-                    click.echo(f"  • Palma ratio: {metrics.get('palma_ratio', 'N/A')}")
-                
-                # Save output file
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_file = os.path.join(output_dir, f"{protocol}_analysis_{timestamp}.{format}")
-                
-                if format == "json":
-                    with open(output_file, "w") as f:
-                        json.dump(data, f, indent=2)
-                elif format == "csv":
-                    df = pd.DataFrame(data["token_holders"])
-                    df.to_csv(output_file, index=False)
-                
-                click.echo(f"\n💾 Analysis saved to {output_file}")
-                
-                # Generate chart if requested
-                if chart:
-                    click.echo("\n📈 Generating distribution chart...")
-                    chart_file = os.path.join(output_dir, f"{protocol}_distribution_{timestamp}.png")
-                    
-                    # Create visualization
-                    plt.figure(figsize=(10, 6))
-                    
-                    # Sort balances in descending order
-                    balances_sorted = sorted(balances, reverse=True)
-                    
-                    # Plot distribution
-                    plt.plot(range(1, len(balances_sorted) + 1), balances_sorted)
-                    plt.title(f"{protocol.upper()} Token Distribution")
-                    plt.xlabel("Holder Rank")
-                    plt.ylabel("Token Balance")
-                    plt.grid(True, alpha=0.3)
-                    plt.tight_layout()
-                    
-                    # Add Lorenz curve on second axis
-                    ax2 = plt.twinx()
-                    total = sum(balances_sorted)
-                    lorenz = [sum(balances_sorted[:i+1])/total for i in range(len(balances_sorted))]
-                    ax2.plot(range(1, len(balances_sorted) + 1), lorenz, 'r-', alpha=0.7)
-                    ax2.set_ylabel("Cumulative Share", color='r')
-                    
-                    # Save chart
-                    plt.savefig(chart_file)
-                    plt.close()
-                    
-                    click.echo(f"📊 Chart saved to {chart_file}")
-            else:
-                click.echo("❌ No positive balances found in the data")
-        else:
-            click.echo("❌ No token holders found in the data")
+        execute_analyze_command(
+            protocol=protocol,
+            limit=limit,
+            output_format=format,  # Pass the format parameter as output_format
+            output_dir=output_dir,
+            chart=chart,
+            live_data=live_data,
+            verbose=verbose,
+        )
     except click.Abort:
         sys.exit(1)
     except Exception as e:
@@ -349,164 +264,16 @@ def compare_protocols(protocols, metric, output_format, output_dir, chart, detai
       gova compare-protocols -p compound,aave -H
     """
     try:
-        # Process protocol list
-        if protocols.lower() == "all":
-            protocol_list = SUPPORTED_PROTOCOLS
-        else:
-            protocol_list = [p.strip().lower() for p in protocols.split(",")]
-            # Validate protocols
-            for p in protocol_list:
-                if p not in SUPPORTED_PROTOCOLS:
-                    raise click.BadParameter(f"Unsupported protocol: {p}")
-        
-        click.echo(f"🔍 Comparing {len(protocol_list)} protocols: {', '.join(protocol_list).upper()}")
-        
-        # Initialize API client
-        api_client = APIClient()
-        
-        # Collect data for each protocol
-        protocol_data = {}
-        for p in protocol_list:
-            click.echo(f"📊 Analyzing {p.upper()}...")
-            try:
-                data = api_client.get_protocol_data(p)
-                protocol_data[p] = data
-            except Exception as e:
-                click.echo(f"⚠️ Error getting data for {p}: {e}")
-                protocol_data[p] = {"error": str(e)}
-        
-        # Compare metrics across protocols
-        comparison_data = {}
-        for p, data in protocol_data.items():
-            if "metrics" in data:
-                comparison_data[p] = {
-                    "protocol": p,
-                    metric: data["metrics"].get(metric, "N/A")
-                }
-                
-                if detailed:
-                    comparison_data[p].update(data["metrics"])
-            else:
-                comparison_data[p] = {"protocol": p, metric: "N/A", "error": data.get("error", "Unknown error")}
-        
-        # Display comparison
-        click.echo("\n📊 Protocol Comparison:")
-        for p, data in comparison_data.items():
-            click.echo(f"  • {p.upper()}: {data.get(metric, 'N/A')}")
-        
-        # Save output
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.{format}")
-        
-        if format == "json":
-            with open(output_file, "w") as f:
-                json.dump(comparison_data, f, indent=2)
-            click.echo(f"\n💾 Comparison saved to {output_file}")
-        elif format == "html":
-            # Generate HTML report
-            html_content = f"""
-            <html>
-            <head>
-                <title>Protocol Comparison</title>
-                <style>
-                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                    table {{ border-collapse: collapse; width: 100%; }}
-                    th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-                    th {{ background-color: #f2f2f2; }}
-                </style>
-            </head>
-            <body>
-                <h1>Protocol Comparison</h1>
-                <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-                <table>
-                    <tr>
-                        <th>Protocol</th>
-                        <th>{metric.replace('_', ' ').title()}</th>
-                    </tr>
-            """
-            
-            for p, data in comparison_data.items():
-                html_content += f"""
-                    <tr>
-                        <td>{p.upper()}</td>
-                        <td>{data.get(metric, 'N/A')}</td>
-                    </tr>
-                """
-            
-            html_content += """
-                </table>
-            </body>
-            </html>
-            """
-            
-            with open(output_file, "w") as f:
-                f.write(html_content)
-            click.echo(f"\n💾 HTML report saved to {output_file}")
-        elif format == "png":
-            # Generate chart
-            plt.figure(figsize=(10, 6))
-            
-            # Extract values and protocols
-            protocols = list(comparison_data.keys())
-            values = [comparison_data[p].get(metric, 0) for p in protocols]
-            
-            # Create bar chart
-            plt.bar(protocols, values)
-            plt.title(f"Protocol Comparison: {metric.replace('_', ' ').title()}")
-            plt.xlabel("Protocol")
-            plt.ylabel(metric.replace('_', ' ').title())
-            plt.xticks(rotation=45)
-            plt.tight_layout()
-            
-            # Save chart
-            plt.savefig(output_file)
-            plt.close()
-            
-            click.echo(f"\n📊 Chart saved to {output_file}")
-        
-        # Add historical analysis if requested
-        if historical:
-            click.echo("\n📈 Adding historical analysis...")
-            
-            # Initialize data manager
-            data_manager = historical_data.HistoricalDataManager(data_dir)
-            
-            # Get historical data for each protocol
-            historical_data_dict = {}
-            for p in protocol_list:
-                try:
-                    time_series = data_manager.get_time_series_data(p, metric)
-                    if not time_series.empty:
-                        historical_data_dict[p] = time_series
-                        click.echo(f"  ✓ Found historical data for {p.upper()}")
-                    else:
-                        click.echo(f"  ⚠️ No historical data found for {p}")
-                except Exception as e:
-                    click.echo(f"  ⚠️ Error loading historical data for {p}: {e}")
-            
-            if historical_data_dict:
-                # Generate historical comparison chart
-                historical_chart_file = os.path.join(output_dir, f"historical_comparison_{timestamp}.png")
-                
-                plt.figure(figsize=(12, 6))
-                
-                for p, ts_data in historical_data_dict.items():
-                    plt.plot(ts_data.index, ts_data[metric], label=p.upper())
-                
-                plt.title(f"Historical Comparison: {metric.replace('_', ' ').title()}")
-                plt.xlabel("Date")
-                plt.ylabel(metric.replace('_', ' ').title())
-                plt.legend()
-                plt.grid(True, alpha=0.3)
-                plt.tight_layout()
-                
-                # Save chart
-                plt.savefig(historical_chart_file)
-                plt.close()
-                
-                click.echo(f"📊 Historical comparison chart saved to {historical_chart_file}")
-            else:
-                click.echo("⚠️ No historical data available for comparison")
+        execute_compare_protocols_command(
+            protocols_arg=protocols,
+            metric=metric,
+            output_format=format,  # Pass the format parameter as output_format
+            output_dir=output_dir,
+            chart=chart,
+            detailed=detailed,
+            historical=historical,
+            data_dir=data_dir,
+        )
     except click.Abort:
         sys.exit(1)
     except Exception as e:
