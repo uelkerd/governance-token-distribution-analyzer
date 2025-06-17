@@ -697,10 +697,10 @@ def generate_report(protocol, output_format, output_dir, include_historical, dat
 
 def _ensure_directories(dirs):
     """Ensure all required directories exist.
-    
+
     Args:
         dirs: List of directory paths to create
-        
+
     Returns:
         bool: True if successful, False if error occurred
     """
@@ -729,17 +729,17 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
     # Ensure required directories exist
     if not _ensure_directories([protocol_dir, output_dir]):
         return [], []
-    
+
     # Process all snapshots and collect visualization data
     visualization_data = [
         _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir)
         for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items())
     ]
-    
+
     # Filter out None values and unzip the valid data points
     valid_data = [(d, g) for d, g in visualization_data if d and g is not None]
     dates, gini_values = zip(*valid_data) if valid_data else ([], [])
-    
+
     return list(dates), list(gini_values)
 
 
