@@ -755,14 +755,14 @@ def _ensure_directories(dirs):
 def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
     """
     Process a single historical snapshot and save to disk.
-
+    
     Args:
         index: Snapshot index
         date_str: Date string for the snapshot
         snapshot_data: The snapshot data to process
         protocol: Protocol name
         protocol_dir: Directory to save the snapshot
-
+        
     Returns:
         tuple: Date string and gini coefficient value, or (None, None) if processing fails
     """
@@ -772,53 +772,87 @@ def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
         if not token_holders:
             click.echo(f"⚠️ Warning: No token holders in snapshot {date_str}")
             return None, None
-
-        # Convert to DataFrame for consistency
-        df = pd.DataFrame(token_holders)
-
-        # Calculate metrics
-        gini = None
-        if "balance" in df.columns and len(df) > 0:
-            try:
-                # Convert balance column to numeric, handling errors gracefully
-                df["balance"] = pd.to_numeric(df["balance"], errors="coerce")
-                df = df.dropna(subset=["balance"])
-
-                # Calculate Gini coefficient if we have valid balances
-                if not df.empty and df["balance"].sum() > 0:
-                    from governance_token_analyzer.core.advanced_metrics import calculate_gini_coefficient
-
-                    gini = calculate_gini_coefficient(df["balance"].values)
-            except Exception as e:
-                click.echo(f"⚠️ Warning: Error calculating metrics for {date_str}: {e}")
-
-        # Save snapshot to file
-        filename = f"{protocol}_snapshot_{date_str.replace('-', '')}.json"
-        filepath = os.path.join(protocol_dir, filename)
-
-        # Add metadata to snapshot
-        enhanced_data = {
-            "timestamp": date_str,
-            "data": {
-                "token_holders": token_holders,
-                "metrics": {
-                    "gini_coefficient": gini,
-                    "total_tokens": df["balance"].sum() if "balance" in df.columns else 0,
-                    "num_holders": len(df),
-                },
-            },
-        }
-
-        # Save to file
-        with open(filepath, "w") as f:
-            json.dump(enhanced_data, f, indent=2)
-
+            
+        # Process token holders data
+        df, gini = _extract_metrics_from_holders(token_holders, date_str)
+        if df is None:
+            return None, None
+            
+        # Save processed snapshot
+        _save_snapshot_to_file(date_str, token_holders, gini, df, protocol, protocol_dir)
+            
         # Return values for visualization
         return date_str, gini
-
+        
     except Exception as e:
         click.echo(f"⚠️ Warning: Failed to process snapshot {date_str}: {e}")
         return None, None
+
+
+def _extract_metrics_from_holders(token_holders, date_str):
+    """
+    Extract metrics from token holder data.
+    
+    Args:
+        token_holders: List of token holders with their balances
+        date_str: Date string for logging purposes
+        
+    Returns:
+        tuple: DataFrame of processed data and gini coefficient value, or (None, None) if processing fails
+    """
+    # Convert to DataFrame for consistency
+    df = pd.DataFrame(token_holders)
+    
+    # Calculate metrics
+    gini = None
+    if "balance" in df.columns and len(df) > 0:
+        try:
+            # Convert balance column to numeric, handling errors gracefully
+            df["balance"] = pd.to_numeric(df["balance"], errors="coerce")
+            df = df.dropna(subset=["balance"])
+            
+            # Calculate Gini coefficient if we have valid balances
+            if not df.empty and df["balance"].sum() > 0:
+                from governance_token_analyzer.core.advanced_metrics import calculate_gini_coefficient
+                gini = calculate_gini_coefficient(df["balance"].values)
+        except Exception as e:
+            click.echo(f"⚠️ Warning: Error calculating metrics for {date_str}: {e}")
+            
+    return df, gini
+
+
+def _save_snapshot_to_file(date_str, token_holders, gini, df, protocol, protocol_dir):
+    """
+    Save processed snapshot to file.
+    
+    Args:
+        date_str: Date string for the snapshot
+        token_holders: List of token holders with their balances
+        gini: Calculated gini coefficient
+        df: DataFrame of processed data
+        protocol: Protocol name
+        protocol_dir: Directory to save the snapshot
+    """
+    # Create filename and path
+    filename = f"{protocol}_snapshot_{date_str.replace('-', '')}.json"
+    filepath = os.path.join(protocol_dir, filename)
+    
+    # Add metadata to snapshot
+    enhanced_data = {
+        "timestamp": date_str,
+        "data": {
+            "token_holders": token_holders,
+            "metrics": {
+                "gini_coefficient": gini,
+                "total_tokens": df["balance"].sum() if "balance" in df.columns else 0,
+                "num_holders": len(df)
+            }
+        }
+    }
+    
+    # Save to file
+    with open(filepath, "w") as f:
+        json.dump(enhanced_data, f, indent=2)
 
 
 def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, protocol_dir, output_dir):

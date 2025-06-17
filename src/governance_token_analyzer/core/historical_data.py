@@ -350,64 +350,89 @@ class HistoricalDataManager:
 
     def get_snapshot_by_date(self, protocol: str, date_str: str) -> Optional[Dict[str, Any]]:
         """Retrieve a snapshot for a specific date.
-
+        
         Args:
             protocol: Name of the protocol
             date_str: Date string in any standard format (YYYY-MM-DD, etc.)
-
+            
         Returns:
             Snapshot data for the given date or None if not found
-
+            
         Raises:
             ProtocolNotSupportedError: If the protocol is not supported
             DataAccessError: If there's an issue accessing the data
         """
         self._validate_protocol(protocol)
-
+        
         try:
-            # Convert the date string to datetime object for comparison
-            target_date = None
-            try:
-                # First try ISO format (YYYY-MM-DD)
-                target_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-            except ValueError:
-                # Try other common formats
-                for fmt in ("%Y-%m-%d", "%Y%m%d", "%d-%m-%Y", "%m/%d/%Y", "%Y/%m/%d"):
-                    try:
-                        target_date = datetime.strptime(date_str, fmt)
-                        break
-                    except ValueError:
-                        continue
-
+            target_date = self._parse_date_string(date_str)
             if not target_date:
-                logger.warning(f"Could not parse date string: {date_str}")
                 return None
-
-            # Get all snapshots and find the closest one to the target date
-            snapshots = self.get_snapshots(protocol)
-            if not snapshots:
-                return None
-
-            # Find the snapshot with date closest to target_date
-            closest_snapshot = None
-            min_delta = timedelta.max
-
-            for snapshot in snapshots:
-                snapshot_date = datetime.fromisoformat(snapshot["timestamp"].replace("Z", "+00:00"))
-                delta = abs(snapshot_date - target_date)
-
-                if delta < min_delta:
-                    min_delta = delta
-                    closest_snapshot = snapshot
-
-            # Return the data portion of the closest snapshot
+                
+            closest_snapshot = self._find_closest_snapshot(protocol, target_date)
             return closest_snapshot.get("data", {}) if closest_snapshot else None
-
+            
         except Exception as e:
             if isinstance(e, ProtocolNotSupportedError):
                 raise
             logger.error(f"Failed to get snapshot by date for {protocol} at {date_str}: {e}")
             raise DataAccessError(f"Failed to get snapshot by date for {protocol} at {date_str}: {e}") from e
+    
+    def _parse_date_string(self, date_str: str) -> Optional[datetime]:
+        """Parse a date string into a datetime object.
+        
+        Args:
+            date_str: Date string in any standard format
+            
+        Returns:
+            Datetime object or None if parsing fails
+        """
+        # First try ISO format (YYYY-MM-DD)
+        try:
+            return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        except ValueError:
+            pass
+            
+        # Try other common formats
+        for fmt in ('%Y-%m-%d', '%Y%m%d', '%d-%m-%Y', '%m/%d/%Y', '%Y/%m/%d'):
+            try:
+                return datetime.strptime(date_str, fmt)
+            except ValueError:
+                continue
+                
+        logger.warning(f"Could not parse date string: {date_str}")
+        return None
+        
+    def _find_closest_snapshot(self, protocol: str, target_date: datetime) -> Optional[Dict[str, Any]]:
+        """Find the snapshot closest to the target date.
+        
+        Args:
+            protocol: Name of the protocol
+            target_date: Target datetime to find closest snapshot for
+            
+        Returns:
+            Closest snapshot or None if no snapshots exist
+        """
+        snapshots = self.get_snapshots(protocol)
+        if not snapshots:
+            return None
+            
+        closest_snapshot = None
+        min_delta = timedelta.max
+        
+        for snapshot in snapshots:
+            try:
+                snapshot_date = datetime.fromisoformat(snapshot["timestamp"].replace('Z', '+00:00'))
+                delta = abs(snapshot_date - target_date)
+                
+                if delta < min_delta:
+                    min_delta = delta
+                    closest_snapshot = snapshot
+            except (ValueError, KeyError) as e:
+                logger.warning(f"Skipping invalid snapshot: {e}")
+                continue
+                
+        return closest_snapshot
 
 
 def calculate_distribution_change(
