@@ -95,23 +95,33 @@
 
 ## Next Steps (Immediate Priorities)
 
-1. ⚠️ **Fix 4 remaining test failures** in live data integration (estimated 1-2 hours)
-2. ✅ **Complete integration testing** - 100% success rate achieved (41/41 tests)
-3. ✅ **Finalize documentation** - comprehensive documentation complete
-4. ⚠️ **Deploy production-ready application** using prepared Heroku configuration
-5. ⚠️ **Validate analysis results** against real-world governance outcomes
-6. 🔄 **Begin Phase 3** advanced governance analysis features
+1. ⚠️ **Fix CLI-related test failures** (estimated 2-3 days)
+   - Address `format` parameter handling in CLI commands
+   - Fix module import issues in CLI implementation
+   - Resolve historical data processing in CLI commands
+   - Fix error propagation in CLI edge cases
+2. ⚠️ **Continue code quality improvements** (2-3 days)
+   - Further refactor complex functions to reduce complexity
+   - Extract helper methods for better code organization
+   - Improve error handling and logging throughout the codebase
+   - Increase test coverage beyond current 32%
+3. ⚠️ **Complete integration testing** - 100% success rate achieved for integration tests (41/41 tests)
+4. ✅ **Finalize documentation** - comprehensive documentation complete
+5. ⚠️ **Deploy production-ready application** using prepared Heroku configuration
+6. ⚠️ **Validate analysis results** against real-world governance outcomes
+7. 🔄 **Begin Phase 3** advanced governance analysis features
 
 ## Success Milestones and Validation
 
 ### Technical Milestones
-- ✅ Successfully analyze governance patterns across at least three major protocols
+- ✅ Successfully analyze governance patterns across all three target protocols
 - ✅ Generate statistically significant insights about governance distribution effects
 - ✅ Achieve sub-minute data refresh times for real-time analysis
 - ⚠️ Demonstrate accuracy validation against known governance outcomes (Final validation pending)
 
 **Next Steps:**
-- ⚠️ Fix 4 remaining test failures (98% → 100% test success)
+- ⚠️ Fix 26 failing tests (32% → 100% test success)
+- ⚠️ Continue code quality improvements and refactoring
 - ⚠️ Final deployment and production validation
 - ✅ Update documentation and PRD (In progress)
 - ✅ Prepare and test Heroku deployment
@@ -138,14 +148,15 @@
 - 🔄 Phase 4: 15-20 hours dedicated to polish, testing, and documentation
 
 ## Current Project Status Summary
-- **Overall Progress**: 85-90% complete for production-ready MVP
-- **Test Coverage**: 98% (196/200 tests passing)
+- **Overall Progress**: 85% complete for production-ready MVP
+- **Test Coverage**: 32% (170/196 tests passing)
 - **Integration Tests**: 100% success rate (41/41 tests)
 - **Core Features**: All implemented and tested
 - **Advanced Features**: All implemented and tested
 - **Documentation**: Comprehensive and complete
+- **Code Quality**: Recent improvements to historical data analysis and CLI modules
 - **Deployment**: Ready for production
 
-**Estimated time to full MVP completion: 1-2 days** for final test fixes and deployment validation.
+**Estimated time to full MVP completion: 1 week** for CLI test fixes, code quality improvements, and deployment validation.
 
 This roadmap structure has successfully delivered a sophisticated tool that showcases both technical capabilities and deep governance understanding. The current implementation provides immediate value for job applications while establishing a foundation for advanced governance research and analysis.
