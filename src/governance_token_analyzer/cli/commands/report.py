@@ -61,7 +61,7 @@ def execute_generate_report_command(
                 if not proposal_id:
                     click.secho(f"⚠️ Skipping proposal {i}: No proposal ID found", fg="yellow")
                     continue
-                    
+
                 click.echo(f"🗳️ Fetching votes for proposal {i} (ID: {proposal_id})")
                 try:
                     votes = api_client.get_governance_votes(protocol, proposal_id)

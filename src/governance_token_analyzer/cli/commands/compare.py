@@ -42,7 +42,7 @@ def execute_compare_protocols_command(
     try:
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
-        
+
         # Process protocol list
         if protocols_arg.lower() == "all":
             protocol_list = list(PROTOCOLS.keys())
@@ -127,11 +127,11 @@ def execute_compare_protocols_command(
 
             # Extract values and protocols
             protocols = list(comparison_data.keys())
-            
+
             # Filter out non-numeric values
             valid_protocols = []
             valid_values = []
-            
+
             for p in protocols:
                 value = comparison_data[p].get(metric)
                 try:
@@ -144,11 +144,11 @@ def execute_compare_protocols_command(
                         click.secho(f"⚠️ Skipping {p.upper()} in chart: Invalid value", fg="yellow")
                 except (ValueError, TypeError):
                     click.secho(f"⚠️ Skipping {p.upper()} in chart: Non-numeric value", fg="yellow")
-            
+
             if not valid_protocols:
                 click.secho("❌ Cannot create chart: No valid numeric data", fg="red")
                 return
-                
+
             # Create bar chart
             plt.bar(valid_protocols, valid_values)
             plt.title(f"Protocol Comparison: {metric.replace('_', ' ').title()}")
