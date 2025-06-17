@@ -505,21 +505,47 @@ def historical_analysis(protocol, metric, data_dir, output_dir, output_format, p
 
             # Calculate trend metrics
             if len(trend_data) >= 2:
-                # Extract first and last data points for old and new distribution
-                old_data = pd.DataFrame([trend_data[0]])
-                new_data = pd.DataFrame([trend_data[-1]])
-
-                trend_metrics = calculate_distribution_change(old_data, new_data)
-
-                # Display trend metrics
-                click.echo("\n📊 Trend Analysis Results:")
-                click.echo(f"  • Overall change: {trend_metrics['overall_change']:.4f}")
-                click.echo(f"  • Average change per period: {trend_metrics['avg_change_per_period']:.4f}")
-                click.echo(f"  • Volatility: {trend_metrics['volatility']:.4f}")
-                click.echo(f"  • Trend direction: {trend_metrics['trend_direction']}")
-
+                # Extract token holder data from first and last snapshots for distribution change calculation
+                old_snapshot = data_manager.get_snapshot_by_date(protocol, trend_data[0]["date"])
+                new_snapshot = data_manager.get_snapshot_by_date(protocol, trend_data[-1]["date"])
+                
+                if old_snapshot and new_snapshot:
+                    old_token_holders = old_snapshot.get("token_holders", [])
+                    new_token_holders = new_snapshot.get("token_holders", [])
+                    
+                    if old_token_holders and new_token_holders:
+                        old_data = pd.DataFrame(old_token_holders)
+                        new_data = pd.DataFrame(new_token_holders)
+                        
+                        # Ensure 'balance' column is numeric and handle potential errors/NaNs
+                        if 'balance' in old_data.columns:
+                            old_data['balance'] = pd.to_numeric(old_data['balance'], errors='coerce').fillna(0)
+                        if 'balance' in new_data.columns:
+                            new_data['balance'] = pd.to_numeric(new_data['balance'], errors='coerce').fillna(0)
+                        
+                        # Proceed only if essential columns are present
+                        if ('address' in old_data.columns and 'balance' in old_data.columns and
+                                'address' in new_data.columns and 'balance' in new_data.columns):
+                            trend_metrics = calculate_distribution_change(old_data, new_data)
+                            
+                            # Display trend metrics
+                            click.echo("\n📊 Trend Analysis Results:")
+                            click.echo(f"  • Overall change: {trend_metrics.get('overall_change', 'N/A')}")
+                            click.echo(f"  • Average change per period: {trend_metrics.get('avg_change_per_period', 'N/A')}")
+                            click.echo(f"  • Volatility: {trend_metrics.get('volatility', 'N/A')}")
+                            click.echo(f"  • Trend direction: {trend_metrics.get('trend_direction', 'N/A')}")
+                        else:
+                            click.echo(click.style("⚠️ Warning: Could not calculate trend metrics due to missing 'address' or 'balance' columns in token holder data.", fg='yellow'))
+                            trend_metrics = {}  # Default to empty if data is insufficient
+                    else:
+                        click.echo(click.style("⚠️ Warning: Not enough token holder data in snapshots to calculate trend metrics.", fg='yellow'))
+                        trend_metrics = {}  # Default to empty if data is insufficient
+                else:
+                    click.echo(click.style("⚠️ Warning: Could not retrieve complete snapshot data for trend analysis.", fg='yellow'))
+                    trend_metrics = {}  # Default to empty if data is insufficient
+                
                 # Save trend metrics
-                if output_format == "json":
+                if output_format == "json" and trend_metrics:
                     output_file = os.path.join(output_dir, f"{protocol}_{metric}_trends.json")
                     with open(output_file, "w") as f:
                         json.dump(
@@ -729,17 +755,17 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
     # Ensure required directories exist
     if not _ensure_directories([protocol_dir, output_dir]):
         return [], []
-
+    
     # Process all snapshots and collect visualization data
     visualization_data = [
         _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir)
         for i, (date_str, snapshot_data) in enumerate(historical_snapshots_dict.items())
     ]
-
+    
     # Filter out None values and unzip the valid data points
-    valid_data = [(d, g) for d, g in visualization_data if d and g is not None]
+    valid_data = [(d, g) for d, g in visualization_data if d is not None and g is not None]
     dates, gini_values = zip(*valid_data) if valid_data else ([], [])
-
+    
     return list(dates), list(gini_values)
 
 
