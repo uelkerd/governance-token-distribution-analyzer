@@ -181,11 +181,11 @@ def analyze(protocol, limit, output_format, output_dir, chart, live_data, simula
         raise click.UsageError(
             "Options --live-data and --simulated-data are mutually exclusive. Please specify only one."
         )
-    
+
     # Set live_data based on simulated_data flag
     if simulated_data:
         live_data = False
-    
+
     try:
         execute_analyze_command(
             protocol=protocol,
@@ -508,7 +508,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, output_format, p
                 # Extract first and last data points for old and new distribution
                 old_data = pd.DataFrame([trend_data[0]])
                 new_data = pd.DataFrame([trend_data[-1]])
-                
+
                 trend_metrics = calculate_distribution_change(old_data, new_data)
 
                 # Display trend metrics
@@ -659,7 +659,9 @@ def generate_report(protocol, output_format, output_dir, include_historical, dat
                     # Convert to list of dictionaries with date and value
                     historical_data_records = []
                     for date, value in time_series_df.iterrows():
-                        historical_data_records.append({"date": date.strftime("%Y-%m-%d"), "value": float(value.iloc[0])})
+                        historical_data_records.append(
+                            {"date": date.strftime("%Y-%m-%d"), "value": float(value.iloc[0])}
+                        )
                 else:
                     click.echo("⚠️ No historical data found")
             except Exception as e:
@@ -695,11 +697,11 @@ def generate_report(protocol, output_format, output_dir, include_historical, dat
 
 def _extract_token_holders(snapshot_data, idx):
     """Extract token holders from a snapshot or convert balances to token holder format.
-    
+
     Args:
         snapshot_data: The snapshot data dictionary
         idx: Index for generating addresses if needed
-        
+
     Returns:
         List of token holder dictionaries
     """
@@ -707,18 +709,16 @@ def _extract_token_holders(snapshot_data, idx):
         return snapshot_data["token_holders"]
     elif "balances" in snapshot_data:
         # Convert balances to token holders format
-        return [
-            {"address": f"0x{i:040x}", "balance": balance} for i, balance in enumerate(snapshot_data["balances"])
-        ]
+        return [{"address": f"0x{i:040x}", "balance": balance} for i, balance in enumerate(snapshot_data["balances"])]
     return []
 
 
 def _extract_positive_balances(token_holders):
     """Extract positive balances from token holders.
-    
+
     Args:
         token_holders: List of token holder dictionaries
-        
+
     Returns:
         List of positive balance values
     """
@@ -727,13 +727,13 @@ def _extract_positive_balances(token_holders):
 
 def _save_snapshot(snapshot, snapshot_file, date_str, metrics):
     """Save a snapshot to a file and return visualization data.
-    
+
     Args:
         snapshot: The snapshot dictionary to save
         snapshot_file: Path to save the snapshot
         date_str: Date string for the snapshot
         metrics: Metrics dictionary
-        
+
     Returns:
         tuple: (date_str, gini_coefficient) if successful, (None, None) if failed
     """
@@ -748,14 +748,14 @@ def _save_snapshot(snapshot, snapshot_file, date_str, metrics):
 
 def _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir):
     """Process a single snapshot and save it to disk.
-    
+
     Args:
         i: Snapshot index
         date_str: Date string for the snapshot
         snapshot_data: The snapshot data dictionary
         protocol: Protocol name
         protocol_dir: Directory to save the snapshot file
-        
+
     Returns:
         tuple: (date_str, gini_coefficient) if successful, (None, None) if failed
     """
@@ -764,16 +764,16 @@ def _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir):
     if not token_holders:
         click.echo(f"  ⚠️ No token holders in snapshot {i + 1}, skipping")
         return None, None
-        
+
     # Extract positive balances
     balances = _extract_positive_balances(token_holders)
     if not balances:
         click.echo(f"  ⚠️ No positive balances in snapshot {i + 1}, skipping")
         return None, None
-        
+
     # Calculate metrics
     metrics = calculate_all_concentration_metrics(balances)
-    
+
     # Create snapshot in the expected format
     snapshot = {
         "timestamp": date_str,
@@ -782,15 +782,15 @@ def _process_snapshot(i, date_str, snapshot_data, protocol, protocol_dir):
         "token_holders": token_holders,
         "metrics": metrics,
     }
-    
+
     # Save snapshot
     snapshot_file = os.path.join(protocol_dir, f"snapshot_{i + 1}.json")
     date, gini = _save_snapshot(snapshot, snapshot_file, date_str, metrics)
-    
+
     if date and gini is not None:
         click.echo(f"  ✓ Saved snapshot {i + 1} with {len(token_holders)} holders and {len(metrics)} metrics")
         return date, gini
-        
+
     return None, None
 
 
@@ -809,7 +809,7 @@ def process_and_save_historical_snapshots(historical_snapshots_dict, protocol, p
     """
     dates = []
     gini_values = []
-    
+
     # Ensure directories exist
     try:
         os.makedirs(protocol_dir, exist_ok=True)
