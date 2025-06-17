@@ -16,6 +16,7 @@ import pandas as pd
 
 from governance_token_analyzer.core.api_client import APIClient
 from governance_token_analyzer.core.advanced_metrics import calculate_all_concentration_metrics
+from governance_token_analyzer.core.metrics_collector import MetricsCollector
 
 
 def execute_analyze_command(
@@ -29,164 +30,109 @@ def execute_analyze_command(
 ) -> None:
     """
     Execute the analyze command to analyze token distribution for a specific protocol.
-
+    
     Args:
         protocol: Protocol to analyze (compound, uniswap, aave)
         limit: Maximum number of token holders to analyze
         output_format: Output format (json, csv)
         output_dir: Directory to save output files
         chart: Whether to generate distribution charts
-        live_data: Whether to use live blockchain data
-        verbose: Whether to enable verbose output with detailed metrics
+        live_data: Whether to use live blockchain data or simulated data
+        verbose: Whether to display detailed metrics
     """
-    # Create output directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Initialize API client
-    api_client = APIClient()
-
+    # Handle long file paths gracefully
     try:
-        # Fetch token holders data
-        click.echo(f"📡 Fetching token holder data for {protocol.upper()}...")
-        holders_data = api_client.get_token_holders(protocol, limit=limit, use_real_data=live_data)
-        
-        if not holders_data:
-            click.echo(click.style("❌ No token holder data found", fg="red"))
+        # Ensure output directory exists
+        os.makedirs(output_dir, exist_ok=True)
+    except OSError as e:
+        if "File name too long" in str(e):
+            click.echo(f"❌ Error: Output path too long: {output_dir}")
+            click.echo("Please specify a shorter output directory path")
+            sys.exit(1)
+        elif "Permission denied" in str(e):
+            click.echo(f"❌ Error: Permission denied when creating directory: {output_dir}")
+            sys.exit(1)
+        else:
+            click.echo(f"❌ Error creating output directory: {e}")
             sys.exit(1)
             
-        click.echo(f"✅ Found {len(holders_data)} token holders")
-
-        # Extract balances for analysis
-        balances = []
-        for holder in holders_data:
-            if isinstance(holder, dict) and "balance" in holder:
-                try:
-                    balance = float(holder["balance"])
-                    if balance > 0:
-                        balances.append(balance)
-                except (ValueError, TypeError):
-                    continue
-
-        if not balances:
-            click.echo(click.style("❌ No valid balance data found", fg="red"))
-            sys.exit(1)
-
-        # Calculate concentration metrics
-        click.echo("🧮 Calculating concentration metrics...")
-        metrics = calculate_all_concentration_metrics(balances)
+    # Initialize metrics collector
+    metrics_collector = MetricsCollector(use_live_data=live_data)
+    
+    # Get token distribution data
+    click.echo(f"📊 Analyzing {protocol.upper()} token distribution...")
+    
+    if live_data:
+        click.echo("📡 Fetching live blockchain data...")
+    else:
+        click.echo("🎲 Generating simulated data...")
+    
+    # Collect protocol data
+    data = metrics_collector.collect_protocol_data(protocol, limit=limit)
+    
+    # Calculate metrics
+    if "token_holders" in data and "metrics" in data:
+        balances = [float(holder.get("balance", 0)) for holder in data["token_holders"] if float(holder.get("balance", 0)) > 0]
+        metrics = data["metrics"]
         
-        # Prepare output data
-        output_data = {
-            "protocol": protocol,
-            "analysis_timestamp": datetime.now().isoformat(),
-            "total_holders_analyzed": len(balances),
-            "metrics": metrics,
-        }
-        
-        # Add verbose metrics if requested
-        if verbose:
-            # Get governance data
-            click.echo("🏛️ Fetching governance data...")
-            proposals = api_client.get_governance_proposals(protocol)
+        if balances:
+            # Display metrics
+            click.echo("\n📊 Token Distribution Analysis:")
+            click.echo(f"  • Total holders analyzed: {len(balances)}")
+            click.echo(f"  • Gini coefficient: {metrics.get('gini_coefficient', 'N/A')}")
+            click.echo(f"  • Nakamoto coefficient: {metrics.get('nakamoto_coefficient', 'N/A')}")
             
-            # Calculate participation metrics
-            participation_rate = 0.0
-            if proposals:
-                total_votes = sum(proposal.get("votes_count", 0) for proposal in proposals)
-                participation_rate = total_votes / (len(proposals) * len(balances)) if proposals and balances else 0
+            if verbose:
+                click.echo(f"  • Shannon entropy: {metrics.get('shannon_entropy', 'N/A')}")
+                click.echo(f"  • Herfindahl index: {metrics.get('herfindahl_index', 'N/A')}")
+                click.echo(f"  • Theil index: {metrics.get('theil_index', 'N/A')}")
+                click.echo(f"  • Palma ratio: {metrics.get('palma_ratio', 'N/A')}")
+            
+            # Save output file
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = os.path.join(output_dir, f"{protocol}_analysis_{timestamp}.{output_format}")
+            
+            if output_format == "json":
+                with open(output_file, "w") as f:
+                    json.dump(data, f, indent=2)
+            elif output_format == "csv":
+                df = pd.DataFrame(data["token_holders"])
+                df.to_csv(output_file, index=False)
+            
+            click.echo(f"\n💾 Analysis saved to {output_file}")
+            
+            # Generate chart if requested
+            if chart:
+                click.echo("\n📈 Generating distribution chart...")
+                chart_file = os.path.join(output_dir, f"{protocol}_distribution_{timestamp}.png")
                 
-            output_data["governance"] = {
-                "proposals_count": len(proposals),
-                "participation_rate": participation_rate,
-                "proposals": proposals[:5] if verbose else []  # Include top 5 proposals in verbose mode
-            }
-
-        # Generate output filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"{protocol}_analysis_{timestamp}.{output_format}"
-        output_path = os.path.join(output_dir, output_filename)
-        
-        # Save output in requested format
-        if output_format == "json":
-            with open(output_path, "w") as f:
-                json.dump(output_data, f, indent=2)
+                # Create visualization
+                plt.figure(figsize=(10, 6))
                 
-        elif output_format == "csv":
-            # For CSV, we need to flatten the nested structure
-            with open(output_path, "w", newline="") as f:
-                writer = csv.writer(f)
+                # Sort balances in descending order
+                balances_sorted = sorted(balances, reverse=True)
                 
-                # Write header
-                header = ["protocol", "timestamp", "total_holders"]
-                for metric_name in metrics.keys():
-                    header.append(metric_name)
-                    
-                writer.writerow(header)
+                # Plot distribution
+                plt.plot(range(1, len(balances_sorted) + 1), balances_sorted)
+                plt.title(f"{protocol.upper()} Token Distribution")
+                plt.xlabel("Holder Rank")
+                plt.ylabel("Token Balance")
+                plt.grid(True, alpha=0.3)
+                plt.tight_layout()
                 
-                # Write data row
-                row = [
-                    protocol,
-                    output_data["analysis_timestamp"],
-                    output_data["total_holders_analyzed"]
-                ]
+                # Add Lorenz curve on second axis
+                ax2 = plt.twinx()
+                total = sum(balances_sorted)
+                lorenz = [sum(balances_sorted[:i+1])/total for i in range(len(balances_sorted))]
+                ax2.plot(range(1, len(balances_sorted) + 1), lorenz, 'r-', alpha=0.7)
+                ax2.set_ylabel("Cumulative Share", color='r')
                 
-                for metric_value in metrics.values():
-                    row.append(metric_value)
-                    
-                writer.writerow(row)
+                # Save chart
+                plt.savefig(chart_file)
+                plt.close()
                 
-                # If verbose, write governance data
-                if verbose and "governance" in output_data:
-                    writer.writerow([])  # Empty row as separator
-                    writer.writerow(["Governance Data"])
-                    writer.writerow(["proposals_count", "participation_rate"])
-                    writer.writerow([
-                        output_data["governance"]["proposals_count"],
-                        output_data["governance"]["participation_rate"]
-                    ])
-        
-        click.echo(f"💾 Analysis saved to {output_path}")
-        
-        # Generate chart if requested
-        if chart:
-            chart_filename = f"{protocol}_distribution_{timestamp}.png"
-            chart_path = os.path.join(output_dir, chart_filename)
-            
-            click.echo("📊 Generating distribution chart...")
-            
-            plt.figure(figsize=(10, 6))
-            
-            # Convert to pandas Series for easier plotting
-            balances_series = pd.Series(balances).sort_values(ascending=False)
-            
-            # Plot top 100 holders (or all if less than 100)
-            top_n = min(100, len(balances_series))
-            plt.bar(range(top_n), balances_series.head(top_n))
-            
-            plt.title(f"{protocol.upper()} Token Distribution - Top {top_n} Holders")
-            plt.xlabel("Holder Rank")
-            plt.ylabel("Token Balance")
-            plt.grid(axis="y", alpha=0.3)
-            
-            # Add key metrics as text annotation
-            plt.figtext(
-                0.02, 0.02,
-                f"Gini Coefficient: {metrics.get('gini_coefficient', 'N/A'):.4f}\n"
-                f"Nakamoto Coefficient: {metrics.get('nakamoto_coefficient', 'N/A')}\n"
-                f"Top 10 Holders: {metrics.get('top_10_percentage', 'N/A'):.2f}%",
-                fontsize=9,
-                bbox={"facecolor": "white", "alpha": 0.8, "pad": 5}
-            )
-            
-            plt.tight_layout()
-            plt.savefig(chart_path)
-            plt.close()
-            
-            click.echo(f"📈 Chart saved to {chart_path}")
-            
-    except Exception as e:
-        click.echo(click.style(f"❌ Error during analysis: {e}", fg="red"))
-        if verbose:
-            import traceback
-            click.echo(traceback.format_exc())
-        sys.exit(1) 
+                click.echo(f"📊 Chart saved to {chart_file}")
+        else:
+            click.echo("❌ No positive balances found in the data")
+    else:
+        click.echo("❌ No token holders or metrics found in the data") 
