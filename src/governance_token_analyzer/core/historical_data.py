@@ -720,28 +720,21 @@ def simulate_historical_data(
 
 def load_historical_snapshots(protocol: str, data_dir: str = "data/historical") -> List[Dict[str, Any]]:
     """Load historical snapshots for a given protocol.
-
+    
     Args:
         protocol: Name of the protocol
         data_dir: Directory containing historical data
-
+        
     Returns:
-        List of snapshots ordered by timestamp
-
-    Raises:
-        DataAccessError: If there's an issue accessing the data
+        List of snapshots ordered by timestamp. Returns an empty list if loading fails
+        or if no snapshots are found.
     """
     try:
         # Initialize data manager
         data_manager = HistoricalDataManager(data_dir)
-
+        
         # Get snapshots
-        snapshots = data_manager.get_snapshots(protocol)
-
-        return snapshots
-    except (DataAccessError, ProtocolNotSupportedError) as e:
-        logger.error(f"Failed to load historical snapshots for {protocol}: {e}")
-        return []
+        return data_manager.get_snapshots(protocol)
     except Exception as e:
-        logger.error(f"Unexpected error loading historical snapshots for {protocol}: {e}")
+        logger.error(f"Failed to load historical snapshots for {protocol}: {e}")
         return []
