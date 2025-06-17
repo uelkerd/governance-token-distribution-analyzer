@@ -348,6 +348,92 @@ class HistoricalDataManager:
             logger.error(f"Failed to load snapshot for {protocol} at {timestamp}: {e}")
             raise DataAccessError(f"Failed to load snapshot for {protocol} at {timestamp}: {e}") from e
 
+    def get_snapshot_by_date(self, protocol: str, date_str: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a snapshot for a specific date.
+
+        Args:
+            protocol: Name of the protocol
+            date_str: Date string in any standard format (YYYY-MM-DD, etc.)
+
+        Returns:
+            Snapshot data for the given date or None if not found
+
+        Raises:
+            ProtocolNotSupportedError: If the protocol is not supported
+            DataAccessError: If there's an issue accessing the data
+        """
+        self._validate_protocol(protocol)
+
+        try:
+            target_date = self._parse_date_string(date_str)
+            if not target_date:
+                return None
+
+            closest_snapshot = self._find_closest_snapshot(protocol, target_date)
+            return closest_snapshot.get("data", {}) if closest_snapshot else None
+
+        except Exception as e:
+            if isinstance(e, ProtocolNotSupportedError):
+                raise
+            logger.error(f"Failed to get snapshot by date for {protocol} at {date_str}: {e}")
+            raise DataAccessError(f"Failed to get snapshot by date for {protocol} at {date_str}: {e}") from e
+
+    def _parse_date_string(self, date_str: str) -> Optional[datetime]:
+        """Parse a date string into a datetime object.
+
+        Args:
+            date_str: Date string in any standard format
+
+        Returns:
+            Datetime object or None if parsing fails
+        """
+        # First try ISO format (YYYY-MM-DD)
+        try:
+            return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+        except ValueError:
+            pass
+
+        # Try other common formats
+        for fmt in ("%Y-%m-%d", "%Y%m%d", "%d-%m-%Y", "%m/%d/%Y", "%Y/%m/%d"):
+            try:
+                return datetime.strptime(date_str, fmt)
+            except ValueError:
+                continue
+
+        logger.warning(f"Could not parse date string: {date_str}")
+        return None
+
+    def _find_closest_snapshot(self, protocol: str, target_date: datetime) -> Optional[Dict[str, Any]]:
+        """Find the snapshot closest to the target date.
+
+        Args:
+            protocol: Name of the protocol
+            target_date: Target datetime to find closest snapshot for
+
+        Returns:
+            Closest snapshot or None if no snapshots exist
+        """
+        snapshots = self.get_snapshots(protocol)
+        if not snapshots:
+            return None
+
+        closest_snapshot = None
+        min_delta = timedelta.max
+
+        for snapshot in snapshots:
+            try:
+                snapshot_date = datetime.fromisoformat(snapshot["timestamp"].replace("Z", "+00:00"))
+                delta = abs(snapshot_date - target_date)
+
+                if delta < min_delta:
+                    min_delta = delta
+                    closest_snapshot = snapshot
+            except (ValueError, KeyError) as e:
+                logger.warning(f"Skipping invalid snapshot: {e}")
+                continue
+
+        return closest_snapshot
+
 
 def calculate_distribution_change(
     old_distribution: pd.DataFrame,
@@ -726,19 +812,20 @@ def load_historical_snapshots(protocol: str, data_dir: str = "data/historical") 
         data_dir: Directory containing historical data
 
     Returns:
-        List of snapshots ordered by timestamp
-
-    Raises:
-        DataAccessError: If there's an issue accessing the data
+        List of snapshots ordered by timestamp. Returns an empty list if loading fails
+        or if no snapshots are found.
     """
     try:
         # Initialize data manager
         data_manager = HistoricalDataManager(data_dir)
 
         # Get snapshots
-        snapshots = data_manager.get_snapshots(protocol)
-
-        return snapshots
-    except Exception as e:
-        logger.error(f"Failed to load historical snapshots for {protocol}: {e}")
+        return data_manager.get_snapshots(protocol)
+    except (DataAccessError, ProtocolNotSupportedError, DataStorageError) as e:
+        logger.warning(f"Failed to load historical snapshots for {protocol} due to a known issue: {e}")
+        return []
+    except Exception as e:  # Catch any other unexpected error
+        logger.error(
+            f"An unexpected error occurred while loading historical snapshots for {protocol}: {e}", exc_info=True
+        )
         return []
