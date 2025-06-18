@@ -26,7 +26,7 @@ def execute_analyze_command(
 ) -> None:
     """
     Execute the analyze command to analyze token distribution for a specific protocol.
-    
+
     Args:
         protocol: Protocol to analyze
         limit: Maximum number of token holders to analyze
@@ -143,4 +143,4 @@ def execute_analyze_command(
         else:
             click.echo("❌ No positive balances found in the data")
     else:
-        click.echo("❌ No token holders or metrics found in the data") 
+        click.echo("❌ No token holders or metrics found in the data")

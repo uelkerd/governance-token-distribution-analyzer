@@ -23,35 +23,35 @@ logger = logging.getLogger(__name__)
 class MetricsCollector:
     """
     Collects and aggregates metrics across different protocols.
-    
+
     This class provides a unified interface for collecting metrics
     from various protocols for comparison and analysis.
     """
-    
+
     def __init__(self, use_live_data: bool = True):
         """
         Initialize the MetricsCollector.
-        
+
         Args:
             use_live_data: Whether to use live data or simulated data
         """
         self.use_live_data = use_live_data
         self.api_client = APIClient()
-        
+
     def collect_protocol_data(self, protocol: str, limit: int = 1000) -> Dict[str, Any]:
         """
         Collect comprehensive data for a specific protocol.
-        
+
         Args:
             protocol: Name of the protocol to collect data for
             limit: Maximum number of token holders to collect
-            
+
         Returns:
             Dictionary containing token holder data and metrics
         """
         # Get token holders data
         holders_data = self.api_client.get_token_holders(protocol, limit=limit, use_real_data=self.use_live_data)
-        
+
         # Extract balances
         balances = []
         for holder in holders_data:
@@ -62,7 +62,7 @@ class MetricsCollector:
                         balances.append(balance)
                 except (ValueError, TypeError):
                     continue
-        
+
         # Calculate metrics
         metrics = {}
         if balances:
@@ -73,67 +73,61 @@ class MetricsCollector:
             metrics["palma_ratio"] = calculate_palma_ratio(balances)
             metrics["total_holders"] = len(balances)
             metrics["total_supply"] = sum(balances)
-        
-        return {
-            "protocol": protocol,
-            "holders": holders_data,
-            "balances": balances,
-            "metrics": metrics
-        }
-    
-    def compare_protocols(self, protocol_list: List[str], primary_metric: str = "gini_coefficient") -> Dict[str, Dict[str, Any]]:
+
+        return {"protocol": protocol, "holders": holders_data, "balances": balances, "metrics": metrics}
+
+    def compare_protocols(
+        self, protocol_list: List[str], primary_metric: str = "gini_coefficient"
+    ) -> Dict[str, Dict[str, Any]]:
         """
         Compare metrics across multiple protocols.
-        
+
         Args:
             protocol_list: List of protocols to compare
             primary_metric: Primary metric for comparison
-            
+
         Returns:
             Dictionary mapping protocols to their metrics
         """
         results = {}
-        
+
         for protocol in protocol_list:
             try:
                 protocol_data = self.collect_protocol_data(protocol)
                 metrics = protocol_data.get("metrics", {})
-                
+
                 if metrics:
                     results[protocol] = metrics
                 else:
                     results[protocol] = {"error": "No metrics available"}
-                    
+
             except Exception as e:
                 logger.error(f"Error collecting data for {protocol}: {str(e)}")
                 results[protocol] = {"error": str(e)}
-        
+
         return results
-    
+
     def get_governance_data(self, protocol: str) -> Dict[str, Any]:
         """
         Get governance-related data for a protocol.
-        
+
         Args:
             protocol: Name of the protocol
-            
+
         Returns:
             Dictionary containing governance data
         """
         try:
             proposals = self.api_client.get_governance_proposals(protocol, use_real_data=self.use_live_data)
             votes = self.api_client.get_governance_votes(protocol, use_real_data=self.use_live_data)
-            
+
             return {
                 "protocol": protocol,
                 "proposals": proposals,
                 "votes": votes,
                 "proposal_count": len(proposals),
-                "vote_count": len(votes)
+                "vote_count": len(votes),
             }
         except Exception as e:
             logger.error(f"Error getting governance data for {protocol}: {str(e)}")
-            return {
-                "protocol": protocol,
-                "error": str(e)
-            } 
+            return {"protocol": protocol, "error": str(e)}

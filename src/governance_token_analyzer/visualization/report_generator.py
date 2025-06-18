@@ -871,14 +871,14 @@ class ReportGenerator:
             # Create a default output path
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_path = os.path.join(self.output_dir, f"{protocol_name.lower()}_report.html")
-        
+
         # Create directory if it doesn't exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        
+
         # Write the HTML content to the file
         with open(output_path, "w") as f:
             f.write(html_content)
-        
+
         return output_path
 
     def _generate_html_report(
@@ -955,7 +955,7 @@ class ReportGenerator:
         historical_data: Optional[Dict[str, Any]] = None,
         format: str = "html",
         output_path: Optional[str] = None,
-        include_historical: bool = False
+        include_historical: bool = False,
     ) -> str:
         """Generate a comprehensive analysis report.
 
@@ -974,11 +974,11 @@ class ReportGenerator:
         """
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
+
         # Set default output path if not provided
         if output_path is None:
             output_path = os.path.join(self.output_dir, f"{protocol}_report_{timestamp}.html")
-        
+
         # Prepare the report data
         report_data = {
             "title": f"{protocol.upper()} Governance Token Analysis Report",
@@ -988,21 +988,21 @@ class ReportGenerator:
             "metrics": [],
             "visualizations": [],
             "include_historical": include_historical,
-            "conclusion": f"This analysis of {protocol.upper()} governance token distribution and governance participation provides insights into the current state of decentralization and governance activity."
+            "conclusion": f"This analysis of {protocol.upper()} governance token distribution and governance participation provides insights into the current state of decentralization and governance activity.",
         }
-        
+
         # Extract metrics from current data
         if current_data:
             metrics = self._extract_metrics(current_data)
             report_data["metrics"].extend(metrics)
-        
+
         # Create visualization directory
         viz_dir = os.path.join(os.path.dirname(output_path), "visualizations")
         os.makedirs(viz_dir, exist_ok=True)
-        
+
         # Generate visualizations
         visualizations = []
-        
+
         # Add distribution visualizations
         if current_data and "token_holders" in current_data:
             try:
@@ -1011,17 +1011,19 @@ class ReportGenerator:
                 charts.create_token_distribution_chart(
                     token_holders=current_data["token_holders"],
                     output_path=viz_path,
-                    title=f"{protocol.upper()} Token Distribution"
+                    title=f"{protocol.upper()} Token Distribution",
                 )
-                
-                visualizations.append({
-                    "title": f"{protocol.upper()} Token Distribution",
-                    "path": viz_path,
-                    "description": "Distribution of tokens among top token holders."
-                })
+
+                visualizations.append(
+                    {
+                        "title": f"{protocol.upper()} Token Distribution",
+                        "path": viz_path,
+                        "description": "Distribution of tokens among top token holders.",
+                    }
+                )
             except Exception as e:
                 print(f"Error generating token distribution chart: {e}")
-        
+
         # Add governance visualizations
         if governance_data and votes_data:
             try:
@@ -1031,25 +1033,27 @@ class ReportGenerator:
                     proposals=governance_data,
                     votes=votes_data,
                     output_path=viz_path,
-                    title=f"{protocol.upper()} Governance Participation"
+                    title=f"{protocol.upper()} Governance Participation",
                 )
-                
-                visualizations.append({
-                    "title": f"{protocol.upper()} Governance Participation",
-                    "path": viz_path,
-                    "description": "Participation rates in governance proposals."
-                })
+
+                visualizations.append(
+                    {
+                        "title": f"{protocol.upper()} Governance Participation",
+                        "path": viz_path,
+                        "description": "Participation rates in governance proposals.",
+                    }
+                )
             except Exception as e:
                 print(f"Error generating governance participation chart: {e}")
-        
+
         # Add historical analysis if available
         historical_analysis = None
         if historical_data:
             historical_analysis = {
                 "overview": f"Historical analysis of {protocol.upper()} token distribution and governance metrics.",
-                "visualizations": []
+                "visualizations": [],
             }
-            
+
             try:
                 # Generate historical metrics chart
                 for metric in ["gini_coefficient", "nakamoto_coefficient"]:
@@ -1058,24 +1062,26 @@ class ReportGenerator:
                         historical_charts.create_time_series_chart(
                             time_series=historical_data[metric],
                             output_path=viz_path,
-                            title=f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}"
+                            title=f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}",
                         )
-                        
-                        historical_analysis["visualizations"].append({
-                            "title": f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}",
-                            "path": viz_path,
-                            "description": f"Historical trend of {metric.replace('_', ' ').title()} over time."
-                        })
+
+                        historical_analysis["visualizations"].append(
+                            {
+                                "title": f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}",
+                                "path": viz_path,
+                                "description": f"Historical trend of {metric.replace('_', ' ').title()} over time.",
+                            }
+                        )
             except Exception as e:
                 print(f"Error generating historical charts: {e}")
-        
+
         # Add visualizations to report data
         report_data["visualizations"] = visualizations
-        
+
         # Add historical analysis if available
         if historical_analysis:
             report_data["historical_analysis"] = historical_analysis
-        
+
         # Generate the report based on format
         if format == "html":
             # Add output path to report data
@@ -1088,7 +1094,7 @@ class ReportGenerator:
                 visualizations=report_data["visualizations"],
                 report_dir=os.path.dirname(output_path),
                 timestamp=timestamp,
-                historical_analysis=historical_analysis
+                historical_analysis=historical_analysis,
             )
         else:
             raise ValueError(f"Unsupported format: {format}")
@@ -1099,7 +1105,7 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
     # Create the report generator
     report_dir = os.path.dirname(output_path)
     report_gen = ReportGenerator(output_dir=report_dir)
-    
+
     # Generate the report
     return report_gen.generate_historical_report(snapshots=snapshots, protocol_name=protocol, format="html")
 
