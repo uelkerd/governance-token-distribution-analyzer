@@ -102,10 +102,17 @@ def execute_analyze_command(
                 with open(output_file, "w") as f:
                     json.dump(data, f, indent=2)
             elif output_format == "csv":
+                # Save token holders
                 df = pd.DataFrame(data["token_holders"])
                 df.to_csv(output_file, index=False)
 
-            click.echo(f"\n💾 Analysis saved to {output_file}")
+                # Save metrics as a separate CSV file
+                metrics_file = os.path.join(output_dir, f"{protocol}_metrics_{timestamp}.csv")
+                metrics_df = pd.DataFrame([metrics])
+                metrics_df.to_csv(metrics_file, index=False)
+
+                click.echo(f"\n💾 Analysis saved to {output_file}")
+                click.echo(f"💾 Metrics saved to {metrics_file}")
 
             # Generate chart if requested
             if chart:
