@@ -49,7 +49,7 @@ def execute_compare_protocols_command(
         else:
             protocol_list = [p.strip().lower() for p in protocols_arg.split(",")]
             # Validate protocols (case-insensitive)
-            protocols_lower = {k.lower(): k for k in PROTOCOLS.keys()}
+            protocols_lower = {k.lower(): k for k in PROTOCOLS}
             for p in protocol_list:
                 if p.lower() not in protocols_lower:
                     raise click.BadParameter(f"Unsupported protocol: {p}")
