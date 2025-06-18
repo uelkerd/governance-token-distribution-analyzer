@@ -390,8 +390,8 @@ def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple
             plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
         except Exception as e:
             logger.error(f"Error creating heatmap visualization: {e}")
-            # Clear the figure and create a simple error message
-            plt.clf()
+            # Close the figure and create a simple error message
+            plt.close(fig)
             fig, ax = plt.subplots(figsize=figsize)
             ax.text(
                 0.5, 0.5, f"Error creating heatmap: {str(e)[:100]}...", ha="center", va="center", transform=ax.transAxes
