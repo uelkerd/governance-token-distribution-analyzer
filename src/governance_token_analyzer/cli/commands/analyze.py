@@ -143,4 +143,4 @@ def execute_analyze_command(
         else:
             click.echo("❌ No positive balances found in the data")
     else:
-        click.echo("❌ No token holders or metrics found in the data") 
+        click.echo("❌ No token holders or metrics found in the data")

@@ -83,7 +83,7 @@ def execute_historical_analysis_command(
     data_dir: str = "data/historical",
     output_dir: str = "outputs",
     format: str = "png",
-    plot: bool = True
+    plot: bool = True,
 ) -> None:
     """
     Execute the historical-analysis command.

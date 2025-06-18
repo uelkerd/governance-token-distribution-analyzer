@@ -29,17 +29,17 @@ def create_time_series_chart(
     figsize: Tuple[int, int] = (12, 6),
 ) -> str:
     """Create and save a time series chart for historical data.
-    
+
     Args:
         time_series: DataFrame with time series data
         output_path: Path to save the chart
         title: Chart title (optional)
         metric: Metric to plot (optional, will use first numeric column if not provided)
         figsize: Figure size
-        
+
     Returns:
         Path to the saved chart
-        
+
     Raises:
         DataFormatError: If input data is not in the expected format
         VisualizationError: If there's an issue creating the visualization
@@ -49,7 +49,7 @@ def create_time_series_chart(
         if not isinstance(time_series, pd.DataFrame):
             logger.error("Invalid input: time_series is not a DataFrame")
             raise DataFormatError("Input data must be a pandas DataFrame")
-        
+
         if time_series.empty:
             logger.warning("Empty time series data provided")
             fig, ax = plt.subplots(figsize=figsize)
@@ -64,7 +64,7 @@ def create_time_series_chart(
             )
             plt.savefig(output_path, dpi=300, bbox_inches="tight")
             return output_path
-        
+
         # Determine which metric to plot
         if metric is None:
             # Find first numeric column
@@ -73,16 +73,16 @@ def create_time_series_chart(
                 logger.error("No numeric columns found in time series data")
                 raise DataFormatError("No numeric columns found in time series data")
             metric = numeric_cols[0]
-        
+
         if metric not in time_series.columns:
             logger.error(f"Metric '{metric}' not found in time series data")
             raise DataFormatError(
                 f"Metric '{metric}' not found in time series data. Available metrics: {list(time_series.columns)}"
             )
-        
+
         # Create figure and axis
         fig, ax = plt.subplots(figsize=figsize)
-        
+
         # Check if the index is a datetime type
         if not isinstance(time_series.index, pd.DatetimeIndex):
             logger.debug("Converting timestamp index to datetime")
@@ -95,7 +95,7 @@ def create_time_series_chart(
                 # If conversion fails, use numeric index
                 logger.warning("Could not convert index to datetime, using numeric index")
                 time_series.set_index("index", inplace=True)
-        
+
         # Plot the metric
         ax.plot(
             time_series.index,
@@ -104,7 +104,7 @@ def create_time_series_chart(
             linestyle="-",
             linewidth=2,
         )
-        
+
         # Add a trend line (linear regression) if we have enough data points
         if len(time_series) > 1:
             try:
@@ -113,20 +113,13 @@ def create_time_series_chart(
                     x = mdates.date2num(time_series.index)
                 else:
                     x = np.arange(len(time_series))
-                
+
                 y = time_series[metric].values
                 z = np.polyfit(x, y, 1)
                 p = np.poly1d(z)
-                
+
                 if isinstance(time_series.index, pd.DatetimeIndex):
-                    ax.plot(
-                        time_series.index,
-                        p(x),
-                        "r--",
-                        alpha=0.7,
-                        linewidth=1.5,
-                        label="Trend"
-                    )
+                    ax.plot(time_series.index, p(x), "r--", alpha=0.7, linewidth=1.5, label="Trend")
                 else:
                     ax.plot(
                         time_series.index,
@@ -134,22 +127,22 @@ def create_time_series_chart(
                         "r--",
                         alpha=0.7,
                         linewidth=1.5,
-                        label="Trend"
+                        label="Trend",
                     )
-                
+
                 ax.legend()
             except Exception as e:
                 logger.warning(f"Could not create trend line: {e}")
-        
+
         # Set labels and title
         ax.set_xlabel("Date")
         ax.set_ylabel(metric.replace("_", " ").title())
-        
+
         if title:
             ax.set_title(title)
         else:
             ax.set_title(f"{metric.replace('_', ' ').title()} Over Time")
-        
+
         # Format x-axis dates if applicable
         if isinstance(time_series.index, pd.DatetimeIndex):
             plt.gcf().autofmt_xdate()
@@ -158,17 +151,17 @@ def create_time_series_chart(
                 ax.xaxis.set_major_locator(mdates.MonthLocator())
             else:
                 ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(time_series) // 10)))
-        
+
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        
+
         # Save the figure
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
-        
+
         logger.info(f"Created time series chart saved to {output_path}")
         return output_path
-    
+
     except Exception as e:
         if isinstance(e, (DataFormatError, VisualizationError)):
             raise

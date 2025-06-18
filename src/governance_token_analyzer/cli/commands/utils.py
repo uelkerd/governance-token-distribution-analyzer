@@ -122,28 +122,28 @@ def create_bar_chart(protocols: List[str], values: List[float], metric: str, out
     display_names = [p.upper() for p in protocols]
     
     # Create bars with different colors
-    bars = plt.bar(display_names, values, color=['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'][:len(protocols)])
+    bars = plt.bar(display_names, values, color=["#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6"][: len(protocols)])
     
     # Add value labels on top of bars
     for bar in bars:
         height = bar.get_height()
         plt.text(
-            bar.get_x() + bar.get_width() / 2.,
+            bar.get_x() + bar.get_width() / 2.0,
             height + 0.02,
-            f'{height:.3f}',
-            ha='center',
-            va='bottom',
+            f"{height:.3f}",
+            ha="center",
+            va="bottom",
             fontsize=10
         )
     
     # Add chart details
     plt.title(f"Protocol Comparison: {metric.replace('_', ' ').title()}")
     plt.ylabel(metric.replace("_", " ").title())
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.grid(axis="y", linestyle="--", alpha=0.7)
     plt.tight_layout()
     
     # Save chart
-    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.savefig(output_file, dpi=300, bbox_inches="tight")
     plt.close()
     
     click.echo(f"📊 Comparison chart saved to {output_file}")
@@ -319,4 +319,4 @@ def create_distribution_chart(balances: List[float], protocol: str, chart_file: 
         
         click.echo(f"📊 Chart saved to {chart_file}")
     except Exception as e:
-        raise CLIError(f"Error creating distribution chart: {e}") 
+        raise CLIError(f"Error creating distribution chart: {e}")

@@ -47,123 +47,123 @@ def calculate_gini_coefficient(balances: List[float]) -> float:
 
 def calculate_nakamoto_coefficient(balances: List[float]) -> int:
     """Calculate the Nakamoto coefficient.
-    
+
     The Nakamoto coefficient is the minimum number of entities required
     to control more than 50% of the token supply.
-    
+
     Args:
         balances: List of token balances.
-        
+
     Returns:
         Nakamoto coefficient as an integer.
     """
     if not balances:
         return 0
-        
+
     # Sort balances in descending order
     balances_sorted = sorted(balances, reverse=True)
     total_supply = sum(balances_sorted)
     threshold = total_supply * 0.5
-    
+
     # Count how many holders needed to exceed 50%
     cumulative_sum = 0
     for i, balance in enumerate(balances_sorted):
         cumulative_sum += balance
         if cumulative_sum > threshold:
             return i + 1
-            
+
     return len(balances_sorted)
 
 
 def calculate_shannon_entropy(balances: List[float]) -> float:
     """Calculate Shannon entropy for token distribution.
-    
+
     Shannon entropy measures the unpredictability or randomness in a distribution.
     Higher values indicate more decentralization.
-    
+
     Args:
         balances: List of token balances.
-        
+
     Returns:
         Shannon entropy as a float.
     """
     if not balances or sum(balances) == 0:
         return 0
-        
+
     total = sum(balances)
     proportions = [balance / total for balance in balances]
-    
+
     # Calculate entropy
     entropy = 0
     for p in proportions:
         if p > 0:
             entropy -= p * math.log2(p)
-            
+
     return entropy
 
 
 def calculate_theil_index(balances: List[float]) -> float:
     """Calculate Theil index for token distribution.
-    
+
     The Theil index is a measure of economic inequality.
-    
+
     Args:
         balances: List of token balances.
-        
+
     Returns:
         Theil index as a float.
     """
     if not balances or sum(balances) == 0:
         return 0
-        
+
     n = len(balances)
     total = sum(balances)
     mean = total / n
-    
+
     if mean == 0:
         return 0
-        
+
     # Calculate Theil index
     theil = 0
     for balance in balances:
         if balance > 0:
             theil += (balance / total) * math.log(balance / mean)
-            
+
     return theil
 
 
 def calculate_palma_ratio(balances: List[float]) -> float:
     """Calculate Palma ratio for token distribution.
-    
+
     The Palma ratio is the ratio of the richest 10% to the poorest 40%.
-    
+
     Args:
         balances: List of token balances.
-        
+
     Returns:
         Palma ratio as a float.
     """
     if not balances or sum(balances) == 0:
         return 0
-        
+
     # Sort balances in ascending order
     balances_sorted = sorted(balances)
     n = len(balances_sorted)
-    
+
     if n < 5:  # Need at least 5 holders to calculate meaningful ratio
         return 0
-        
+
     # Calculate indices for percentiles
     bottom_40_idx = int(n * 0.4)
     top_10_idx = int(n * 0.9)
-    
+
     # Calculate sum for each group
     bottom_40_sum = sum(balances_sorted[:bottom_40_idx])
     top_10_sum = sum(balances_sorted[top_10_idx:])
-    
+
     if bottom_40_sum == 0:
-        return float('inf')  # Avoid division by zero
-        
+        return float("inf")  # Avoid division by zero
+
     return top_10_sum / bottom_40_sum
 
 
