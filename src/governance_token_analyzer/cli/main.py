@@ -9,13 +9,11 @@ concentration metrics, and governance participation across protocols.
 import os
 import sys
 import json
-import csv
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 
 import click
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # Add the src directory to Python path for imports
 try:

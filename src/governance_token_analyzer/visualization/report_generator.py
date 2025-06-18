@@ -206,7 +206,7 @@ class ReportGenerator:
                 report_dir=report_dir,
                 timestamp=timestamp,
             )
-        elif format == "json":
+        if format == "json":
             return self._generate_json_report(
                 protocol_name=protocol_name,
                 metrics=metrics,
@@ -214,11 +214,10 @@ class ReportGenerator:
                 report_dir=report_dir,
                 timestamp=timestamp,
             )
-        elif format == "pdf":
+        if format == "pdf":
             # PDF generation would go here
             return "PDF generation not yet implemented"
-        else:
-            raise ValueError(f"Unsupported format: {format}")
+        raise ValueError(f"Unsupported format: {format}")
 
     def generate_historical_report(
         self,
@@ -392,7 +391,8 @@ class ReportGenerator:
 
         return metrics
 
-    def _get_metric_description(self, metric_name: str) -> str:
+    @staticmethod
+    def _get_metric_description(metric_name: str) -> str:
         """Get description for a specific metric."""
         descriptions = {
             "gini_coefficient": "Measure of inequality in token distribution (0=equal, 1=unequal)",
@@ -403,7 +403,8 @@ class ReportGenerator:
 
         return descriptions.get(metric_name, "No description available")
 
-    def _generate_snapshot_visualizations(self, protocol_data: Dict[str, Any], viz_dir: str) -> List[Dict[str, str]]:
+    @staticmethod
+    def _generate_snapshot_visualizations(protocol_data: Dict[str, Any], viz_dir: str) -> List[Dict[str, str]]:
         """Generate visualizations for a protocol snapshot."""
         visualizations = []
 
@@ -441,8 +442,9 @@ class ReportGenerator:
 
         return visualizations
 
+    @staticmethod
     def _generate_historical_visualizations(
-        self, snapshots: List[Dict[str, Any]], viz_dir: str
+        snapshots: List[Dict[str, Any]], viz_dir: str
     ) -> List[Dict[str, str]]:
         """Generate visualizations for historical data."""
         visualizations = []
@@ -561,8 +563,9 @@ class ReportGenerator:
 
         return visualizations
 
+    @staticmethod
     def _generate_comparison_visualizations(
-        self, protocol_data: Dict[str, Dict[str, Any]], viz_dir: str
+        protocol_data: Dict[str, Dict[str, Any]], viz_dir: str
     ) -> List[Dict[str, str]]:
         """Generate visualizations comparing multiple protocols."""
         visualizations = []
@@ -848,7 +851,7 @@ class ReportGenerator:
 
         # Add historical analysis if available
         if report_data.get("include_historical") or report_data.get("historical_data"):
-            html_content += f"""
+            html_content += """
             <div class="historical">
                 <h2>📈 Historical Analysis</h2>
                 <p>Historical data shows trends in token concentration over time.</p>
@@ -856,7 +859,7 @@ class ReportGenerator:
             </div>
             """
 
-        html_content += f"""
+        html_content += """
             <div class="footer">
                 <p>Generated using Governance Token Distribution Analyzer v1.0.0</p>
                 <p>Report includes mathematical validation and cross-protocol benchmarking.</p>
@@ -917,8 +920,8 @@ class ReportGenerator:
 
         return output_path
 
+    @staticmethod
     def _generate_json_report(
-        self,
         protocol_name: str,
         metrics: List[Dict[str, Any]],
         visualizations: List[Dict[str, str]],
@@ -1087,7 +1090,7 @@ class ReportGenerator:
             # Add output path to report data
             report_data["output_path"] = output_path
             return self.generate_html_report(report_data)
-        elif format == "json":
+        if format == "json":
             return self._generate_json_report(
                 protocol_name=protocol,
                 metrics=report_data["metrics"],
@@ -1096,8 +1099,7 @@ class ReportGenerator:
                 timestamp=timestamp,
                 historical_analysis=historical_analysis,
             )
-        else:
-            raise ValueError(f"Unsupported format: {format}")
+        raise ValueError(f"Unsupported format: {format}")
 
 
 def generate_historical_analysis_report(protocol, time_series_data, snapshots, output_path):

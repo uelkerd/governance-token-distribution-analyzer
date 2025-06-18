@@ -6,7 +6,6 @@ allowing users to create detailed analysis reports with visualizations.
 """
 
 import os
-from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 import click
@@ -14,7 +13,7 @@ import click
 from governance_token_analyzer.core.metrics_collector import MetricsCollector
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
 from governance_token_analyzer.visualization.report_generator import ReportGenerator
-from .utils import ensure_output_directory, handle_cli_error, CLIError, generate_timestamp
+from .utils import ensure_output_directory, handle_cli_error, CLIError
 
 
 def _fetch_governance_data_safely(api_client, protocol: str) -> List[Dict[str, Any]]:
@@ -24,9 +23,8 @@ def _fetch_governance_data_safely(api_client, protocol: str) -> List[Dict[str, A
         if governance_data:
             click.echo(f"📊 Found {len(governance_data)} governance proposals")
             return governance_data
-        else:
-            click.echo("⚠️ No governance proposals found")
-            return []
+        click.echo("⚠️ No governance proposals found")
+        return []
     except Exception as e:
         click.secho(f"⚠️ Error fetching governance data: {e}", fg="yellow")
         return []
