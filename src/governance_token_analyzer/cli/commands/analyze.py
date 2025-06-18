@@ -63,7 +63,7 @@ def execute_analyze_command(
 
     # Collect protocol data
     data = metrics_collector.collect_protocol_data(protocol, limit=limit)
-    
+
     # Replace with error handling
     try:
         data = metrics_collector.collect_protocol_data(protocol, limit=limit)
@@ -117,12 +117,12 @@ def execute_analyze_command(
 
                 # Sort balances in descending order
                 balances_sorted = sorted(balances, reverse=True)
-                
+
                 if not balances_sorted:
                     click.secho("⚠️ No balances to plot", fg="yellow")
                     plt.close()
                     return
-                
+
                 # Plot distribution
                 plt.plot(range(1, len(balances_sorted) + 1), balances_sorted)
                 plt.title(f"{protocol.upper()} Token Distribution")

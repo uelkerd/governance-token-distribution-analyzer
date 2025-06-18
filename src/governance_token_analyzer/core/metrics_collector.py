@@ -114,11 +114,7 @@ class MetricsCollector:
             # Add total_holders field for compatibility with tests
             data["total_holders"] = len(data["token_holders"])
 
-            balances = [
-                balance
-                for holder in data["token_holders"]
-                if (balance := float(holder.get("balance", 0))) > 0
-            ]
+            balances = [balance for holder in data["token_holders"] if (balance := float(holder.get("balance", 0))) > 0]
 
             if balances:
                 metrics = calculate_all_concentration_metrics(balances)
