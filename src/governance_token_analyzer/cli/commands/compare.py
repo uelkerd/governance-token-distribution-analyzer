@@ -21,7 +21,7 @@ from .utils import (
     display_protocol_comparison,
     filter_numeric_values,
     create_bar_chart,
-    generate_timestamp
+    generate_timestamp,
 )
 
 
@@ -40,16 +40,16 @@ def _generate_html_report(comparison_data: dict, metric: str) -> str:
         </style>
     </head>
     <body>
-        <h1 class="header">Protocol Comparison: {metric.replace('_', ' ').title()}</h1>
+        <h1 class="header">Protocol Comparison: {metric.replace("_", " ").title()}</h1>
         <div class="protocols">
     """
 
     for protocol, data in comparison_data.items():
-        value = data.get(metric, 'N/A')
+        value = data.get(metric, "N/A")
         html_content += f"""
             <div class="protocol">
                 <h3>{protocol.upper()}</h3>
-                <p><span class="metric">{metric.replace('_', ' ').title()}:</span> {value}</p>
+                <p><span class="metric">{metric.replace("_", " ").title()}:</span> {value}</p>
             </div>
         """
 
@@ -69,11 +69,7 @@ def _save_html_report(html_content: str, output_file: str) -> None:
 
 
 def _create_historical_comparison_chart(
-    protocol_list: List[str],
-    metric: str,
-    data_manager: HistoricalDataManager,
-    output_dir: str,
-    timestamp: str
+    protocol_list: List[str], metric: str, data_manager: HistoricalDataManager, output_dir: str, timestamp: str
 ) -> None:
     """Create historical comparison chart for protocols."""
     click.echo("\n📈 Adding historical analysis...")
@@ -171,6 +167,7 @@ def execute_compare_protocols_command(
 
         if format == "json":
             import json
+
             output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.json")
             with open(output_file, "w") as f:
                 json.dump(comparison_data, f, indent=2)

@@ -16,12 +16,7 @@ import pandas as pd
 
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
 from governance_token_analyzer.core.api_client import APIClient
-from .utils import (
-    ensure_output_directory,
-    handle_cli_error,
-    CLIError,
-    generate_timestamp
-)
+from .utils import ensure_output_directory, handle_cli_error, CLIError, generate_timestamp
 
 
 def _export_to_json(data: pd.DataFrame, output_file: str) -> None:
@@ -64,7 +59,7 @@ def execute_export_historical_data_command(
     limit: int = 1000,
     include_historical: bool = False,
     metric: str = "gini_coefficient",
-    data_dir: str = "data/historical"
+    data_dir: str = "data/historical",
 ) -> None:
     """
     Execute the export-historical-data command.

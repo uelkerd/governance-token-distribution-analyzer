@@ -19,20 +19,10 @@ import pandas as pd
 
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
 from governance_token_analyzer.visualization.historical_charts import create_time_series_chart
-from .utils import (
-    ensure_output_directory,
-    handle_cli_error,
-    CLIError,
-    generate_timestamp
-)
+from .utils import ensure_output_directory, handle_cli_error, CLIError, generate_timestamp
 
 
-def _create_time_series_plot(
-    time_series: pd.DataFrame,
-    protocol: str,
-    metric: str,
-    output_file: str
-) -> None:
+def _create_time_series_plot(time_series: pd.DataFrame, protocol: str, metric: str, output_file: str) -> None:
     """Create and save a time series plot with trend line."""
     if time_series.empty:
         raise CLIError(f"No historical data available for {protocol} {metric}")
@@ -44,18 +34,13 @@ def _create_time_series_plot(
     create_time_series_chart(
         time_series=time_series,
         output_path=output_file,
-        title=f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}"
+        title=f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}",
     )
 
     click.echo(f"📊 Time series plot saved to {output_file}")
 
 
-def _export_time_series_data(
-    time_series: pd.DataFrame,
-    protocol: str,
-    metric: str,
-    output_file: str
-) -> None:
+def _export_time_series_data(time_series: pd.DataFrame, protocol: str, metric: str, output_file: str) -> None:
     """Export time series data to JSON file."""
     if time_series.empty:
         raise CLIError(f"No historical data available for {protocol} {metric}")
@@ -128,7 +113,7 @@ def execute_historical_analysis_command(
             # Calculate change
             if isinstance(latest, (int, float)) and isinstance(earliest, (int, float)):
                 change = latest - earliest
-                change_pct = (change / earliest) * 100 if earliest != 0 else float('inf')
+                change_pct = (change / earliest) * 100 if earliest != 0 else float("inf")
 
                 if change > 0:
                     click.echo(f"  ↗️ Increase: {change:.4f} ({change_pct:.2f}%)")
@@ -140,12 +125,12 @@ def execute_historical_analysis_command(
             click.echo(f"⚠️ Metric '{metric}' not found in historical data")
 
         # Generate output based on format
-        timestamp = generate_timestamp() # Use the utility function for timestamp
+        timestamp = generate_timestamp()  # Use the utility function for timestamp
         if format == "png" and plot:
-            output_file = os.path.join(output_dir, f"{protocol}_{metric}_{timestamp}.png") # Add timestamp
+            output_file = os.path.join(output_dir, f"{protocol}_{metric}_{timestamp}.png")  # Add timestamp
             _create_time_series_plot(time_series, protocol, metric, output_file)
         elif format == "json":
-            output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical_{timestamp}.json") # Add timestamp
+            output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical_{timestamp}.json")  # Add timestamp
             _export_time_series_data(time_series, protocol, metric, output_file)
 
     except CLIError:

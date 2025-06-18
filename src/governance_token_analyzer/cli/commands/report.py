@@ -15,12 +15,7 @@ import click
 from governance_token_analyzer.core.metrics_collector import MetricsCollector
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
 from governance_token_analyzer.visualization.report_generator import ReportGenerator
-from .utils import (
-    ensure_output_directory,
-    handle_cli_error,
-    CLIError,
-    generate_timestamp
-)
+from .utils import ensure_output_directory, handle_cli_error, CLIError, generate_timestamp
 
 
 def _fetch_governance_data_safely(api_client, protocol: str) -> List[Dict[str, Any]]:
