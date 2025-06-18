@@ -30,6 +30,9 @@ try:
     # Import command implementations
     from governance_token_analyzer.cli.commands.analyze import execute_analyze_command
     from governance_token_analyzer.cli.commands.compare import execute_compare_protocols_command
+    from governance_token_analyzer.cli.commands.export import execute_export_historical_data_command
+    from governance_token_analyzer.cli.commands.historical import execute_historical_analysis_command
+    from governance_token_analyzer.cli.commands.report import execute_generate_report_command
 
     # Import from core.voting_block_analysis instead of non-existent analysis module
     from governance_token_analyzer.core.voting_block_analysis import VotingBlockAnalyzer
@@ -156,7 +159,7 @@ def validate_positive_int(ctx, param, value):
     help="Use simulated data instead of live data",
 )
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output with detailed metrics")
-def analyze(protocol, limit, output_format, output_dir, chart, live_data, simulated_data, verbose):
+def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_data, verbose):
     """📊 Analyze token distribution for a specific protocol.
 
     Calculates concentration metrics and generates detailed analysis reports.
@@ -190,7 +193,7 @@ def analyze(protocol, limit, output_format, output_dir, chart, live_data, simula
         execute_analyze_command(
             protocol=protocol,
             limit=limit,
-            output_format=output_format,
+            format=format,
             output_dir=output_dir,
             chart=chart,
             live_data=live_data,
@@ -243,7 +246,7 @@ def analyze(protocol, limit, output_format, output_dir, chart, live_data, simula
     default="data/historical",
     help="Directory containing historical data (default: data/historical)",
 )
-def compare_protocols(protocols, metric, output_format, output_dir, chart, detailed, historical, data_dir):
+def compare_protocols(protocols, metric, format, output_dir, chart, detailed, historical, data_dir):
     """🔍 Compare token distribution metrics across multiple protocols.
 
     Analyzes and visualizes differences in concentration and governance metrics.
@@ -265,9 +268,9 @@ def compare_protocols(protocols, metric, output_format, output_dir, chart, detai
     """
     try:
         execute_compare_protocols_command(
-            protocols_arg=protocols,
+            protocols=protocols,
             metric=metric,
-            output_format=output_format,
+            format=format,
             output_dir=output_dir,
             chart=chart,
             detailed=detailed,
@@ -315,7 +318,7 @@ def compare_protocols(protocols, metric, output_format, output_dir, chart, detai
     help="Metric to focus on for historical export",
 )
 @click.option("--data-dir", "-D", type=str, default="data/historical", help="Directory containing historical data")
-def export_historical_data(protocol, output_format, output_dir, limit, include_historical, metric, data_dir):
+def export_historical_data(protocol, format, output_dir, limit, include_historical, metric, data_dir):
     """📤 Export token distribution data for further analysis.
 
     Exports raw data in various formats for use in external tools.
@@ -334,73 +337,20 @@ def export_historical_data(protocol, output_format, output_dir, limit, include_h
       gova export-historical-data -p uniswap -h
       gova export-historical-data -p aave -f csv -l 5000
     """
-    click.echo(f"📤 Exporting {protocol.upper()} token distribution data...")
-
     try:
-        # Initialize components
-        api_client = APIClient()
-
-        # Get current data
-        click.echo("📡 Fetching current data...")
-        holders_data = api_client.get_token_holders(protocol, limit=limit, use_real_data=True)
-
-        # Prepare export data
-        export_data = {
-            "protocol": protocol,
-            "protocol_info": PROTOCOLS.get(protocol, {}),
-            "export_timestamp": datetime.now().isoformat(),
-            "current_data": holders_data,
-        }
-
-        # Add historical data if requested
-        if include_historical:
-            click.echo("📜 Loading historical snapshots...")
-            try:
-                if snapshots := historical_data.load_historical_snapshots(protocol, data_dir):
-                    click.echo(f"✅ Loaded {len(snapshots)} historical snapshots")
-                    export_data["historical_snapshots"] = snapshots
-                else:
-                    click.echo("⚠️  No historical snapshots found")
-            except Exception as e:
-                click.echo(f"⚠️  Error loading historical data: {e}")
-
-        # Generate output file
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = os.path.join(output_dir, f"{protocol}_export_{timestamp}.{output_format}")
-
-        # Save in requested format
-        if output_format == "json":
-            with open(output_file, "w") as f:
-                json.dump(export_data, f, indent=2)
-        elif output_format == "csv":
-            with open(output_file, "w", newline="") as f:
-                # For CSV, we need to flatten the data structure
-                writer = csv.writer(f)
-
-                # Write header
-                writer.writerow(["protocol", "address", "balance", "timestamp"])
-
-                # Write current data
-                for holder in holders_data:
-                    if isinstance(holder, dict):
-                        address = holder.get("address", "unknown")
-                        balance = holder.get("balance", 0)
-                        writer.writerow([protocol, address, balance, export_data["export_timestamp"]])
-
-                # Write historical data if included
-                if include_historical and "historical_snapshots" in export_data:
-                    for snapshot in export_data["historical_snapshots"]:
-                        timestamp = snapshot.get("timestamp", "unknown")
-                        for holder in snapshot.get("holders", []):
-                            if isinstance(holder, dict):
-                                address = holder.get("address", "unknown")
-                                balance = holder.get("balance", 0)
-                                writer.writerow([protocol, address, balance, timestamp])
-
-        click.echo(f"💾 Data exported to {output_file}")
-
+        execute_export_historical_data_command(
+            protocol=protocol,
+            format=format,
+            output_dir=output_dir,
+            limit=limit,
+            include_historical=include_historical,
+            metric=metric,
+            data_dir=data_dir,
+        )
+    except click.Abort:
+        sys.exit(1)
     except Exception as e:
-        click.echo(f"❌ Error exporting data: {e}", err=True)
+        click.echo(f"❌ Error: {e}", err=True)
         sys.exit(1)
 
 
@@ -434,7 +384,7 @@ def export_historical_data(protocol, output_format, output_dir, limit, include_h
 )
 @click.option("--format", "-f", type=click.Choice(["json", "png"]), default="png", help="Output format (default: png)")
 @click.option("--plot", "-c", is_flag=True, default=True, help="Generate time series plots")
-def historical_analysis(protocol, metric, data_dir, output_dir, output_format, plot):
+def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
     """📈 Analyze historical trends in token distribution metrics.
 
     Tracks changes in concentration and governance metrics over time.
@@ -453,163 +403,16 @@ def historical_analysis(protocol, metric, data_dir, output_dir, output_format, p
       gova historical-analysis -p aave -f json
     """
     try:
-        # Initialize data manager
-        from governance_token_analyzer.core.historical_data import HistoricalDataManager
-
-        data_manager = HistoricalDataManager(data_dir)
-
-        # Get time series data
-        click.echo(f"📊 Loading historical data for {protocol.upper()}...")
-
-        try:
-            time_series_df = data_manager.get_time_series_data(protocol, metric)
-
-            if time_series_df.empty:
-                click.echo(f"❌ No historical data found for {protocol} and metric {metric}")
-                sys.exit(1)
-
-            # Get the number of snapshots
-            num_snapshots = len(time_series_df)
-            click.echo(f"✅ Found {num_snapshots} historical snapshots")
-
-            # Calculate trend analysis
-            click.echo("🧮 Calculating distribution trends...")
-            from governance_token_analyzer.core.historical_data import calculate_distribution_change
-
-            # Convert DataFrame to the format expected by calculate_distribution_change
-            # The function expects a list of dictionaries with 'date' and 'value' keys
-            trend_data = []
-
-            for date, row in time_series_df.iterrows():
-                # Handle different date formats
-                if isinstance(date, pd.Timestamp):
-                    date_str = date.strftime("%Y-%m-%d")
-                else:
-                    # Try to parse the date if it's a string
-                    try:
-                        date_str = pd.Timestamp(date).strftime("%Y-%m-%d")
-                    except (ValueError, TypeError) as e:
-                        click.echo(f"⚠️ Warning: Failed to parse date '{date}' due to error: {e}")
-                        date_str = str(date)
-
-                # Extract the metric value
-                if isinstance(row, pd.Series):
-                    value = row.iloc[0]
-                else:
-                    value = row
-
-                trend_data.append({"date": date_str, "value": float(value)})
-
-            # Sort by date to ensure chronological order
-            trend_data.sort(key=lambda x: x["date"])
-
-            # Calculate trend metrics
-            if len(trend_data) >= 2:
-                # Extract token holder data from first and last snapshots for distribution change calculation
-                old_snapshot = data_manager.get_snapshot_by_date(protocol, trend_data[0]["date"])
-                new_snapshot = data_manager.get_snapshot_by_date(protocol, trend_data[-1]["date"])
-
-                if old_snapshot and new_snapshot:
-                    old_token_holders = old_snapshot.get("token_holders", [])
-                    new_token_holders = new_snapshot.get("token_holders", [])
-
-                    if old_token_holders and new_token_holders:
-                        old_data = pd.DataFrame(old_token_holders)
-                        new_data = pd.DataFrame(new_token_holders)
-
-                        # Ensure 'balance' column is numeric and handle potential errors/NaNs
-                        if "balance" in old_data.columns:
-                            old_data["balance"] = pd.to_numeric(old_data["balance"], errors="coerce").fillna(0)
-                        if "balance" in new_data.columns:
-                            new_data["balance"] = pd.to_numeric(new_data["balance"], errors="coerce").fillna(0)
-
-                        # Proceed only if essential columns are present
-                        if (
-                            "address" in old_data.columns
-                            and "balance" in old_data.columns
-                            and "address" in new_data.columns
-                            and "balance" in new_data.columns
-                        ):
-                            trend_metrics = calculate_distribution_change(old_data, new_data)
-
-                            # Display trend metrics
-                            click.echo("\n📊 Trend Analysis Results:")
-                            click.echo(f"  • Overall change: {trend_metrics.get('overall_change', 'N/A')}")
-                            click.echo(
-                                f"  • Average change per period: {trend_metrics.get('avg_change_per_period', 'N/A')}"
-                            )
-                            click.echo(f"  • Volatility: {trend_metrics.get('volatility', 'N/A')}")
-                            click.echo(f"  • Trend direction: {trend_metrics.get('trend_direction', 'N/A')}")
-                        else:
-                            click.echo(
-                                click.style(
-                                    "⚠️ Warning: Could not calculate trend metrics due to missing 'address' or 'balance' columns in token holder data.",
-                                    fg="yellow",
-                                )
-                            )
-                            trend_metrics = {}  # Default to empty if data is insufficient
-                    else:
-                        click.echo(
-                            click.style(
-                                "⚠️ Warning: Not enough token holder data in snapshots to calculate trend metrics.",
-                                fg="yellow",
-                            )
-                        )
-                        trend_metrics = {}  # Default to empty if data is insufficient
-                else:
-                    click.echo(
-                        click.style(
-                            "⚠️ Warning: Could not retrieve complete snapshot data for trend analysis.", fg="yellow"
-                        )
-                    )
-                    trend_metrics = {}  # Default to empty if data is insufficient
-
-                # Save trend metrics
-                if output_format == "json" and trend_metrics:
-                    output_file = os.path.join(output_dir, f"{protocol}_{metric}_trends.json")
-                    with open(output_file, "w") as f:
-                        json.dump(
-                            {
-                                "protocol": protocol,
-                                "metric": metric,
-                                "time_series": trend_data,
-                                "trend_metrics": trend_metrics,
-                            },
-                            f,
-                            indent=2,
-                        )
-                    click.echo(f"\n💾 Results saved to {output_file}")
-
-                # Generate visualization
-                if plot:
-                    click.echo("\n📈 Generating time series visualization...")
-
-                    # Extract dates and values for plotting
-                    dates = [entry["date"] for entry in trend_data]
-                    values = [entry["value"] for entry in trend_data]
-
-                    # Create the plot
-                    plt.figure(figsize=(12, 6))
-                    plt.plot(dates, values, marker="o", linestyle="-", color="#1f77b4")
-                    plt.title(f"{protocol.upper()} - {metric.replace('_', ' ').title()} Over Time")
-                    plt.xlabel("Date")
-                    plt.ylabel(metric.replace("_", " ").title())
-                    plt.grid(True, linestyle="--", alpha=0.7)
-                    plt.xticks(rotation=45)
-                    plt.tight_layout()
-
-                    # Save the plot
-                    output_file = os.path.join(output_dir, f"{protocol}_{metric}.png")
-                    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-                    plt.close()
-
-                    click.echo(f"📊 Visualization saved to {output_file}")
-            else:
-                click.echo("❌ Not enough data points for trend analysis (minimum 2 required)")
-        except Exception as e:
-            click.echo(f"❌ Error processing historical data: {e}")
-            sys.exit(1)
-
+        execute_historical_analysis_command(
+            protocol=protocol,
+            metric=metric,
+            data_dir=data_dir,
+            output_dir=output_dir,
+            format=format,
+            plot=plot,
+        )
+    except click.Abort:
+        sys.exit(1)
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
         sys.exit(1)
@@ -631,7 +434,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, output_format, p
 )
 @click.option("--include-historical", "-H", is_flag=True, help="Include historical analysis in report")
 @click.option("--data-dir", "-D", type=str, default="data/historical", help="Directory containing historical data")
-def generate_report(protocol, output_format, output_dir, include_historical, data_dir):
+def generate_report(protocol, format, output_dir, include_historical, data_dir):
     """📑 Generate a comprehensive analysis report for a protocol.
 
     Creates a detailed report with visualizations and insights.
@@ -649,93 +452,15 @@ def generate_report(protocol, output_format, output_dir, include_historical, dat
       gova generate-report -p aave -o custom_reports
     """
     try:
-        # Initialize components
-        api_client = APIClient()
-        report_gen = ReportGenerator(output_dir=output_dir)
-
-        # Get current data
-        click.echo("📡 Fetching current data...")
-        holders_data = api_client.get_token_holders(protocol, limit=1000, use_real_data=True)
-
-        # Extract balances
-        balances = []
-        for holder in holders_data:
-            if isinstance(holder, dict) and "balance" in holder:
-                try:
-                    balance = float(holder["balance"])
-                    if balance > 0:
-                        balances.append(balance)
-                except (ValueError, TypeError):
-                    continue
-
-        # Get governance data
-        click.echo("🏛️ Fetching governance data...")
-        proposals = api_client.get_governance_proposals(protocol)
-        click.echo(f"📊 Found {len(proposals)} governance proposals")
-
-        # Get votes for each proposal
-        PROPOSAL_VOTE_FETCH_LIMIT = 10  # Limit number of proposals to fetch votes for performance
-        all_votes = []
-        for proposal in proposals[:PROPOSAL_VOTE_FETCH_LIMIT]:
-            proposal_id = proposal.get("id")
-            if proposal_id:
-                click.echo(f"🗳️ Fetching votes for proposal {proposal_id}")
-                votes = api_client.get_governance_votes(protocol, proposal_id)
-                all_votes.extend(votes)
-
-        click.echo(f"✅ Fetched {len(all_votes)} total votes across all proposals")
-
-        # Get historical data if requested
-        historical_data_records = None
-        if include_historical:
-            click.echo("📜 Loading historical data...")
-            try:
-                # Load historical snapshots
-                from governance_token_analyzer.core.historical_data import HistoricalDataManager
-
-                data_manager = HistoricalDataManager(data_dir)
-                snapshots = data_manager.get_snapshots(protocol)
-
-                if snapshots:
-                    click.echo(f"✅ Loaded {len(snapshots)} historical snapshots")
-
-                    # Get time series data for Gini coefficient
-                    time_series_df = data_manager.get_time_series_data(protocol, "gini_coefficient")
-
-                    # Convert to list of dictionaries with date and value
-                    historical_data_records = []
-                    for date, value in time_series_df.iterrows():
-                        historical_data_records.append(
-                            {"date": date.strftime("%Y-%m-%d"), "value": float(value.iloc[0])}
-                        )
-                else:
-                    click.echo("⚠️ No historical data found")
-            except Exception as e:
-                click.echo(f"⚠️ Error loading historical data: {e}")
-
-        # Prepare data for report
-        protocol_data = {
-            "protocol": protocol,
-            "balances": balances,
-            "proposals": proposals,
-            "votes": all_votes,
-            "historical_data": historical_data_records,
-            "timestamp": datetime.now().isoformat(),
-        }
-
-        # Generate report
-        click.echo("🔧 Generating report...")
-        output_file = os.path.join(output_dir, f"{protocol}_report.{output_format}")
-
-        try:
-            report_path = report_gen.generate_full_report(
-                protocol_data=protocol_data, output_file=output_file, output_format=output_format
-            )
-            click.echo(f"✅ Report generated: {report_path}")
-        except Exception as e:
-            click.echo(f"❌ Error generating report: {e}")
-            raise
-
+        execute_generate_report_command(
+            protocol=protocol,
+            format=format,
+            output_dir=output_dir,
+            include_historical=include_historical,
+            data_dir=data_dir,
+        )
+    except click.Abort:
+        sys.exit(1)
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
         sys.exit(1)
@@ -767,8 +492,10 @@ def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
         tuple: Date string and gini coefficient value, or (None, None) if processing fails
     """
     try:
-        # Extract token holder data
-        token_holders = snapshot_data.get("token_holders", [])
+        # Extract token holder data (handle both 'token_holders' and 'result' keys)
+        token_holders = snapshot_data.get("token_holders")
+        if token_holders is None:
+            token_holders = snapshot_data.get("result")
         if not token_holders:
             click.echo(f"⚠️ Warning: No token holders in snapshot {date_str}")
             return None, None

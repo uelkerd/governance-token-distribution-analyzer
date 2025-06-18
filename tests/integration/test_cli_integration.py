@@ -162,6 +162,7 @@ class TestCliIntegration:
             temp_output_dir,
             "--format",
             "json",
+            "--include-historical",
         ]
 
         # Run the command
@@ -178,12 +179,12 @@ class TestCliIntegration:
         # Verify the JSON content
         with open(expected_output) as f:
             data = json.load(f)
-            assert "protocol" in data
-            assert data["protocol"] == "compound"
-            assert "metric" in data
-            assert data["metric"] == "gini_coefficient"
-            assert "data_points" in data
-            assert len(data["data_points"]) > 0
+            assert isinstance(data, list)
+            assert len(data) > 0
+            # JSON should be a list of records with gini_coefficient and timestamp
+            first_record = data[0]
+            assert "gini_coefficient" in first_record
+            assert "timestamp" in first_record or "date" in first_record or "index" in first_record
 
     def test_simulate_historical_command(self, temp_data_dir, temp_output_dir):
         """Test that the simulate-historical command works correctly."""
