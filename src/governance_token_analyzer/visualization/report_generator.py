@@ -1135,7 +1135,7 @@ class ReportGenerator:
                 visualizations=report_data["visualizations"],
                 report_dir=os.path.dirname(output_path),
                 timestamp=timestamp,
-                historical_analysis=historical_analysis,
+def generate_historical_analysis_report(protocol, snapshots, output_path):
             )
         raise ValueError(f"Unsupported format: {format}")
 
