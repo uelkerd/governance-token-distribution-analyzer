@@ -284,15 +284,17 @@ def create_distribution_chart(balances: List[float], protocol: str, chart_file: 
     Raises:
         CLIError: If chart creation fails
     """
+    # Check for empty balances early
+    if not balances:
+        click.secho("⚠️ No balances to plot", fg="yellow")
+        return
+        
+    fig = None
     try:
-        if not balances:
-            click.secho("⚠️ No balances to plot", fg="yellow")
-            return
-
         # Sort balances in descending order
         balances_sorted = sorted(balances, reverse=True)
 
-        plt.figure(figsize=(10, 6))
+        fig = plt.figure(figsize=(10, 6))
 
         # Plot distribution
         plt.plot(range(1, len(balances_sorted) + 1), balances_sorted)
@@ -314,8 +316,10 @@ def create_distribution_chart(balances: List[float], protocol: str, chart_file: 
 
         # Save chart
         plt.savefig(chart_file)
-        plt.close()
-
         click.echo(f"📊 Chart saved to {chart_file}")
     except Exception as e:
-        raise CLIError(f"Error creating distribution chart: {e}")
+        raise CLIError(f"Error creating distribution chart: {e}") from e
+    finally:
+        # Ensure figure is closed even if an exception occurs
+        if fig is not None:
+            plt.close(fig)

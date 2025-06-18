@@ -74,7 +74,7 @@ class MetricsCollector:
             metrics["total_holders"] = len(balances)
             metrics["total_supply"] = sum(balances)
 
-        return {"protocol": protocol, "holders": holders_data, "balances": balances, "metrics": metrics}
+        return {"protocol": protocol, "token_holders": holders_data, "balances": balances, "metrics": metrics}
 
     def compare_protocols(
         self, protocol_list: List[str], primary_metric: str = "gini_coefficient"
@@ -119,14 +119,25 @@ class MetricsCollector:
         """
         try:
             proposals = self.api_client.get_governance_proposals(protocol, use_real_data=self.use_live_data)
-            votes = self.api_client.get_governance_votes(protocol, use_real_data=self.use_live_data)
-
+            
+            # Collect votes for each proposal
+            all_votes = []
+            for proposal in proposals:
+                if proposal.get("id"):
+                    proposal_id = int(proposal["id"])
+                    proposal_votes = self.api_client.get_governance_votes(
+                        protocol, 
+                        proposal_id, 
+                        use_real_data=self.use_live_data
+                    )
+                    all_votes.extend(proposal_votes)
+            
             return {
                 "protocol": protocol,
                 "proposals": proposals,
-                "votes": votes,
+                "votes": all_votes,
                 "proposal_count": len(proposals),
-                "vote_count": len(votes),
+                "vote_count": len(all_votes),
             }
         except Exception as e:
             logger.error(f"Error getting governance data for {protocol}: {str(e)}")

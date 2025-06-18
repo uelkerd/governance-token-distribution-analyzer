@@ -216,7 +216,7 @@ class ReportGenerator:
             )
         if format == "pdf":
             # PDF generation would go here
-            return "PDF generation not yet implemented"
+            raise NotImplementedError("PDF report generation not implemented yet")
         raise ValueError(f"Unsupported format: {format}")
 
     def generate_historical_report(
@@ -998,150 +998,100 @@ class ReportGenerator:
         output_path: Optional[str] = None,
         include_historical: bool = False,
     ) -> str:
-        """Generate a comprehensive analysis report.
+        """Generate a comprehensive report with all available data.
 
         Args:
             protocol: Protocol name
-            current_data: Current token distribution data
+            current_data: Current snapshot data
             governance_data: Governance proposal data
             votes_data: Voting data
-            historical_data: Historical data dictionary
-            format: Output format (html, json)
-            output_path: Path to save the report (optional)
+            historical_data: Historical data (optional)
+            format: Output format (html, pdf, json)
+            output_path: Custom output path (optional)
             include_historical: Whether to include historical analysis
 
         Returns:
             Path to the generated report
+
+        Raises:
+            ValueError: If the format is unsupported
+            NotImplementedError: If PDF format is requested but not implemented
+
         """
+        # Validate input
+        if not current_data:
+            raise ValueError("Cannot generate report: current data is empty")
+
+        # Ensure protocol is set
+        if "protocol" not in current_data:
+            current_data["protocol"] = protocol
+
+        # Set output path if provided
+        if output_path:
+            report_dir = os.path.dirname(output_path)
+            os.makedirs(report_dir, exist_ok=True)
+
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # Set default output path if not provided
-        if output_path is None:
-            output_path = os.path.join(self.output_dir, f"{protocol}_report_{timestamp}.html")
+        # Create output filename base
+        filename_base = f"{protocol}_report_{timestamp}"
 
-        # Prepare the report data
-        report_data = {
-            "title": f"{protocol.upper()} Governance Token Analysis Report",
-            "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "protocol": protocol.upper(),
-            "overview": f"This report provides a comprehensive analysis of {protocol.upper()} governance token distribution and governance participation.",
-            "metrics": [],
-            "visualizations": [],
-            "include_historical": include_historical,
-            "conclusion": f"This analysis of {protocol.upper()} governance token distribution and governance participation provides insights into the current state of decentralization and governance activity.",
-        }
+        # Create folder for this report
+        if output_path:
+            report_dir = os.path.dirname(output_path)
+        else:
+            report_dir = os.path.join(self.output_dir, filename_base)
+        os.makedirs(report_dir, exist_ok=True)
 
-        # Extract metrics from current data
-        if current_data:
-            metrics = self._extract_metrics(current_data)
-            report_data["metrics"].extend(metrics)
-
-        # Create visualization directory
-        viz_dir = os.path.join(os.path.dirname(output_path), "visualizations")
+        # Create folder for visualizations
+        viz_dir = os.path.join(report_dir, "visualizations")
         os.makedirs(viz_dir, exist_ok=True)
 
-        # Generate visualizations
-        visualizations = []
-
-        # Add distribution visualizations
-        if current_data and "token_holders" in current_data:
-            try:
-                # Generate token distribution chart
-                viz_path = os.path.join(viz_dir, f"{protocol}_token_distribution.png")
-                charts.create_token_distribution_chart(
-                    token_holders=current_data["token_holders"],
-                    output_path=viz_path,
-                    title=f"{protocol.upper()} Token Distribution",
-                )
-
-                visualizations.append(
-                    {
-                        "title": f"{protocol.upper()} Token Distribution",
-                        "path": viz_path,
-                        "description": "Distribution of tokens among top token holders.",
-                    }
-                )
-            except Exception as e:
-                print(f"Error generating token distribution chart: {e}")
-
-        # Add governance visualizations
-        if governance_data and votes_data:
-            try:
-                # Generate governance participation chart
-                viz_path = os.path.join(viz_dir, f"{protocol}_governance_participation.png")
-                charts.create_governance_participation_chart(
-                    proposals=governance_data,
-                    votes=votes_data,
-                    output_path=viz_path,
-                    title=f"{protocol.upper()} Governance Participation",
-                )
-
-                visualizations.append(
-                    {
-                        "title": f"{protocol.upper()} Governance Participation",
-                        "path": viz_path,
-                        "description": "Participation rates in governance proposals.",
-                    }
-                )
-            except Exception as e:
-                print(f"Error generating governance participation chart: {e}")
-
-        # Add historical analysis if available
-        historical_analysis = None
-        if historical_data:
-            historical_analysis = {
-                "overview": f"Historical analysis of {protocol.upper()} token distribution and governance metrics.",
-                "visualizations": [],
-            }
-
-            try:
-                # Generate historical metrics chart
-                for metric in ["gini_coefficient", "nakamoto_coefficient"]:
-                    if metric in historical_data:
-                        viz_path = os.path.join(viz_dir, f"{protocol}_{metric}_historical.png")
-                        historical_charts.create_time_series_chart(
-                            time_series=historical_data[metric],
-                            output_path=viz_path,
-                            title=f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}",
-                        )
-
-                        historical_analysis["visualizations"].append(
-                            {
-                                "title": f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}",
-                                "path": viz_path,
-                                "description": f"Historical trend of {metric.replace('_', ' ').title()} over time.",
-                            }
-                        )
-            except Exception as e:
-                print(f"Error generating historical charts: {e}")
-
-        # Add visualizations to report data
-        report_data["visualizations"] = visualizations
-
-        # Add historical analysis if available
-        if historical_analysis:
-            report_data["historical_analysis"] = historical_analysis
-
-        # Generate the report based on format
-        if format == "html":
-            # Add output path to report data
-            report_data["output_path"] = output_path
-            return self.generate_html_report(report_data)
-        if format == "json":
-            return self._generate_json_report(
-                protocol_name=protocol,
-                metrics=report_data["metrics"],
-                visualizations=report_data["visualizations"],
-                report_dir=os.path.dirname(output_path),
+        # Generate HTML report
+        if format.lower() == "html":
+            return self._generate_comprehensive_html_report(
+                protocol=protocol,
+                current_data=current_data,
+                governance_data=governance_data,
+                votes_data=votes_data,
+                historical_data=historical_data if include_historical else None,
+                output_path=output_path,
+                report_dir=report_dir,
+                viz_dir=viz_dir,
                 timestamp=timestamp,
-def generate_historical_analysis_report(protocol, snapshots, output_path):
             )
-        raise ValueError(f"Unsupported format: {format}")
+        # Generate JSON report
+        elif format.lower() == "json":
+            return self._generate_comprehensive_json_report(
+                protocol=protocol,
+                current_data=current_data,
+                governance_data=governance_data,
+                votes_data=votes_data,
+                historical_data=historical_data if include_historical else None,
+                output_path=output_path,
+                report_dir=report_dir,
+                timestamp=timestamp,
+            )
+        # PDF format is not yet implemented
+        elif format.lower() == "pdf":
+            raise NotImplementedError("PDF report generation not yet implemented")
+        # Unsupported format
+        else:
+            raise ValueError(f"Unsupported format: {format}")
 
 
-def generate_historical_analysis_report(protocol, time_series_data, snapshots, output_path):
-    """Generate a historical analysis report."""
+def generate_historical_analysis_report(protocol, snapshots, output_path):
+    """Generate a historical analysis report.
+    
+    Args:
+        protocol: Name of the protocol
+        snapshots: List of historical snapshots
+        output_path: Path to save the report
+    
+    Returns:
+        Path to the generated report
+    """
     # Create the report generator
     report_dir = os.path.dirname(output_path)
     report_gen = ReportGenerator(output_dir=report_dir)

@@ -25,18 +25,25 @@ def calculate_gini_coefficient(balances: List[float]) -> float:
     The Gini coefficient is a measure of inequality where:
     - 0 represents perfect equality (everyone has the same amount)
     - 1 represents perfect inequality (one person has everything)
+    
+    Note:
+        This implementation assumes all balances are non-negative. Negative values
+        are filtered out before calculation to avoid unexpected results.
 
     Args:
-        balances: List of token balances.
+        balances: List of token balances (should be non-negative).
 
     Returns:
         Gini coefficient as a float between 0 and 1.
     """
-    if not balances or sum(balances) == 0:
+    # Filter out any negative values that might cause issues
+    positive_balances = [b for b in balances if b >= 0]
+    
+    if not positive_balances or sum(positive_balances) == 0:
         return 0
 
     # Sort balances in ascending order
-    balances_sorted = sorted(balances)
+    balances_sorted = sorted(positive_balances)
     n = len(balances_sorted)
 
     # Calculate Gini coefficient using the formula
@@ -136,12 +143,18 @@ def calculate_palma_ratio(balances: List[float]) -> float:
     """Calculate Palma ratio for token distribution.
 
     The Palma ratio is the ratio of the richest 10% to the poorest 40%.
-
+    
+    Note:
+        Percentile-based calculations like the Palma ratio may not be reliable 
+        for small sample sizes (e.g., n < 20). Use caution when interpreting 
+        results for small numbers of token holders.
+    
     Args:
-        balances: List of token balances.
+        balances: List of token balances (must be non-negative).
 
     Returns:
-        Palma ratio as a float.
+        Palma ratio as a float. Returns 0 if insufficient data, or
+        float("inf") if bottom 40% sum is zero.
     """
     if not balances or sum(balances) == 0:
         return 0
@@ -151,7 +164,16 @@ def calculate_palma_ratio(balances: List[float]) -> float:
     n = len(balances_sorted)
 
     if n < 5:  # Need at least 5 holders to calculate meaningful ratio
+        logger.warning("Cannot calculate reliable Palma ratio: insufficient data points (n=%d)", n)
         return 0
+        
+    # Log warning for small sample sizes
+    if n < 20:
+        logger.warning(
+            "Palma ratio calculation may be unreliable for small sample sizes (n=%d). "
+            "Percentile-based statistics are less stable with fewer data points.", 
+            n
+        )
 
     # Calculate indices for percentiles
     bottom_40_idx = int(n * 0.4)
@@ -162,6 +184,7 @@ def calculate_palma_ratio(balances: List[float]) -> float:
     top_10_sum = sum(balances_sorted[top_10_idx:])
 
     if bottom_40_sum == 0:
+        logger.warning("Palma ratio calculation resulted in division by zero: bottom 40%% has zero total balance")
         return float("inf")  # Avoid division by zero
 
     return top_10_sum / bottom_40_sum
