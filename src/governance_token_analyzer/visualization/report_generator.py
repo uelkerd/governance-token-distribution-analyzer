@@ -443,9 +443,7 @@ class ReportGenerator:
         return visualizations
 
     @staticmethod
-    def _generate_historical_visualizations(
-        snapshots: List[Dict[str, Any]], viz_dir: str
-    ) -> List[Dict[str, str]]:
+    def _generate_historical_visualizations(snapshots: List[Dict[str, Any]], viz_dir: str) -> List[Dict[str, str]]:
         """Generate visualizations for historical data."""
         visualizations = []
 
