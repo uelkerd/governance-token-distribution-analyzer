@@ -1,6 +1,4 @@
-"""
-Analyze command implementation for the governance token analyzer CLI.
-"""
+"""Analyze command implementation for the governance token analyzer CLI."""
 
 import os
 import sys

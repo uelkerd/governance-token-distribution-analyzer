@@ -6,7 +6,6 @@ allowing users to compare metrics across multiple DeFi protocols.
 """
 
 import os
-from datetime import datetime
 from typing import List
 
 import click

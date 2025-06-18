@@ -13,17 +13,12 @@ from typing import Dict, List, Any, Tuple, Optional
 import click
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 
 from governance_token_analyzer.core.metrics_collector import MetricsCollector
-from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
-from governance_token_analyzer.visualization.report_generator import ReportGenerator
 
 
 class CLIError(Exception):
     """Custom exception for CLI command errors."""
-
-    pass
 
 
 def handle_cli_error(error: Exception) -> None:

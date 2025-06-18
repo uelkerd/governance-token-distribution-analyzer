@@ -7,7 +7,6 @@ allowing users to create detailed analysis reports with visualizations.
 """
 
 import os
-from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 import click
@@ -25,9 +24,8 @@ def _fetch_governance_data_safely(api_client, protocol: str) -> List[Dict[str, A
         if governance_data:
             click.echo(f"📊 Found {len(governance_data)} governance proposals")
             return governance_data
-        else:
-            click.echo("⚠️ No governance proposals found")
-            return []
+        click.echo("⚠️ No governance proposals found")
+        return []
     except Exception as e:
         click.secho(f"⚠️ Error fetching governance data: {e}", fg="yellow")
         return []

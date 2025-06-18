@@ -7,14 +7,9 @@ allowing users to analyze time series data for governance metrics.
 """
 
 import os
-import csv
-from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 import click
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import numpy as np
 import pandas as pd
 
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
