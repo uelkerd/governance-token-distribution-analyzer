@@ -3,10 +3,33 @@ from typing import Any, Dict, List
 import pandas as pd
 
 from .logging_config import get_logger
-from .metrics_collector import measure_api_call
+from .metrics_collector import measure_api_call, MetricsCollector
 
 # Configure logger
 logger = get_logger(__name__)
+
+
+@measure_api_call(protocol="cross_protocol", method="compare_protocols")
+def compare_protocols(protocols: List[str], metric: str = "gini_coefficient") -> Dict[str, Any]:
+    """
+    Compare metrics across multiple protocols.
+
+    Args:
+        protocols: List of protocols to compare
+        metric: Primary metric for comparison
+
+    Returns:
+        Dictionary containing comparison data
+    """
+    try:
+        logger.info(f"Comparing {len(protocols)} protocols using {metric} metric")
+
+        # Use MetricsCollector to get real data
+        metrics_collector = MetricsCollector(use_live_data=True)
+        return metrics_collector.compare_protocols(protocols, metric)
+    except Exception as e:
+        logger.error(f"Error comparing protocols: {e}")
+        return {"error": str(e)}
 
 
 @measure_api_call(protocol="cross_protocol", method="create_comprehensive_comparison")

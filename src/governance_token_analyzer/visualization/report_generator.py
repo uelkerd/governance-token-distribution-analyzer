@@ -239,7 +239,18 @@ class ReportGenerator:
         Returns:
             Path to the generated report
 
+        Raises:
+            ValueError: If snapshots list is empty or contains invalid data
         """
+        # Validate input
+        if not snapshots:
+            raise ValueError("Cannot generate historical report: snapshots list is empty")
+
+        # Validate snapshot format
+        for i, snapshot in enumerate(snapshots):
+            if "timestamp" not in snapshot or "data" not in snapshot:
+                raise ValueError(f"Invalid snapshot format at index {i}: missing required fields")
+
         # Create a timestamp for the report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -255,10 +266,22 @@ class ReportGenerator:
         os.makedirs(viz_dir, exist_ok=True)
 
         # Extract latest metrics from most recent snapshot
-        latest_metrics = self._extract_metrics(snapshots[-1]["data"])
+        try:
+            latest_metrics = self._extract_metrics(snapshots[-1]["data"])
+        except (KeyError, IndexError, TypeError) as e:
+            import logging
+
+            logging.warning(f"Could not extract latest metrics: {e}")
+            latest_metrics = []
 
         # Generate historical visualizations
         historical_visualizations = self._generate_historical_visualizations(snapshots, viz_dir)
+
+        # Check if we have any visualizations
+        if not historical_visualizations:
+            import logging
+
+            logging.warning("No historical visualizations were generated")
 
         # Generate report based on format
         if output_format == "html":
@@ -545,22 +568,39 @@ class ReportGenerator:
         # Create multi-metric dashboard
         metrics_to_include = [col for col in df.columns if not df[col].isnull().all()]
         if len(metrics_to_include) >= 2:
-            fig = historical_charts.create_multi_metric_dashboard(
-                {metric: df[[metric]] for metric in metrics_to_include},
-                metrics=metrics_to_include,
-                title="Governance Metrics Dashboard",
-            )
-            dashboard_path = os.path.join(viz_dir, "metrics_dashboard.png")
-            fig.savefig(dashboard_path)
-            plt.close(fig)
+            try:
+                # Create a dictionary mapping each metric to the full DataFrame
+                # This is the correct format expected by create_multi_metric_dashboard
+                metrics_data = {}
+                for metric in metrics_to_include:
+                    # Create a copy of the DataFrame with only the relevant metric column
+                    metric_df = pd.DataFrame(df[metric].copy())
+                    # Rename the column to match what the function expects
+                    metric_df.columns = [metric]
+                    metrics_data[metric] = metric_df
 
-            visualizations.append(
-                {
-                    "title": "Governance Metrics Dashboard",
-                    "path": os.path.relpath(dashboard_path, start=os.path.dirname(viz_dir)),
-                    "description": "Dashboard showing multiple governance metrics over time",
-                }
-            )
+                fig = historical_charts.create_multi_metric_dashboard(
+                    metrics_data,
+                    metrics=metrics_to_include,
+                    title="Governance Metrics Dashboard",
+                )
+                dashboard_path = os.path.join(viz_dir, "metrics_dashboard.png")
+                fig.savefig(dashboard_path)
+                plt.close(fig)
+
+                visualizations.append(
+                    {
+                        "title": "Governance Metrics Dashboard",
+                        "path": os.path.relpath(dashboard_path, start=os.path.dirname(viz_dir)),
+                        "description": "Dashboard showing multiple governance metrics over time",
+                    }
+                )
+            except Exception as e:
+                # Log the error but continue with other visualizations
+                import logging
+
+                logging.error(f"Failed to create multi-metric dashboard: {e}")
+                # Don't add this visualization to the list
 
         return visualizations
 
@@ -950,12 +990,31 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
     Returns:
         Path to the generated report
 
+    Raises:
+        ValueError: If snapshots list is empty or contains invalid data
+        IOError: If there's an issue with file operations
+        Exception: For other unexpected errors
     """
-    # Create a report generator instance
-    report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))
+    try:
+        # Validate input
+        if not snapshots:
+            raise ValueError("Cannot generate historical report: snapshots list is empty")
 
-    # Generate the report using the existing method
-    return report_gen.generate_historical_report(snapshots=snapshots, protocol_name=protocol, output_format="html")
+        # Create a report generator instance
+        output_dir = os.path.dirname(output_path)
+        report_gen = ReportGenerator(output_dir=output_dir)
+
+        # Generate the report using the existing method
+        return report_gen.generate_historical_report(snapshots=snapshots, protocol_name=protocol, output_format="html")
+    except (ValueError, IOError) as e:
+        # Re-raise these specific exceptions
+        raise
+    except Exception as e:
+        # Log and re-raise other exceptions
+        import logging
+
+        logging.error(f"Failed to generate historical analysis report: {e}")
+        raise Exception(f"Failed to generate historical analysis report: {e}") from e
 
 
 def generate_comprehensive_report(protocol, snapshots, time_series_data, visualization_paths, output_path):
