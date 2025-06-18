@@ -1,22 +1,24 @@
-#!/usr/bin/env python3
-"""Analyze command implementation for the Governance Token Distribution Analyzer CLI."""
+"""
+Analyze command implementation for the governance token analyzer CLI.
+"""
 
 import os
-import json
 import sys
-from typing import Dict, Any, List, Optional
+import json
 from datetime import datetime
+from typing import Any
 
 import click
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+
 from governance_token_analyzer.core.metrics_collector import MetricsCollector
 
 
 def execute_analyze_command(
     protocol: str,
     limit: int = 1000,
-    output_format: str = "json",
+    format: str = "json",
     output_dir: str = "outputs",
     chart: bool = False,
     live_data: bool = True,
@@ -24,47 +26,32 @@ def execute_analyze_command(
 ) -> None:
     """
     Execute the analyze command to analyze token distribution for a specific protocol.
-
+    
     Args:
-        protocol: Protocol to analyze (compound, uniswap, aave)
+        protocol: Protocol to analyze
         limit: Maximum number of token holders to analyze
-        output_format: Output format (json, csv)
+        format: Output format (json, csv)
         output_dir: Directory to save output files
         chart: Whether to generate distribution charts
-        live_data: Whether to use live blockchain data or simulated data
-        verbose: Whether to display detailed metrics
+        live_data: Whether to use live blockchain data
+        verbose: Whether to enable verbose output
     """
-    # Handle long file paths gracefully
+    # Ensure output directory exists
     try:
-        # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
     except OSError as e:
-        if "File name too long" in str(e):
-            click.echo(f"❌ Error: Output path too long: {output_dir}")
-            click.echo("Please specify a shorter output directory path")
-            sys.exit(1)
-        elif "Permission denied" in str(e):
-            click.echo(f"❌ Error: Permission denied when creating directory: {output_dir}")
-            sys.exit(1)
-        else:
-            click.echo(f"❌ Error creating output directory: {e}")
-            sys.exit(1)
+        click.secho(f"❌ Error creating output directory: {e}", fg="red")
+        sys.exit(1)
 
     # Initialize metrics collector
     metrics_collector = MetricsCollector(use_live_data=live_data)
-
-    # Get token distribution data
-    click.echo(f"📊 Analyzing {protocol.upper()} token distribution...")
 
     if live_data:
         click.echo("📡 Fetching live blockchain data...")
     else:
         click.echo("🎲 Generating simulated data...")
 
-    # Collect protocol data
-    data = metrics_collector.collect_protocol_data(protocol, limit=limit)
-
-    # Replace with error handling
+    # Collect protocol data with error handling
     try:
         data = metrics_collector.collect_protocol_data(protocol, limit=limit)
         if not data:
@@ -96,12 +83,12 @@ def execute_analyze_command(
 
             # Save output file
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = os.path.join(output_dir, f"{protocol}_analysis_{timestamp}.{output_format}")
+            output_file = os.path.join(output_dir, f"{protocol}_analysis_{timestamp}.{format}")
 
-            if output_format == "json":
+            if format == "json":
                 with open(output_file, "w") as f:
                     json.dump(data, f, indent=2)
-            elif output_format == "csv":
+            elif format == "csv":
                 # Save token holders
                 df = pd.DataFrame(data["token_holders"])
                 df.to_csv(output_file, index=False)
@@ -156,4 +143,4 @@ def execute_analyze_command(
         else:
             click.echo("❌ No positive balances found in the data")
     else:
-        click.echo("❌ No token holders or metrics found in the data")
+        click.echo("❌ No token holders or metrics found in the data") 

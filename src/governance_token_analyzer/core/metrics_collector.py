@@ -185,3 +185,31 @@ class MetricsCollector:
                 }
 
         return comparison_data
+
+    def get_governance_data(self, protocol: str) -> Dict[str, Any]:
+        """
+        Get governance-related data for a protocol.
+
+        Args:
+            protocol: Name of the protocol
+
+        Returns:
+            Dictionary containing governance data
+        """
+        try:
+            proposals = self.api_client.get_governance_proposals(protocol, use_real_data=self.use_live_data)
+            votes = self.api_client.get_governance_votes(protocol, use_real_data=self.use_live_data)
+
+            return {
+                "protocol": protocol,
+                "proposals": proposals,
+                "votes": votes,
+                "proposal_count": len(proposals),
+                "vote_count": len(votes)
+            }
+        except Exception as e:
+            logger.error(f"Error getting governance data for {protocol}: {str(e)}")
+            return {
+                "protocol": protocol,
+                "error": str(e)
+            }

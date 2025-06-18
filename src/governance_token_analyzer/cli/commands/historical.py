@@ -1,19 +1,80 @@
 #!/usr/bin/env python3
 """
-Historical analysis command implementation for the Governance Token Distribution Analyzer CLI.
+Historical analysis command implementation for CLI.
+
+This module implements historical trend analysis functionality,
+allowing users to analyze time series data for governance metrics.
 """
 
 import os
-import json
-import sys
-from typing import Dict, Any, List, Optional
+import csv
 from datetime import datetime
+from typing import Dict, Any, List, Optional
 
 import click
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import numpy as np
+import pandas as pd
 
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
+from governance_token_analyzer.visualization.historical_charts import create_time_series_chart
+from .utils import (
+    ensure_output_directory,
+    handle_cli_error,
+    CLIError,
+    generate_timestamp
+)
+
+
+def _create_time_series_plot(
+    time_series: pd.DataFrame,
+    protocol: str,
+    metric: str,
+    output_file: str
+) -> None:
+    """Create and save a time series plot with trend line."""
+    if time_series.empty:
+        raise CLIError(f"No historical data available for {protocol} {metric}")
+
+    if metric not in time_series.columns:
+        raise CLIError(f"Metric '{metric}' not found in historical data for {protocol}")
+
+    # Create the plot
+    create_time_series_chart(
+        time_series=time_series,
+        output_path=output_file,
+        title=f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}"
+    )
+
+    click.echo(f"📊 Time series plot saved to {output_file}")
+
+
+def _export_time_series_data(
+    time_series: pd.DataFrame,
+    protocol: str,
+    metric: str,
+    output_file: str
+) -> None:
+    """Export time series data to JSON file."""
+    if time_series.empty:
+        raise CLIError(f"No historical data available for {protocol} {metric}")
+
+    if metric not in time_series.columns:
+        raise CLIError(f"Metric '{metric}' not found in historical data for {protocol}")
+
+    # Convert to JSON
+    try:
+        # Convert index to string format for JSON serialization
+        time_series_json = time_series.reset_index().to_json(orient="records", date_format="iso")
+
+        # Write to file
+        with open(output_file, "w") as f:
+            f.write(time_series_json)
+
+        click.echo(f"💾 Time series data saved to {output_file}")
+    except Exception as e:
+        raise CLIError(f"Error exporting time series data: {e}")
 
 
 def execute_historical_analysis_command(
@@ -21,90 +82,74 @@ def execute_historical_analysis_command(
     metric: str = "gini_coefficient",
     data_dir: str = "data/historical",
     output_dir: str = "outputs",
-    output_format: str = "png",
-    plot: bool = True,
+    format: str = "png",
+    plot: bool = True
 ) -> None:
     """
-    Execute the historical-analysis command to analyze historical trends in token distribution metrics.
+    Execute the historical-analysis command.
 
     Args:
         protocol: Protocol to analyze historical data for
         metric: Metric to analyze over time
         data_dir: Directory containing historical data
         output_dir: Directory to save analysis results
-        output_format: Output format (json, png)
+        format: Output format (json, png)
         plot: Whether to generate time series plots
     """
-    # Ensure output directory exists
-    os.makedirs(output_dir, exist_ok=True)
-
-    click.echo(f"📈 Analyzing historical {metric} data for {protocol.upper()}...")
-
-    # Initialize historical data manager
-    data_manager = HistoricalDataManager(data_dir)
-
-    # Get time series data for the protocol and metric
     try:
-        time_series = data_manager.get_time_series_data(protocol, metric)
+        # Ensure output directory exists
+        ensure_output_directory(output_dir)
 
+        click.echo(f"📈 Analyzing historical {metric} data for {protocol.upper()}...")
+
+        # Initialize historical data manager
+        data_manager = HistoricalDataManager(data_dir)
+
+        # Get time series data
+        try:
+            time_series = data_manager.get_time_series_data(protocol, metric)
+        except Exception as e:
+            raise CLIError(f"Error loading historical data: {e}")
+
+        # Check if we have data
         if time_series.empty:
-            click.echo(f"❌ No historical data found for {protocol.upper()}")
-            sys.exit(1)
+            raise CLIError(f"No historical data found for {protocol}")
 
-        click.echo(f"✅ Found {len(time_series)} historical data points")
+        # Display summary statistics
+        click.echo(f"📊 Found {len(time_series)} historical data points")
 
-        # Generate output filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        if metric in time_series.columns:
+            latest = time_series[metric].iloc[-1] if not time_series.empty else "N/A"
+            earliest = time_series[metric].iloc[0] if not time_series.empty else "N/A"
 
-        if output_format == "json":
-            # Convert time series to JSON format
-            json_data = {
-                "protocol": protocol,
-                "metric": metric,
-                "timestamps": time_series.index.strftime("%Y-%m-%d").tolist(),
-                "values": time_series[metric].tolist(),
-                "analysis_timestamp": datetime.now().isoformat(),
-            }
+            click.echo(f"  ✓ Latest {metric}: {latest}")
+            click.echo(f"  ✓ Earliest {metric}: {earliest}")
 
-            # Save JSON output
-            output_file = os.path.join(output_dir, f"{protocol}_historical_{metric}_{timestamp}.json")
-            with open(output_file, "w") as f:
-                json.dump(json_data, f, indent=2)
+            # Calculate change
+            if isinstance(latest, (int, float)) and isinstance(earliest, (int, float)):
+                change = latest - earliest
+                change_pct = (change / earliest) * 100 if earliest != 0 else float('inf')
 
-            click.echo(f"💾 Historical data saved to {output_file}")
+                if change > 0:
+                    click.echo(f"  ↗️ Increase: {change:.4f} ({change_pct:.2f}%)")
+                elif change < 0:
+                    click.echo(f"  ↘️ Decrease: {change:.4f} ({change_pct:.2f}%)")
+                else:
+                    click.echo("  ↔️ No change")
+        else:
+            click.echo(f"⚠️ Metric '{metric}' not found in historical data")
 
-        if plot or output_format == "png":
-            # Generate time series plot
-            plt.figure(figsize=(12, 6))
+        # Generate output based on format
+        timestamp = generate_timestamp() # Use the utility function for timestamp
+        if format == "png" and plot:
+            output_file = os.path.join(output_dir, f"{protocol}_{metric}_{timestamp}.png") # Add timestamp
+            _create_time_series_plot(time_series, protocol, metric, output_file)
+        elif format == "json":
+            output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical_{timestamp}.json") # Add timestamp
+            _export_time_series_data(time_series, protocol, metric, output_file)
 
-            # Plot time series
-            plt.plot(time_series.index, time_series[metric])
-
-            # Add trend line
-            if len(time_series) > 1:
-                z = np.polyfit(range(len(time_series)), time_series[metric], 1)
-                p = np.poly1d(z)
-                plt.plot(time_series.index, p(range(len(time_series))), "r--", alpha=0.7)
-
-            plt.title(f"{protocol.upper()} Historical {metric.replace('_', ' ').title()}")
-            plt.xlabel("Date")
-            plt.ylabel(metric.replace("_", " ").title())
-            plt.grid(True, alpha=0.3)
-            plt.tight_layout()
-
-            # Save plot
-            if output_format == "png":
-                output_file = os.path.join(output_dir, f"{protocol}_historical_{metric}_{timestamp}.png")
-                plt.savefig(output_file)
-                plt.close()
-                click.echo(f"📊 Historical chart saved to {output_file}")
-            else:
-                plt.show()
-                plt.close()
-
-    except FileNotFoundError:
-        click.echo(f"❌ No historical data directory found at {data_dir}")
-        sys.exit(1)
+    except CLIError:
+        # CLIError is already handled by the utility function
+        raise
     except Exception as e:
-        click.echo(f"❌ Error analyzing historical data: {e}")
-        sys.exit(1)
+        handle_cli_error(e)

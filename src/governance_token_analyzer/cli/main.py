@@ -28,6 +28,7 @@ try:
     # Import command implementations
     from governance_token_analyzer.cli.commands.analyze import execute_analyze_command
     from governance_token_analyzer.cli.commands.compare import execute_compare_protocols_command
+    from governance_token_analyzer.cli.commands.export import execute_export_historical_data_command
     from governance_token_analyzer.cli.commands.historical import execute_historical_analysis_command
     from governance_token_analyzer.cli.commands.report import execute_generate_report_command
 
@@ -156,7 +157,7 @@ def validate_positive_int(ctx, param, value):
     help="Use simulated data instead of live data",
 )
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output with detailed metrics")
-def analyze(protocol, limit, output_format, output_dir, chart, live_data, simulated_data, verbose):
+def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_data, verbose):
     """📊 Analyze token distribution for a specific protocol.
 
     Calculates concentration metrics and generates detailed analysis reports.
@@ -190,7 +191,7 @@ def analyze(protocol, limit, output_format, output_dir, chart, live_data, simula
         execute_analyze_command(
             protocol=protocol,
             limit=limit,
-            output_format=format,  # Pass the format parameter as output_format
+            format=format,
             output_dir=output_dir,
             chart=chart,
             live_data=live_data,
@@ -243,7 +244,7 @@ def analyze(protocol, limit, output_format, output_dir, chart, live_data, simula
     default="data/historical",
     help="Directory containing historical data (default: data/historical)",
 )
-def compare_protocols(protocols, metric, output_format, output_dir, chart, detailed, historical, data_dir):
+def compare_protocols(protocols, metric, format, output_dir, chart, detailed, historical, data_dir):
     """🔍 Compare token distribution metrics across multiple protocols.
 
     Analyzes and visualizes differences in concentration and governance metrics.
@@ -265,9 +266,9 @@ def compare_protocols(protocols, metric, output_format, output_dir, chart, detai
     """
     try:
         execute_compare_protocols_command(
-            protocols_arg=protocols,
+            protocols=protocols,
             metric=metric,
-            output_format=format,  # Pass the format parameter as output_format
+            format=format,
             output_dir=output_dir,
             chart=chart,
             detailed=detailed,
@@ -315,7 +316,7 @@ def compare_protocols(protocols, metric, output_format, output_dir, chart, detai
     help="Metric to focus on for historical export",
 )
 @click.option("--data-dir", "-D", type=str, default="data/historical", help="Directory containing historical data")
-def export_historical_data(protocol, output_format, output_dir, limit, include_historical, metric, data_dir):
+def export_historical_data(protocol, format, output_dir, limit, include_historical, metric, data_dir):
     """📤 Export token distribution data for further analysis.
 
     Exports raw data in various formats for use in external tools.
@@ -334,75 +335,20 @@ def export_historical_data(protocol, output_format, output_dir, limit, include_h
       gova export-historical-data -p uniswap -h
       gova export-historical-data -p aave -f csv -l 5000
     """
-    click.echo(f"📤 Exporting {protocol.upper()} token distribution data...")
-
     try:
-        # Initialize components
-        api_client = APIClient()
-
-        # Get current data
-        click.echo("📡 Fetching current data...")
-        holders_data = api_client.get_token_holders(protocol, limit=limit, use_real_data=True)
-
-        # Prepare export data
-        export_data = {
-            "protocol": protocol,
-            "protocol_info": PROTOCOLS.get(protocol, {}),
-            "export_timestamp": datetime.now().isoformat(),
-            "current_data": holders_data,
-        }
-
-        # Add historical data if requested
-        if include_historical:
-            click.echo("📜 Loading historical snapshots...")
-            try:
-                if snapshots := historical_data.load_historical_snapshots(protocol, data_dir):
-                    click.echo(f"✅ Loaded {len(snapshots)} historical snapshots")
-                    export_data["historical_snapshots"] = snapshots
-                else:
-                    click.echo("⚠️  No historical snapshots found")
-            except Exception as e:
-                click.echo(f"⚠️  Error loading historical data: {e}")
-
-        # Generate output file
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical.{format}")
-
-        # Ensure the output directory exists
-        os.makedirs(output_dir, exist_ok=True)
-
-        try:
-            if format == "json":
-                with open(output_file, "w") as f:
-                    json.dump(export_data, f, indent=2)
-            elif format == "csv":
-                # Convert to DataFrame for CSV export
-                df = pd.DataFrame(
-                    {
-                        "protocol": protocol,
-                        "timestamp": datetime.now().isoformat(),
-                        "holders_count": len(export_data.get("current_data", [])),
-                    },
-                    index=[0],
-                )
-
-                if "historical_snapshots" in export_data:
-                    # Add historical data columns
-                    for i, snapshot in enumerate(export_data["historical_snapshots"]):
-                        date = snapshot.get("date", f"snapshot_{i}")
-                        value = snapshot.get(metric, 0)
-                        df[f"snapshot_{i}_date"] = date
-                        df[f"snapshot_{i}_value"] = value
-
-                df.to_csv(output_file, index=False)
-
-            click.echo(f"✅ Data exported to {output_file}")
-        except Exception as e:
-            click.echo(f"❌ Error saving export file: {e}")
-            sys.exit(1)
-
+        execute_export_historical_data_command(
+            protocol=protocol,
+            format=format,
+            output_dir=output_dir,
+            limit=limit,
+            include_historical=include_historical,
+            metric=metric,
+            data_dir=data_dir,
+        )
+    except click.Abort:
+        sys.exit(1)
     except Exception as e:
-        click.echo(f"❌ Error exporting data: {e}", err=True)
+        click.echo(f"❌ Error: {e}", err=True)
         sys.exit(1)
 
 
@@ -436,7 +382,7 @@ def export_historical_data(protocol, output_format, output_dir, limit, include_h
 )
 @click.option("--format", "-f", type=click.Choice(["json", "png"]), default="png", help="Output format (default: png)")
 @click.option("--plot", "-c", is_flag=True, default=True, help="Generate time series plots")
-def historical_analysis(protocol, metric, data_dir, output_dir, output_format, plot):
+def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
     """📈 Analyze historical trends in token distribution metrics.
 
     Visualizes changes in metrics over time with time series plots.
@@ -460,7 +406,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, output_format, p
             metric=metric,
             data_dir=data_dir,
             output_dir=output_dir,
-            output_format=format,
+            format=format,
             plot=plot,
         )
     except click.Abort:
@@ -486,7 +432,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, output_format, p
 )
 @click.option("--include-historical", "-H", is_flag=True, help="Include historical analysis in report")
 @click.option("--data-dir", "-D", type=str, default="data/historical", help="Directory containing historical data")
-def generate_report(protocol, output_format, output_dir, include_historical, data_dir):
+def generate_report(protocol, format, output_dir, include_historical, data_dir):
     """📑 Generate a comprehensive analysis report for a protocol.
 
     Creates a detailed report with visualizations and insights.
@@ -506,7 +452,7 @@ def generate_report(protocol, output_format, output_dir, include_historical, dat
     try:
         execute_generate_report_command(
             protocol=protocol,
-            output_format=format,
+            format=format,
             output_dir=output_dir,
             include_historical=include_historical,
             data_dir=data_dir,
@@ -544,8 +490,10 @@ def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
         tuple: Date string and gini coefficient value, or (None, None) if processing fails
     """
     try:
-        # Extract token holder data
-        token_holders = snapshot_data.get("token_holders", [])
+        # Extract token holder data (handle both 'token_holders' and 'result' keys)
+        token_holders = snapshot_data.get("token_holders")
+        if token_holders is None:
+            token_holders = snapshot_data.get("result")
         if not token_holders:
             click.echo(f"⚠️ Warning: No token holders in snapshot {date_str}")
             return None, None
