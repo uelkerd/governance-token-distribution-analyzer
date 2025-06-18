@@ -361,7 +361,7 @@ def create_concentration_heatmap(snapshots: List[Dict[str, Any]], figsize: Tuple
 
         # Make sure all rows have the same number of columns
         # This is important for the heatmap to work correctly
-        for i in range(1, min(10, min_holders_count) + 1):
+        for i in range(1, min(MAX_TOP_HOLDERS, min_holders_count) + 1):
             col_name = f"Holder {i}"
             if col_name not in df.columns:
                 df[col_name] = np.nan
