@@ -61,9 +61,11 @@ def execute_analyze_command(
 
     # Calculate metrics
     if "token_holders" in data and "metrics" in data:
-        balances = [
-            float(holder.get("balance", 0)) for holder in data["token_holders"] if float(holder.get("balance", 0)) > 0
-        ]
+        balances = []
+        for holder_data in data["token_holders"]:
+            balance = float(holder_data.get("balance", 0))
+            if balance > 0:
+                balances.append(balance)
         metrics = data["metrics"]
 
         if balances:
