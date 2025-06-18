@@ -19,7 +19,11 @@ import pandas as pd
 try:
     # Import core functionality
     from governance_token_analyzer.core.api_client import APIClient
-    from governance_token_analyzer.core.advanced_metrics import calculate_all_concentration_metrics, calculate_gini_coefficient, calculate_nakamoto_coefficient
+    from governance_token_analyzer.core.advanced_metrics import (
+        calculate_all_concentration_metrics,
+        calculate_gini_coefficient,
+        calculate_nakamoto_coefficient,
+    )
     from governance_token_analyzer.core.config import PROTOCOLS
     from governance_token_analyzer.core.data_simulator import TokenDistributionSimulator
     from governance_token_analyzer.core import historical_data
@@ -496,7 +500,7 @@ def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
     # Calculate metrics if not present or if token holders are available
     if token_holders:
         balances = [balance for holder in token_holders if (balance := float(holder.get("balance", 0))) > 0]
-        
+
         if balances:
             # Calculate metrics
             metrics = {}
@@ -504,14 +508,14 @@ def _process_snapshot(index, date_str, snapshot_data, protocol, protocol_dir):
             metrics["nakamoto_coefficient"] = calculate_nakamoto_coefficient(balances)
             metrics["total_holders"] = len(balances)
             metrics["total_supply"] = sum(balances)
-            
+
             # Create snapshot with metrics
             snapshot = {
                 "date": date_str,
                 "token_holders": token_holders,
                 "metrics": metrics,
             }
-            
+
             # Save snapshot
             snapshot_file = os.path.join(protocol_dir, f"snapshot_{index + 1}.json")
             try:

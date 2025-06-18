@@ -288,7 +288,7 @@ def create_distribution_chart(balances: List[float], protocol: str, chart_file: 
     if not balances:
         click.secho("⚠️ No balances to plot", fg="yellow")
         return
-        
+
     fig = None
     try:
         # Sort balances in descending order

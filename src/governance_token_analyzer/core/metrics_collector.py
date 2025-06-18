@@ -119,19 +119,17 @@ class MetricsCollector:
         """
         try:
             proposals = self.api_client.get_governance_proposals(protocol, use_real_data=self.use_live_data)
-            
+
             # Collect votes for each proposal
             all_votes = []
             for proposal in proposals:
                 if proposal.get("id"):
                     proposal_id = int(proposal["id"])
                     proposal_votes = self.api_client.get_governance_votes(
-                        protocol, 
-                        proposal_id, 
-                        use_real_data=self.use_live_data
+                        protocol, proposal_id, use_real_data=self.use_live_data
                     )
                     all_votes.extend(proposal_votes)
-            
+
             return {
                 "protocol": protocol,
                 "proposals": proposals,

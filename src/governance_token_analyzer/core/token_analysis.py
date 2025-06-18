@@ -25,7 +25,7 @@ def calculate_gini_coefficient(balances: List[float]) -> float:
     The Gini coefficient is a measure of inequality where:
     - 0 represents perfect equality (everyone has the same amount)
     - 1 represents perfect inequality (one person has everything)
-    
+
     Note:
         This implementation assumes all balances are non-negative. Negative values
         are filtered out before calculation to avoid unexpected results.
@@ -38,7 +38,7 @@ def calculate_gini_coefficient(balances: List[float]) -> float:
     """
     # Filter out any negative values that might cause issues
     positive_balances = [b for b in balances if b >= 0]
-    
+
     if not positive_balances or sum(positive_balances) == 0:
         return 0
 
@@ -143,12 +143,12 @@ def calculate_palma_ratio(balances: List[float]) -> float:
     """Calculate Palma ratio for token distribution.
 
     The Palma ratio is the ratio of the richest 10% to the poorest 40%.
-    
+
     Note:
-        Percentile-based calculations like the Palma ratio may not be reliable 
-        for small sample sizes (e.g., n < 20). Use caution when interpreting 
+        Percentile-based calculations like the Palma ratio may not be reliable
+        for small sample sizes (e.g., n < 20). Use caution when interpreting
         results for small numbers of token holders.
-    
+
     Args:
         balances: List of token balances (must be non-negative).
 
@@ -166,13 +166,13 @@ def calculate_palma_ratio(balances: List[float]) -> float:
     if n < 5:  # Need at least 5 holders to calculate meaningful ratio
         logger.warning("Cannot calculate reliable Palma ratio: insufficient data points (n=%d)", n)
         return 0
-        
+
     # Log warning for small sample sizes
     if n < 20:
         logger.warning(
             "Palma ratio calculation may be unreliable for small sample sizes (n=%d). "
-            "Percentile-based statistics are less stable with fewer data points.", 
-            n
+            "Percentile-based statistics are less stable with fewer data points.",
+            n,
         )
 
     # Calculate indices for percentiles

@@ -1083,12 +1083,12 @@ class ReportGenerator:
 
 def generate_historical_analysis_report(protocol, snapshots, output_path):
     """Generate a historical analysis report.
-    
+
     Args:
         protocol: Name of the protocol
         snapshots: List of historical snapshots
         output_path: Path to save the report
-    
+
     Returns:
         Path to the generated report
     """
