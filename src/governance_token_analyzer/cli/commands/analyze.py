@@ -16,23 +16,25 @@ from governance_token_analyzer.core.metrics_collector import MetricsCollector
 def execute_analyze_command(
     protocol: str,
     limit: int = 1000,
-    format: str = "json",
+    output_format: str = "json",
     output_dir: str = "outputs",
     chart: bool = False,
     live_data: bool = True,
+    simulated_data: bool = False,
     verbose: bool = False,
 ) -> None:
     """
-    Execute the analyze command to analyze token distribution for a specific protocol.
+    Execute the analyze command.
 
     Args:
-        protocol: Protocol to analyze
+        protocol: Protocol to analyze (compound, uniswap, aave)
         limit: Maximum number of token holders to analyze
-        format: Output format (json, csv)
+        output_format: Output format (json, csv)
         output_dir: Directory to save output files
         chart: Whether to generate distribution charts
         live_data: Whether to use live blockchain data
-        verbose: Whether to enable verbose output
+        simulated_data: Whether to use simulated data
+        verbose: Whether to show detailed metrics
     """
     # Ensure output directory exists
     try:
@@ -81,12 +83,12 @@ def execute_analyze_command(
 
             # Save output file
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = os.path.join(output_dir, f"{protocol}_analysis_{timestamp}.{format}")
+            output_file = os.path.join(output_dir, f"{protocol}_analysis_{timestamp}.{output_format}")
 
-            if format == "json":
+            if output_format == "json":
                 with open(output_file, "w") as f:
                     json.dump(data, f, indent=2)
-            elif format == "csv":
+            elif output_format == "csv":
                 # Save token holders
                 df = pd.DataFrame(data["token_holders"])
                 df.to_csv(output_file, index=False)

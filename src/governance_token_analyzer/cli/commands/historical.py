@@ -62,7 +62,7 @@ def execute_historical_analysis_command(
     metric: str = "gini_coefficient",
     data_dir: str = "data/historical",
     output_dir: str = "outputs",
-    format: str = "png",
+    output_format: str = "png",
     plot: bool = True,
 ) -> None:
     """
@@ -73,7 +73,7 @@ def execute_historical_analysis_command(
         metric: Metric to analyze over time
         data_dir: Directory containing historical data
         output_dir: Directory to save analysis results
-        format: Output format (json, png)
+        output_format: Output format (json, png)
         plot: Whether to generate time series plots
     """
     try:
@@ -121,10 +121,10 @@ def execute_historical_analysis_command(
 
         # Generate output based on format
         timestamp = generate_timestamp()  # Use the utility function for timestamp
-        if format == "png" and plot:
+        if output_format == "png" and plot:
             output_file = os.path.join(output_dir, f"{protocol}_{metric}_{timestamp}.png")  # Add timestamp
             _create_time_series_plot(time_series, protocol, metric, output_file)
-        elif format == "json":
+        elif output_format == "json":
             output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical_{timestamp}.json")  # Add timestamp
             _export_time_series_data(time_series, protocol, metric, output_file)
 

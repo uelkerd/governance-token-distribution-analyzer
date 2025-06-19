@@ -120,7 +120,7 @@ def _create_historical_comparison_chart(
 def execute_compare_protocols_command(
     protocols: str,
     metric: str = "gini_coefficient",
-    format: str = "json",
+    output_format: str = "json",
     output_dir: str = "outputs",
     chart: bool = False,
     detailed: bool = False,
@@ -133,7 +133,7 @@ def execute_compare_protocols_command(
     Args:
         protocols: Comma-separated list of protocols to compare
         metric: Primary metric for comparison
-        format: Output format (json, html, png)
+        output_format: Output format (json, html, png)
         output_dir: Directory to save output files
         chart: Whether to generate comparison charts
         detailed: Whether to include detailed metrics
@@ -164,7 +164,7 @@ def execute_compare_protocols_command(
         # Generate output file
         timestamp = generate_timestamp()
 
-        if format == "json":
+        if output_format == "json":
             import json
 
             output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.json")
@@ -172,12 +172,12 @@ def execute_compare_protocols_command(
                 json.dump(comparison_data, f, indent=2)
             click.echo(f"\n💾 Comparison data saved to {output_file}")
 
-        elif format == "html":
+        elif output_format == "html":
             output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.html")
             html_content = _generate_html_report(comparison_data, metric)
             _save_html_report(html_content, output_file)
 
-        elif format == "png" or chart:
+        elif output_format == "png" or chart:
             output_file = os.path.join(output_dir, f"protocol_comparison_{timestamp}.png")
             protocols_list = list(comparison_data.keys())
             valid_protocols, valid_values = filter_numeric_values(protocols_list, comparison_data, metric)

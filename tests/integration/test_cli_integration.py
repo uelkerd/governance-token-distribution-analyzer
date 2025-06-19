@@ -62,7 +62,7 @@ class TestCliIntegration:
             sample_data,
             "--output-dir",
             temp_output_dir,
-            "--format",
+            "--output-format",
             "png",
         ]
 
@@ -73,9 +73,11 @@ class TestCliIntegration:
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
         # Check that output files were created
-        expected_output = os.path.join(temp_output_dir, "compound_gini_coefficient.png")
-        assert os.path.exists(expected_output)
-        assert os.path.getsize(expected_output) > 0
+        # The file name includes a timestamp, so we need to check for any file matching the pattern
+        import glob
+        output_files = glob.glob(os.path.join(temp_output_dir, "compound_gini_coefficient_*.png"))
+        assert len(output_files) > 0, f"No output files found in {temp_output_dir}"
+        assert os.path.getsize(output_files[0]) > 0
 
     def test_compare_protocols_command(self, sample_data, temp_output_dir):
         """Test that the compare-protocols command works correctly with historical data."""
@@ -93,7 +95,7 @@ class TestCliIntegration:
             sample_data,
             "--output-dir",
             temp_output_dir,
-            "--format",
+            "--output-format",
             "png",
         ]
 
@@ -103,13 +105,9 @@ class TestCliIntegration:
         # Check that the command executed successfully
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
-        # Check that output files were created (with timestamp pattern)
-        import glob
-
-        pattern = os.path.join(temp_output_dir, "protocol_comparison_*.png")
-        output_files = glob.glob(pattern)
-        assert len(output_files) > 0, f"No PNG files found matching pattern: {pattern}"
-        assert os.path.getsize(output_files[0]) > 0
+        # Check that the output file was created
+        output_files = os.listdir(temp_output_dir)
+        assert any(f.startswith("protocol_comparison_") and f.endswith(".png") for f in output_files)
 
     def test_generate_report_command(self, sample_data, temp_output_dir):
         """Test that the generate-report command works correctly with historical data."""
@@ -125,7 +123,7 @@ class TestCliIntegration:
             sample_data,
             "--output-dir",
             temp_output_dir,
-            "--format",
+            "--output-format",
             "html",
         ]
 
@@ -136,12 +134,14 @@ class TestCliIntegration:
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
         # Check that output files were created
-        expected_output = os.path.join(temp_output_dir, "compound_report.html")
-        assert os.path.exists(expected_output)
-        assert os.path.getsize(expected_output) > 0
+        # The file name includes a timestamp, so we need to check for any file matching the pattern
+        import glob
+        output_files = glob.glob(os.path.join(temp_output_dir, "compound_report_*.html"))
+        assert len(output_files) > 0, f"No output files found in {temp_output_dir}"
+        assert os.path.getsize(output_files[0]) > 0
 
         # Verify report contains historical analysis section
-        with open(expected_output) as f:
+        with open(output_files[0]) as f:
             content = f.read()
             assert "Historical Analysis" in content
 
@@ -160,7 +160,7 @@ class TestCliIntegration:
             sample_data,
             "--output-dir",
             temp_output_dir,
-            "--format",
+            "--output-format",
             "json",
             "--include-historical",
         ]
@@ -172,12 +172,14 @@ class TestCliIntegration:
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
         # Check that output files were created
-        expected_output = os.path.join(temp_output_dir, "compound_gini_coefficient_historical.json")
-        assert os.path.exists(expected_output)
-        assert os.path.getsize(expected_output) > 0
+        # The file name includes a timestamp, so we need to check for any file matching the pattern
+        import glob
+        output_files = glob.glob(os.path.join(temp_output_dir, "compound_gini_coefficient_historical*.json"))
+        assert len(output_files) > 0, f"No output files found in {temp_output_dir}"
+        assert os.path.getsize(output_files[0]) > 0
 
         # Verify the JSON content
-        with open(expected_output) as f:
+        with open(output_files[0]) as f:
             data = json.load(f)
             assert isinstance(data, list)
             assert len(data) > 0

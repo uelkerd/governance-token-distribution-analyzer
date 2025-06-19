@@ -329,6 +329,128 @@ class TokenDistributionSimulator:
 
         return historical_data
 
+    def generate_protocol_data(
+        self,
+        protocol: str,
+        num_holders: int = 1000,
+        date: Optional[str] = None,
+        variance_factor: float = 0.1,
+        distribution_type: str = "power_law",
+    ) -> Dict[str, Any]:
+        """Generate simulated protocol data including token holders and metrics.
+        
+        Args:
+            protocol: Name of the protocol (compound, aave, uniswap)
+            num_holders: Number of token holders to generate
+            date: Date string for the snapshot (YYYY-MM-DD)
+            variance_factor: Factor to adjust distribution variance
+            distribution_type: Type of distribution ("power_law", "protocol_dominated", "community")
+            
+        Returns:
+            Dictionary with simulated protocol data
+        """
+        # Set default date if not provided
+        if date is None:
+            date = datetime.now().strftime("%Y-%m-%d")
+        
+        # Select distribution method based on protocol and type
+        if distribution_type == "power_law":
+            # Adjust alpha to make each protocol slightly different
+            alpha_adjustments = {
+                "compound": 1.4,
+                "aave": 1.5,
+                "uniswap": 1.6,
+            }
+            alpha = alpha_adjustments.get(protocol.lower(), 1.5)
+            alpha += variance_factor  # Add variance based on the provided factor
+            
+            token_holders = self.generate_power_law_distribution(
+                num_holders=num_holders, 
+                alpha=alpha,
+                total_supply=10_000_000
+            )
+        elif distribution_type == "protocol_dominated":
+            # Adjust protocol percentage for each protocol
+            protocol_percentages = {
+                "compound": 35.0,
+                "aave": 30.0,
+                "uniswap": 25.0,
+            }
+            protocol_pct = protocol_percentages.get(protocol.lower(), 30.0)
+            protocol_pct += variance_factor * 10  # Scale variance factor appropriately
+            
+            token_holders = self.generate_protocol_dominated_distribution(
+                num_holders=num_holders,
+                protocol_percentage=protocol_pct,
+                total_supply=10_000_000
+            )
+        else:  # community distribution
+            # Adjust gini target for each protocol
+            gini_targets = {
+                "compound": 0.65,
+                "aave": 0.6,
+                "uniswap": 0.55,
+            }
+            gini_target = gini_targets.get(protocol.lower(), 0.6)
+            gini_target -= variance_factor * 0.1  # Lower gini means more equal
+            
+            token_holders = self.generate_community_distribution(
+                num_holders=num_holders,
+                gini_target=gini_target,
+                total_supply=10_000_000
+            )
+
+        # Extract balances for metrics calculation
+        balances = []
+        for holder in token_holders:
+            if "TokenHolderQuantity" in holder:
+                balances.append(float(holder["TokenHolderQuantity"]))
+
+        # Calculate metrics if we have balances
+        metrics = {}
+        if balances:
+            # Sort balances in ascending order
+            balances_sorted = sorted(balances)
+            total = sum(balances_sorted)
+            n = len(balances_sorted)
+
+            # Calculate Gini coefficient (simple implementation)
+            sum_of_abs_diffs = sum(abs(x - y) for x in balances_sorted for y in balances_sorted)
+            metrics["gini_coefficient"] = sum_of_abs_diffs / (2 * n * total)
+
+            # Calculate Nakamoto coefficient (# of entities to reach 51%)
+            cumulative_sum = 0
+            nakamoto = 0
+            for balance in reversed(balances_sorted):  # Start from largest balance
+                cumulative_sum += balance
+                nakamoto += 1
+                if cumulative_sum / total > 0.51:
+                    break
+            metrics["nakamoto_coefficient"] = nakamoto
+
+            # Add total supply and holders count
+            metrics["total_supply"] = total
+            metrics["total_holders"] = n
+
+            # Add protocol-specific metrics
+            if protocol.lower() == "compound":
+                metrics["proposal_threshold"] = 100000  # Example threshold
+                metrics["voting_weight"] = total * 0.7  # Example of active voting weight
+            elif protocol.lower() == "aave":
+                metrics["safety_module_stake"] = total * 0.3  # Example of safety module stake
+                metrics["staking_ratio"] = 0.3  # Example of staking ratio
+            elif protocol.lower() == "uniswap":
+                metrics["liquidity_providers"] = n // 3  # Example of LP count
+                metrics["average_holding"] = total / n  # Average holdings
+        
+        # Return the complete data structure
+        return {
+            "protocol": protocol,
+            "date": date,
+            "token_holders": token_holders,
+            "metrics": metrics
+        }
+
 
 # Simple usage example
 if __name__ == "__main__":

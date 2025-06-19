@@ -51,7 +51,7 @@ def _export_to_csv(data: pd.DataFrame, output_file: str) -> None:
 
 def execute_export_historical_data_command(
     protocol: str,
-    format: str = "json",
+    output_format: str = "json",
     output_dir: str = "exports",
     limit: int = 1000,
     include_historical: bool = False,
@@ -63,7 +63,7 @@ def execute_export_historical_data_command(
 
     Args:
         protocol: Protocol to export data for
-        format: Export format (json, csv)
+        output_format: Export format (json, csv)
         output_dir: Directory to save exported files
         limit: Maximum number of records to export
         include_historical: Whether to include historical data
@@ -95,12 +95,12 @@ def execute_export_historical_data_command(
                 click.echo(f"📊 Found {len(time_series)} historical data points")
 
                 # Generate output filename
-                output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical.{format}")
+                output_file = os.path.join(output_dir, f"{protocol}_{metric}_historical.{output_format}")
 
                 # Export data based on format
-                if format == "json":
+                if output_format == "json":
                     _export_to_json(time_series, output_file)
-                elif format == "csv":
+                elif output_format == "csv":
                     _export_to_csv(time_series, output_file)
 
         else:
@@ -126,12 +126,12 @@ def execute_export_historical_data_command(
 
             # Generate output filename
             timestamp = generate_timestamp()
-            output_file = os.path.join(output_dir, f"{protocol}_token_holders_{timestamp}.{format}")
+            output_file = os.path.join(output_dir, f"{protocol}_token_holders_{timestamp}.{output_format}")
 
             # Export data based on format
-            if format == "json":
+            if output_format == "json":
                 _export_to_json(df, output_file)
-            elif format == "csv":
+            elif output_format == "csv":
                 _export_to_csv(df, output_file)
 
     except CLIError:

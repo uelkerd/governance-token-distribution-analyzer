@@ -136,7 +136,7 @@ def validate_positive_int(ctx, param, value):
     help="Maximum number of token holders to analyze (default: 1000)",
 )
 @click.option(
-    "--format", "-f", type=click.Choice(["json", "csv"]), default="json", help="Output format (default: json)"
+    "--output-format", "-f", type=click.Choice(["json", "csv"]), default="json", help="Output format (default: json)"
 )
 @click.option(
     "--output-dir",
@@ -161,7 +161,7 @@ def validate_positive_int(ctx, param, value):
     help="Use simulated data instead of live data",
 )
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output with detailed metrics")
-def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_data, verbose):
+def analyze(protocol, limit, output_format, output_dir, chart, live_data, simulated_data, verbose):
     """📊 Analyze token distribution for a specific protocol.
 
     Calculates concentration metrics and generates detailed analysis reports.
@@ -195,7 +195,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
         execute_analyze_command(
             protocol=protocol,
             limit=limit,
-            format=format,
+            output_format=output_format,
             output_dir=output_dir,
             chart=chart,
             live_data=live_data,
@@ -228,7 +228,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
     help="Primary metric for comparison (default: gini_coefficient)",
 )
 @click.option(
-    "--format", "-f", type=click.Choice(["json", "html", "png"]), default="json", help="Output format (default: json)"
+    "--output-format", "-f", type=click.Choice(["json", "html", "png"]), default="json", help="Output format (default: json)"
 )
 @click.option(
     "--output-dir",
@@ -248,7 +248,7 @@ def analyze(protocol, limit, format, output_dir, chart, live_data, simulated_dat
     default="data/historical",
     help="Directory containing historical data (default: data/historical)",
 )
-def compare_protocols(protocols, metric, format, output_dir, chart, detailed, historical, data_dir):
+def compare_protocols(protocols, metric, output_format, output_dir, chart, detailed, historical, data_dir):
     """🔍 Compare token distribution metrics across multiple protocols.
 
     Analyzes and visualizes differences in concentration and governance metrics.
@@ -272,7 +272,7 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
         execute_compare_protocols_command(
             protocols=protocols,
             metric=metric,
-            format=format,
+            output_format=output_format,
             output_dir=output_dir,
             chart=chart,
             detailed=detailed,
@@ -293,7 +293,7 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
 )
 @click.option("--protocol", "-p", type=ProtocolChoice(), required=True, help="Protocol to export data for")
 @click.option(
-    "--format", "-f", type=click.Choice(["json", "csv"]), default="json", help="Export format (default: json)"
+    "--output-format", "-f", type=click.Choice(["json", "csv"]), default="json", help="Export format (default: json)"
 )
 @click.option(
     "--output-dir",
@@ -320,7 +320,7 @@ def compare_protocols(protocols, metric, format, output_dir, chart, detailed, hi
     help="Metric to focus on for historical export",
 )
 @click.option("--data-dir", "-D", type=str, default="data/historical", help="Directory containing historical data")
-def export_historical_data(protocol, format, output_dir, limit, include_historical, metric, data_dir):
+def export_historical_data(protocol, output_format, output_dir, limit, include_historical, metric, data_dir):
     """📤 Export token distribution data for further analysis.
 
     Exports raw data in various formats for use in external tools.
@@ -342,7 +342,7 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
     try:
         execute_export_historical_data_command(
             protocol=protocol,
-            format=format,
+            output_format=output_format,
             output_dir=output_dir,
             limit=limit,
             include_historical=include_historical,
@@ -384,9 +384,9 @@ def export_historical_data(protocol, format, output_dir, limit, include_historic
     callback=validate_output_dir,
     help="Directory to save analysis results (default: outputs)",
 )
-@click.option("--format", "-f", type=click.Choice(["json", "png"]), default="png", help="Output format (default: png)")
+@click.option("--output-format", "-f", type=click.Choice(["json", "png"]), default="png", help="Output format (default: png)")
 @click.option("--plot", "-c", is_flag=True, default=True, help="Generate time series plots")
-def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
+def historical_analysis(protocol, metric, data_dir, output_dir, output_format, plot):
     """📈 Analyze historical trends in token distribution metrics.
 
     Visualizes changes in metrics over time with time series plots.
@@ -410,7 +410,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
             metric=metric,
             data_dir=data_dir,
             output_dir=output_dir,
-            format=format,
+            output_format=output_format,
             plot=plot,
         )
     except click.Abort:
@@ -425,7 +425,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
     "generate-report", help="📑 Generate a comprehensive analysis report (-p) with visualizations and detailed metrics."
 )
 @click.option("--protocol", "-p", type=ProtocolChoice(), required=True, help="Protocol to generate report for")
-@click.option("--format", "-f", type=click.Choice(["html"]), default="html", help="Report format (default: html)")
+@click.option("--output-format", "-f", type=click.Choice(["html"]), default="html", help="Report format (default: html)")
 @click.option(
     "--output-dir",
     "-o",
@@ -436,7 +436,7 @@ def historical_analysis(protocol, metric, data_dir, output_dir, format, plot):
 )
 @click.option("--include-historical", "-H", is_flag=True, help="Include historical analysis in report")
 @click.option("--data-dir", "-D", type=str, default="data/historical", help="Directory containing historical data")
-def generate_report(protocol, format, output_dir, include_historical, data_dir):
+def generate_report(protocol, output_format, output_dir, include_historical, data_dir):
     """📑 Generate a comprehensive analysis report for a protocol.
 
     Creates a detailed report with visualizations and insights.
@@ -456,7 +456,7 @@ def generate_report(protocol, format, output_dir, include_historical, data_dir):
     try:
         execute_generate_report_command(
             protocol=protocol,
-            format=format,
+            output_format=output_format,
             output_dir=output_dir,
             include_historical=include_historical,
             data_dir=data_dir,
@@ -633,6 +633,7 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
                 days_ago = (snapshots - i - 1) * interval
                 snapshot_date = datetime.now() - timedelta(days=days_ago)
                 date_str = snapshot_date.strftime("%Y-%m-%d")
+                timestamp_str = snapshot_date.isoformat()
 
                 click.echo(f"  📊 Generating snapshot for {date_str}...")
 
@@ -656,11 +657,17 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
                         metrics = calculate_all_concentration_metrics(balances)
                         snapshot_data["metrics"] = metrics
 
+                # Format the snapshot correctly with timestamp and data fields
+                formatted_snapshot = {
+                    "timestamp": timestamp_str,
+                    "data": snapshot_data
+                }
+
                 # Save snapshot
                 snapshot_file = os.path.join(protocol_dir, f"{protocol}_snapshot_{date_str}.json")
 
                 with open(snapshot_file, "w") as f:
-                    json.dump(snapshot_data, f, indent=2)
+                    json.dump(formatted_snapshot, f, indent=2)
 
             click.echo(f"✅ Generated {snapshots} historical snapshots for {protocol.upper()}")
             click.echo(f"💾 Snapshots saved to {protocol_dir}")
