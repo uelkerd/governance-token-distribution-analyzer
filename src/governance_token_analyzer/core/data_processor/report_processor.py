@@ -233,9 +233,7 @@ The distribution has a Gini coefficient of {gini_coefficient:.4f}, indicating a 
         return distribution
 
     @staticmethod
-    def _generate_governance_section(
-        protocol: str, proposals: List[Dict[str, Any]], metrics: Dict[str, Any]
-    ) -> str:
+    def _generate_governance_section(protocol: str, proposals: List[Dict[str, Any]], metrics: Dict[str, Any]) -> str:
         """Generate governance section.
 
         Args:
