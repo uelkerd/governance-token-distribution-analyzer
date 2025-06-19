@@ -663,7 +663,11 @@ class TestErrorPropagation:
                 assert "token distribution analysis" in result.output.lower() or "metrics" in result.output.lower()
             else:
                 # If exit code is non-zero, check that error was reported
-                assert "error" in result.output.lower() or "failed" in result.output.lower() or "simulated error" in result.output.lower()
+                assert (
+                    "error" in result.output.lower()
+                    or "failed" in result.output.lower()
+                    or "simulated error" in result.output.lower()
+                )
 
 
 if __name__ == "__main__":
