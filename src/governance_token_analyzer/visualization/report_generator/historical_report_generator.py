@@ -9,9 +9,6 @@ import logging
 import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
-
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 # Configure logging
@@ -59,11 +56,11 @@ def generate_historical_analysis_report(
             viz_dir=viz_dir,
             timestamp=timestamp,
         )
-    elif output_format == "json":
+    if output_format == "json":
         # JSON report generation
         # ... (implementation details)
         return "JSON report generation not implemented yet"
-    elif output_format == "pdf":
+    if output_format == "pdf":
         # PDF report generation
         # ... (implementation details)
         raise NotImplementedError("PDF report generation not implemented yet")
@@ -345,7 +342,7 @@ def create_snapshots_section(protocol: str, snapshots: List[Dict[str, Any]]) -> 
     <div class="section">
         <h2>Historical Snapshots</h2>
         <p>This section compares key metrics across different points in time.</p>
-        
+
         <table>
             <tr>
                 <th>Date</th>

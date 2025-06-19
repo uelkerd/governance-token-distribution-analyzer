@@ -48,14 +48,14 @@ class DataFetcher:
 
             ethereum_client = EthereumClient(self.parent_client)
             return ethereum_client.fetch_token_holders_with_fallback(protocol, token_address, limit)
-        else:
-            # Use simulated data
-            from .ethereum_client import EthereumClient
+        # Use simulated data
+        from .ethereum_client import EthereumClient
 
-            ethereum_client = EthereumClient(self.parent_client)
-            return ethereum_client.generate_sample_holder_data(protocol, limit)
+        ethereum_client = EthereumClient(self.parent_client)
+        return ethereum_client.generate_sample_holder_data(protocol, limit)
 
-    def normalize_holder_balances(self, holders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    @staticmethod
+    def normalize_holder_balances(holders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Normalize token holder balances to ensure consistent format.
 
         Args:

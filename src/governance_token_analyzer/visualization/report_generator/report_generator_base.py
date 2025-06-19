@@ -265,11 +265,11 @@ class ReportGenerator:
                 viz_dir=viz_dir,
                 timestamp=timestamp,
             )
-        elif output_format == "json":
+        if output_format == "json":
             # JSON report generation
             # ... (implementation details)
             return "JSON report generation not implemented yet"
-        elif output_format == "pdf":
+        if output_format == "pdf":
             # PDF report generation
             # ... (implementation details)
             raise NotImplementedError("PDF report generation not implemented yet")

@@ -5,7 +5,6 @@ governance token distribution and governance participation.
 """
 
 import logging
-import math
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -87,7 +86,8 @@ class MetricsProcessor:
             "whale_count": whale_count,
         }
 
-    def calculate_governance_metrics(self, proposals: List[Dict[str, Any]]) -> Dict[str, Any]:
+    @staticmethod
+    def calculate_governance_metrics(proposals: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Calculate metrics related to governance participation.
 
         Args:
@@ -145,7 +145,8 @@ class MetricsProcessor:
             "avg_participation_rate": avg_participation_rate,
         }
 
-    def calculate_comparison_metrics(self, protocol_metrics: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    @staticmethod
+    def calculate_comparison_metrics(protocol_metrics: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
         """Calculate comparison metrics across multiple protocols.
 
         Args:
@@ -194,7 +195,8 @@ class MetricsProcessor:
 
         return comparison
 
-    def _calculate_gini_coefficient(self, balances: List[float]) -> float:
+    @staticmethod
+    def _calculate_gini_coefficient(balances: List[float]) -> float:
         """Calculate the Gini coefficient for token distribution.
 
         Args:

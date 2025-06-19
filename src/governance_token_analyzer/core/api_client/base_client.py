@@ -341,7 +341,8 @@ class APIClient:
             },
         }
 
-    def _calculate_holder_concentration(self, holders: List[Dict[str, Any]], protocol_info: Dict[str, Any]) -> float:
+    @staticmethod
+    def _calculate_holder_concentration(holders: List[Dict[str, Any]], protocol_info: Dict[str, Any]) -> float:
         """Calculate holder concentration (percentage held by top 10 holders).
 
         Args:
@@ -371,7 +372,8 @@ class APIClient:
 
         return min(concentration, 100.0)  # Cap at 100%
 
-    def _calculate_participation_rate(self, proposals: List[Dict[str, Any]]) -> float:
+    @staticmethod
+    def _calculate_participation_rate(proposals: List[Dict[str, Any]]) -> float:
         """Calculate governance participation rate.
 
         Args:

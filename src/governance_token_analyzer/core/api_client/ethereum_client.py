@@ -6,12 +6,11 @@ interacting with Ethereum blockchain APIs like Etherscan, Alchemy, and Ethplorer
 
 import logging
 import random
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import requests
 
-from .base_client import ETHERSCAN_API_URL, ALCHEMY_API_URL, ETHPLORER_API_URL, TOKEN_ADDRESSES, PROTOCOL_INFO
+from .base_client import ETHERSCAN_API_URL, ETHPLORER_API_URL, TOKEN_ADDRESSES, PROTOCOL_INFO
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -62,14 +61,13 @@ class EthereumClient:
                 "total_supply": int(response.get("result", 0)),
                 "status": "success",
             }
-        else:
-            logger.warning(f"Failed to get token supply for {token_address}: {response.get('message')}")
-            return {
-                "token_address": token_address,
-                "total_supply": 0,
-                "status": "error",
-                "message": response.get("message", "Unknown error"),
-            }
+        logger.warning(f"Failed to get token supply for {token_address}: {response.get('message')}")
+        return {
+            "token_address": token_address,
+            "total_supply": 0,
+            "status": "error",
+            "message": response.get("message", "Unknown error"),
+        }
 
     def get_etherscan_token_holders(self, token_address: str, page: int = 1, offset: int = 100) -> Dict[str, Any]:
         """Get token holders from Etherscan.
@@ -114,10 +112,9 @@ class EthereumClient:
                 "holders": holders,
                 "status": "success",
             }
-        else:
-            logger.warning(f"Failed to get token holders for {token_address}: {response.get('message')}")
-            # Fall back to simulated data
-            return self._generate_simulated_holders(token_address, page, offset)
+        logger.warning(f"Failed to get token holders for {token_address}: {response.get('message')}")
+        # Fall back to simulated data
+        return self._generate_simulated_holders(token_address, page, offset)
 
     def get_token_balance(self, token_address: str, address: str) -> Dict[str, Any]:
         """Get the token balance of an address.
@@ -153,15 +150,14 @@ class EthereumClient:
                 "balance": int(response.get("result", 0)) / 10**18,  # Convert from wei
                 "status": "success",
             }
-        else:
-            logger.warning(f"Failed to get token balance for {address}: {response.get('message')}")
-            return {
-                "address": address,
-                "token_address": token_address,
-                "balance": 0,
-                "status": "error",
-                "message": response.get("message", "Unknown error"),
-            }
+        logger.warning(f"Failed to get token balance for {address}: {response.get('message')}")
+        return {
+            "address": address,
+            "token_address": token_address,
+            "balance": 0,
+            "status": "error",
+            "message": response.get("message", "Unknown error"),
+        }
 
     def fetch_token_holders_with_fallback(self, protocol: str, token_address: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch token holders with fallback options.
@@ -276,9 +272,8 @@ class EthereumClient:
                         }
                     )
                 return holders
-            else:
-                logger.warning(f"Failed to get token holders from Ethplorer for {token_address}")
-                return []
+            logger.warning(f"Failed to get token holders from Ethplorer for {token_address}")
+            return []
         except Exception as e:
             logger.error(f"Error fetching token holders from Ethplorer: {e}")
             return []
@@ -319,7 +314,8 @@ class EthereumClient:
             "simulated": True,
         }
 
-    def _get_simulation_params(self, protocol: str) -> Dict[str, Any]:
+    @staticmethod
+    def _get_simulation_params(protocol: str) -> Dict[str, Any]:
         """Get parameters for simulating token holders.
 
         Args:
@@ -396,8 +392,9 @@ class EthereumClient:
         end_idx = min(start_idx + offset, len(holders))
         return holders[start_idx:end_idx]
 
+    @staticmethod
     def _calculate_holder_allocation(
-        self, idx: int, whale_count: int, institution_count: int, total_supply: int, params: Dict[str, Any]
+        idx: int, whale_count: int, institution_count: int, total_supply: int, params: Dict[str, Any]
     ) -> tuple:
         """Calculate token allocation for a holder.
 

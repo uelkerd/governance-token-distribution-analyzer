@@ -5,7 +5,6 @@ governance token data.
 """
 
 import logging
-import os
 from typing import Any, Dict, List, Optional
 
 # Configure logging
@@ -15,7 +14,8 @@ logger = logging.getLogger(__name__)
 class ReportProcessor:
     """Processor for generating reports from governance token data."""
 
-    def generate_report(self, protocol: str, processed_data: Dict[str, Any], output_path: str) -> str:
+    @staticmethod
+    def generate_report(protocol: str, processed_data: Dict[str, Any], output_path: str) -> str:
         """Generate a report for processed protocol data.
 
         Args:
@@ -29,8 +29,9 @@ class ReportProcessor:
         logger.info(f"Generating report for {protocol}")
         return output_path
 
+    @staticmethod
     def generate_comparison_report(
-        self, protocol_data: Dict[str, Dict[str, Any]], comparison_data: Dict[str, Any], output_path: str
+        protocol_data: Dict[str, Dict[str, Any]], comparison_data: Dict[str, Any], output_path: str
     ) -> str:
         """Generate a comparison report for multiple protocols.
 
@@ -122,7 +123,8 @@ class ReportProcessor:
 
         return report
 
-    def _generate_report_header(self, protocol: str) -> str:
+    @staticmethod
+    def _generate_report_header(protocol: str) -> str:
         """Generate report header.
 
         Args:
@@ -142,7 +144,8 @@ This report provides a comprehensive analysis of the {protocol_name} governance 
 
         return header
 
-    def _generate_summary_section(self, protocol: str, metrics: Dict[str, Any]) -> str:
+    @staticmethod
+    def _generate_summary_section(protocol: str, metrics: Dict[str, Any]) -> str:
         """Generate summary section.
 
         Args:
@@ -174,8 +177,9 @@ The {protocol_name} governance token exhibits the following key characteristics:
 
         return summary
 
+    @staticmethod
     def _generate_distribution_section(
-        self, protocol: str, token_holders: List[Dict[str, Any]], metrics: Dict[str, Any]
+        protocol: str, token_holders: List[Dict[str, Any]], metrics: Dict[str, Any]
     ) -> str:
         """Generate distribution section.
 
@@ -228,8 +232,9 @@ The distribution has a Gini coefficient of {gini_coefficient:.4f}, indicating a 
 
         return distribution
 
+    @staticmethod
     def _generate_governance_section(
-        self, protocol: str, proposals: List[Dict[str, Any]], metrics: Dict[str, Any]
+        protocol: str, proposals: List[Dict[str, Any]], metrics: Dict[str, Any]
     ) -> str:
         """Generate governance section.
 
@@ -278,7 +283,8 @@ The average participation rate is {participation_rate:.2f}%, indicating {"high" 
 
         return governance
 
-    def _generate_visualization_section(self, visualizations: Dict[str, Dict[str, Any]]) -> str:
+    @staticmethod
+    def _generate_visualization_section(visualizations: Dict[str, Dict[str, Any]]) -> str:
         """Generate visualization section.
 
         Args:
@@ -307,7 +313,8 @@ The average participation rate is {participation_rate:.2f}%, indicating {"high" 
 
         return visualization_section
 
-    def _generate_conclusion_section(self, protocol: str, metrics: Dict[str, Any]) -> str:
+    @staticmethod
+    def _generate_conclusion_section(protocol: str, metrics: Dict[str, Any]) -> str:
         """Generate conclusion section.
 
         Args:
@@ -356,7 +363,8 @@ The protocol demonstrates a {governance_assessment} with an average participatio
 
         return conclusion
 
-    def _generate_comparison_header(self, protocols: List[str]) -> str:
+    @staticmethod
+    def _generate_comparison_header(protocols: List[str]) -> str:
         """Generate comparison report header.
 
         Args:
@@ -376,7 +384,8 @@ This report provides a comparative analysis of governance token distribution and
 
         return header
 
-    def _generate_comparison_summary(self, protocols: List[str], metrics: Dict[str, Any]) -> str:
+    @staticmethod
+    def _generate_comparison_summary(protocols: List[str], metrics: Dict[str, Any]) -> str:
         """Generate comparison summary section.
 
         Args:
@@ -423,7 +432,8 @@ The comparison reveals significant differences in token distribution patterns an
 
         return summary
 
-    def _generate_distribution_comparison_section(self, protocols: List[str], metrics: Dict[str, Any]) -> str:
+    @staticmethod
+    def _generate_distribution_comparison_section(protocols: List[str], metrics: Dict[str, Any]) -> str:
         """Generate distribution comparison section.
 
         Args:
@@ -464,7 +474,8 @@ The percentage of tokens held by the top 10 token holders.
 
         return distribution
 
-    def _generate_governance_comparison_section(self, protocols: List[str], metrics: Dict[str, Any]) -> str:
+    @staticmethod
+    def _generate_governance_comparison_section(protocols: List[str], metrics: Dict[str, Any]) -> str:
         """Generate governance comparison section.
 
         Args:
@@ -506,7 +517,8 @@ The average percentage of tokens that participate in governance votes.
 
         return governance
 
-    def _generate_comparison_visualization_section(self, visualizations: Dict[str, Dict[str, Any]]) -> str:
+    @staticmethod
+    def _generate_comparison_visualization_section(visualizations: Dict[str, Dict[str, Any]]) -> str:
         """Generate comparison visualization section.
 
         Args:
@@ -539,7 +551,8 @@ The average percentage of tokens that participate in governance votes.
 
         return visualization_section
 
-    def _generate_comparison_conclusion(self, protocols: List[str], metrics: Dict[str, Any]) -> str:
+    @staticmethod
+    def _generate_comparison_conclusion(protocols: List[str], metrics: Dict[str, Any]) -> str:
         """Generate comparison conclusion section.
 
         Args:

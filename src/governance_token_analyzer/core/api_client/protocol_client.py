@@ -44,8 +44,7 @@ class ProtocolClient:
 
         if use_real_data:
             return self._fetch_governance_proposals(protocol, limit)
-        else:
-            return self._generate_sample_proposal_data(protocol, limit)
+        return self._generate_sample_proposal_data(protocol, limit)
 
     def get_votes_data(self, protocol: str, proposal_id: int, use_real_data: bool = False) -> List[Dict[str, Any]]:
         """Get governance votes data for a proposal.
@@ -63,8 +62,7 @@ class ProtocolClient:
 
         if use_real_data:
             return self._fetch_governance_votes(protocol, proposal_id)
-        else:
-            return self._generate_sample_vote_data(protocol, proposal_id)
+        return self._generate_sample_vote_data(protocol, proposal_id)
 
     def _fetch_governance_proposals(self, protocol: str, limit: int) -> List[Dict[str, Any]]:
         """Fetch governance proposals from The Graph API.
@@ -154,9 +152,8 @@ class ProtocolClient:
             if "data" in response and "votes" in response["data"]:
                 votes = response["data"]["votes"]
                 return votes
-            else:
-                logger.warning(f"Invalid response from The Graph API for {protocol} votes")
-                return self._generate_sample_vote_data(protocol, proposal_id)
+            logger.warning(f"Invalid response from The Graph API for {protocol} votes")
+            return self._generate_sample_vote_data(protocol, proposal_id)
         except Exception as e:
             logger.error(f"Error fetching governance votes for {protocol} proposal {proposal_id}: {e}")
             return self._generate_sample_vote_data(protocol, proposal_id)
@@ -445,7 +442,8 @@ class ProtocolClient:
 
         return proposals
 
-    def _generate_sample_vote_data(self, protocol: str, proposal_id: int) -> List[Dict[str, Any]]:
+    @staticmethod
+    def _generate_sample_vote_data(protocol: str, proposal_id: int) -> List[Dict[str, Any]]:
         """Generate sample governance vote data.
 
         Args:
