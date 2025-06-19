@@ -194,11 +194,13 @@ def create_time_series_section(
                 continue
             viz_path = _create_time_series_chart(protocol, df, metric_name, viz_dir, timestamp)
             if viz_path:
-                visualizations.append({
-                    "title": f"{metric_name.replace('_', ' ').title()} Over Time",
-                    "path": viz_path,
-                    "description": f"Historical trend of {metric_name.replace('_', ' ')} over time."
-                })
+                visualizations.append(
+                    {
+                        "title": f"{metric_name.replace('_', ' ').title()} Over Time",
+                        "path": viz_path,
+                        "description": f"Historical trend of {metric_name.replace('_', ' ')} over time.",
+                    }
+                )
 
     # Handle single DataFrame
     elif isinstance(time_series_data, pd.DataFrame) and not time_series_data.empty:
@@ -208,11 +210,13 @@ def create_time_series_section(
                 continue
             viz_path = _create_time_series_chart(protocol, time_series_data, column, viz_dir, timestamp)
             if viz_path:
-                visualizations.append({
-                    "title": f"{column.replace('_', ' ').title()} Over Time",
-                    "path": viz_path,
-                    "description": f"Historical trend of {column.replace('_', ' ')} over time."
-                })
+                visualizations.append(
+                    {
+                        "title": f"{column.replace('_', ' ').title()} Over Time",
+                        "path": viz_path,
+                        "description": f"Historical trend of {column.replace('_', ' ')} over time.",
+                    }
+                )
 
     # Add visualizations to HTML content
     for viz in visualizations:
@@ -242,23 +246,23 @@ def create_dataframe_time_series_tables(time_series_data: Dict[str, pd.DataFrame
         HTML string with tables
     """
     html_content = ""
-    
+
     for metric_name, df in time_series_data.items():
         if not isinstance(df, pd.DataFrame) or df.empty:
             continue
-            
+
         html_content += f"""
-        <h3>{metric_name.replace('_', ' ').title()} Data</h3>
+        <h3>{metric_name.replace("_", " ").title()} Data</h3>
         <div style="max-height: 300px; overflow-y: auto;">
             <table>
                 <tr>
         """
-        
+
         # Add column headers
         for col in df.columns:
             html_content += f"<th>{col.replace('_', ' ').title()}</th>"
         html_content += "</tr>\n"
-        
+
         # Add rows (limit to 100 rows to prevent huge tables)
         for _, row in df.head(100).iterrows():
             html_content += "<tr>"
@@ -270,12 +274,12 @@ def create_dataframe_time_series_tables(time_series_data: Dict[str, pd.DataFrame
                     formatted_value = str(value)
                 html_content += f"<td>{formatted_value}</td>"
             html_content += "</tr>\n"
-            
+
         html_content += """
             </table>
         </div>
         """
-        
+
     return html_content
 
 
@@ -289,21 +293,21 @@ def create_dict_time_series_tables(time_series_data: Dict[str, Any]) -> str:
         HTML string with tables
     """
     html_content = ""
-    
+
     for metric_name, data in time_series_data.items():
         if isinstance(data, pd.DataFrame) and not data.empty:
             html_content += f"""
-            <h3>{metric_name.replace('_', ' ').title()} Data</h3>
+            <h3>{metric_name.replace("_", " ").title()} Data</h3>
             <div style="max-height: 300px; overflow-y: auto;">
                 <table>
                     <tr>
             """
-            
+
             # Add column headers
             for col in data.columns:
                 html_content += f"<th>{col.replace('_', ' ').title()}</th>"
             html_content += "</tr>\n"
-            
+
             # Add rows (limit to 100 rows to prevent huge tables)
             for _, row in data.head(100).iterrows():
                 html_content += "<tr>"
@@ -315,12 +319,12 @@ def create_dict_time_series_tables(time_series_data: Dict[str, Any]) -> str:
                         formatted_value = str(value)
                     html_content += f"<td>{formatted_value}</td>"
                 html_content += "</tr>\n"
-                
+
             html_content += """
                 </table>
             </div>
             """
-            
+
     return html_content
 
 
@@ -356,7 +360,7 @@ def create_snapshots_section(protocol: str, snapshots: List[Dict[str, Any]]) -> 
         if "timestamp" in snapshot and "data" in snapshot:
             data = snapshot["data"]
             metrics = data.get("metrics", {})
-            
+
             html_content += f"""
             <tr>
                 <td>{snapshot["timestamp"]}</td>
@@ -392,16 +396,16 @@ def _create_time_series_chart(
     """
     try:
         from governance_token_analyzer.visualization.historical_charts import create_time_series_chart
-        
+
         chart_file = os.path.join(viz_dir, f"{protocol}_{metric}_{timestamp}.png")
-        
+
         create_time_series_chart(
             time_series=df,
             output_path=chart_file,
             metric=metric,
             title=f"{protocol.upper()} {metric.replace('_', ' ').title()} Over Time",
         )
-        
+
         return chart_file
     except Exception as e:
         logger.error(f"Error creating time series chart for {metric}: {e}")

@@ -124,10 +124,10 @@ def _generate_comprehensive_html_report(
     # Add historical section if available
     if historical_data:
         from .historical_report_generator import create_time_series_section, create_snapshots_section
-        
+
         if "time_series" in historical_data:
             html_content += create_time_series_section(protocol, historical_data["time_series"], viz_dir, timestamp)
-            
+
         if "snapshots" in historical_data:
             html_content += create_snapshots_section(protocol, historical_data["snapshots"])
 
@@ -522,7 +522,7 @@ def _create_votes_visualization(
                 proposal_id = vote["proposal_id"]
                 if proposal_id not in proposals:
                     proposals[proposal_id] = {"for": 0, "against": 0}
-                
+
                 if vote["support"]:
                     proposals[proposal_id]["for"] += 1
                 else:
@@ -570,9 +570,7 @@ def _create_votes_visualization(
     return None
 
 
-def _create_governance_section(
-    governance_data: List[Dict[str, Any]], votes_data: List[Dict[str, Any]]
-) -> str:
+def _create_governance_section(governance_data: List[Dict[str, Any]], votes_data: List[Dict[str, Any]]) -> str:
     """Create the governance section of the report.
 
     Args:
@@ -630,13 +628,13 @@ def _create_governance_section(
         total_proposals = len(governance_data)
         passed_proposals = sum(1 for p in governance_data if p.get("status", "").lower() == "passed")
         rejected_proposals = sum(1 for p in governance_data if p.get("status", "").lower() == "rejected")
-        
+
         html_content += f"""
         <h3>Governance Participation Metrics</h3>
         <ul>
             <li><strong>Total Proposals:</strong> {total_proposals}</li>
-            <li><strong>Passed Proposals:</strong> {passed_proposals} ({passed_proposals/total_proposals*100:.1f}% of total)</li>
-            <li><strong>Rejected Proposals:</strong> {rejected_proposals} ({rejected_proposals/total_proposals*100:.1f}% of total)</li>
+            <li><strong>Passed Proposals:</strong> {passed_proposals} ({passed_proposals / total_proposals * 100:.1f}% of total)</li>
+            <li><strong>Rejected Proposals:</strong> {rejected_proposals} ({rejected_proposals / total_proposals * 100:.1f}% of total)</li>
         </ul>
         """
 

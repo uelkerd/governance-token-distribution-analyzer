@@ -24,4 +24,4 @@ __all__ = [
     "combine_protocol_data",
     "filter_top_holders",
     "calculate_overlap",
-] 
+]

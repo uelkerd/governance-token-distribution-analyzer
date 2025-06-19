@@ -17,33 +17,37 @@ class ResponseParser:
     @staticmethod
     def parse_token_holders(response: Dict[str, Any], api_type: str) -> List[Dict[str, Any]]:
         """Parse token holder response from various APIs.
-        
+
         Args:
             response: API response dictionary
             api_type: Type of API (etherscan, ethplorer, alchemy)
-            
+
         Returns:
             Standardized list of token holder dictionaries
         """
         holders = []
-        
+
         try:
             if api_type == "etherscan":
                 if "result" in response and isinstance(response["result"], list):
                     for holder in response["result"]:
-                        holders.append({
-                            "address": holder.get("address", ""),
-                            "balance": float(holder.get("value", 0)) / 10**18,  # Convert from wei
-                            "percentage": float(holder.get("share", 0)),
-                        })
+                        holders.append(
+                            {
+                                "address": holder.get("address", ""),
+                                "balance": float(holder.get("value", 0)) / 10**18,  # Convert from wei
+                                "percentage": float(holder.get("share", 0)),
+                            }
+                        )
             elif api_type == "ethplorer":
                 if "holders" in response and isinstance(response["holders"], list):
                     for holder in response["holders"]:
-                        holders.append({
-                            "address": holder.get("address", ""),
-                            "balance": float(holder.get("balance", 0)) / 10**18,  # Convert from wei
-                            "percentage": float(holder.get("share", 0)),
-                        })
+                        holders.append(
+                            {
+                                "address": holder.get("address", ""),
+                                "balance": float(holder.get("balance", 0)) / 10**18,  # Convert from wei
+                                "percentage": float(holder.get("share", 0)),
+                            }
+                        )
             elif api_type == "alchemy":
                 # Alchemy doesn't currently have a token holders endpoint
                 # This is a placeholder for when Alchemy adds this feature
@@ -52,22 +56,22 @@ class ResponseParser:
                 logger.warning(f"Unknown API type: {api_type}")
         except Exception as e:
             logger.error(f"Error parsing token holders from {api_type}: {e}")
-            
+
         return holders
 
     @staticmethod
     def parse_governance_proposals(response: Dict[str, Any], api_type: str) -> List[Dict[str, Any]]:
         """Parse governance proposal response from various APIs.
-        
+
         Args:
             response: API response dictionary
             api_type: Type of API (graph, compound, uniswap, aave)
-            
+
         Returns:
             Standardized list of governance proposal dictionaries
         """
         proposals = []
-        
+
         try:
             if api_type == "graph":
                 if "data" in response and "proposals" in response["data"]:
@@ -92,22 +96,22 @@ class ResponseParser:
                 logger.warning(f"Unknown API type: {api_type}")
         except Exception as e:
             logger.error(f"Error parsing governance proposals from {api_type}: {e}")
-            
+
         return proposals
 
     @staticmethod
     def parse_governance_votes(response: Dict[str, Any], api_type: str) -> List[Dict[str, Any]]:
         """Parse governance votes response from various APIs.
-        
+
         Args:
             response: API response dictionary
             api_type: Type of API (graph, compound, uniswap, aave)
-            
+
         Returns:
             Standardized list of governance vote dictionaries
         """
         votes = []
-        
+
         try:
             if api_type == "graph":
                 if "data" in response and "votes" in response["data"]:
@@ -127,17 +131,17 @@ class ResponseParser:
                 logger.warning(f"Unknown API type: {api_type}")
         except Exception as e:
             logger.error(f"Error parsing governance votes from {api_type}: {e}")
-            
+
         return votes
 
     @staticmethod
     def parse_token_supply(response: Dict[str, Any], api_type: str) -> int:
         """Parse token supply response from various APIs.
-        
+
         Args:
             response: API response dictionary
             api_type: Type of API (etherscan, ethplorer, alchemy)
-            
+
         Returns:
             Token supply as an integer
         """
@@ -156,17 +160,17 @@ class ResponseParser:
                 logger.warning(f"Unknown API type: {api_type}")
         except Exception as e:
             logger.error(f"Error parsing token supply from {api_type}: {e}")
-            
+
         return 0
 
     @staticmethod
     def parse_token_balance(response: Dict[str, Any], api_type: str) -> float:
         """Parse token balance response from various APIs.
-        
+
         Args:
             response: API response dictionary
             api_type: Type of API (etherscan, ethplorer, alchemy)
-            
+
         Returns:
             Token balance as a float
         """
@@ -184,5 +188,5 @@ class ResponseParser:
                 logger.warning(f"Unknown API type: {api_type}")
         except Exception as e:
             logger.error(f"Error parsing token balance from {api_type}: {e}")
-            
-        return 0.0 
+
+        return 0.0

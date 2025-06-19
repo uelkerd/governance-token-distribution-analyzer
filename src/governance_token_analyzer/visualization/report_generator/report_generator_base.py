@@ -252,6 +252,7 @@ class ReportGenerator:
         # Generate the report based on format
         if output_format == "html":
             from .html_report_generator import generate_comprehensive_html_report
+
             return generate_comprehensive_html_report(
                 self,
                 protocol=protocol,
@@ -273,4 +274,4 @@ class ReportGenerator:
             # ... (implementation details)
             raise NotImplementedError("PDF report generation not implemented yet")
         else:
-            raise ValueError(f"Unsupported format: {output_format}") 
+            raise ValueError(f"Unsupported format: {output_format}")

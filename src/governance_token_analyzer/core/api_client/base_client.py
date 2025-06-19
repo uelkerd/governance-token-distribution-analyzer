@@ -245,23 +245,24 @@ class APIClient:
         self.graph_clients = {}
         if self.graph_api_key:
             from .graph_client import TheGraphAPI
+
             for protocol, endpoint_template in GRAPHQL_ENDPOINTS.items():
                 endpoint = endpoint_template.format(api_key=self.graph_api_key)
                 self.graph_clients[protocol] = TheGraphAPI(endpoint)
 
     def get_token_holders(self, protocol: str, limit: int = 100, use_real_data: bool = True) -> List[Dict[str, Any]]:
         """Get token holders for a specific protocol.
-        
+
         Args:
             protocol: Protocol name (compound, uniswap, aave)
             limit: Maximum number of holders to return
             use_real_data: Whether to use real data or simulated data
-            
+
         Returns:
             List of token holder dictionaries
         """
         from .data_fetcher import DataFetcher
-        
+
         data_fetcher = DataFetcher(self)
         return data_fetcher.get_token_holder_data(protocol, limit, use_real_data)
 
@@ -269,17 +270,17 @@ class APIClient:
         self, protocol: str, limit: int = 10, use_real_data: bool = False
     ) -> List[Dict[str, Any]]:
         """Get governance proposals for a specific protocol.
-        
+
         Args:
             protocol: Protocol name (compound, uniswap, aave)
             limit: Maximum number of proposals to return
             use_real_data: Whether to use real data or simulated data
-            
+
         Returns:
             List of governance proposal dictionaries
         """
         from .protocol_client import ProtocolClient
-        
+
         protocol_client = ProtocolClient(self)
         return protocol_client.get_proposal_data(protocol, limit, use_real_data)
 
@@ -287,27 +288,27 @@ class APIClient:
         self, protocol: str, proposal_id: int, use_real_data: bool = False
     ) -> List[Dict[str, Any]]:
         """Get governance votes for a specific proposal.
-        
+
         Args:
             protocol: Protocol name (compound, uniswap, aave)
             proposal_id: ID of the proposal to get votes for
             use_real_data: Whether to use real data or simulated data
-            
+
         Returns:
             List of vote dictionaries
         """
         from .protocol_client import ProtocolClient
-        
+
         protocol_client = ProtocolClient(self)
         return protocol_client.get_votes_data(protocol, proposal_id, use_real_data)
 
     def get_protocol_data(self, protocol: str, use_real_data: bool = False) -> Dict[str, Any]:
         """Get comprehensive data for a specific protocol.
-        
+
         Args:
             protocol: Protocol name (compound, uniswap, aave)
             use_real_data: Whether to use real data or simulated data
-            
+
         Returns:
             Dictionary containing token holders, proposals, and protocol info
         """
@@ -317,19 +318,19 @@ class APIClient:
 
         # Get token holders
         holders = self.get_token_holders(protocol, limit=100, use_real_data=use_real_data)
-        
+
         # Get governance proposals
         proposals = self.get_governance_proposals(protocol, limit=10, use_real_data=use_real_data)
-        
+
         # Get protocol information
         protocol_info = PROTOCOL_INFO.get(protocol.lower(), {})
-        
+
         # Calculate holder concentration
         holder_concentration = self._calculate_holder_concentration(holders, protocol_info)
-        
+
         # Calculate participation rate
         participation_rate = self._calculate_participation_rate(proposals)
-        
+
         return {
             "token_holders": holders,
             "governance_proposals": proposals,
@@ -342,81 +343,81 @@ class APIClient:
 
     def _calculate_holder_concentration(self, holders: List[Dict[str, Any]], protocol_info: Dict[str, Any]) -> float:
         """Calculate holder concentration (percentage held by top 10 holders).
-        
+
         Args:
             holders: List of token holder dictionaries
             protocol_info: Protocol information dictionary
-            
+
         Returns:
             Holder concentration percentage (0-100)
         """
         if not holders:
             return 0.0
-            
+
         # Sort holders by balance
         sorted_holders = sorted(holders, key=lambda x: float(x.get("balance", 0)), reverse=True)
-        
+
         # Get top 10 holders
         top_holders = sorted_holders[:10]
-        
+
         # Calculate total balance of top holders
         top_balance = sum(float(holder.get("balance", 0)) for holder in top_holders)
-        
+
         # Calculate total supply
         total_supply = protocol_info.get("total_supply", 0)
-        
+
         # Calculate concentration
         concentration = (top_balance / total_supply) * 100 if total_supply > 0 else 0
-        
+
         return min(concentration, 100.0)  # Cap at 100%
 
     def _calculate_participation_rate(self, proposals: List[Dict[str, Any]]) -> float:
         """Calculate governance participation rate.
-        
+
         Args:
             proposals: List of governance proposal dictionaries
-            
+
         Returns:
             Participation rate percentage (0-100)
         """
         if not proposals:
             return 0.0
-            
+
         # Calculate total votes across all proposals
         total_votes = sum(
-            int(proposal.get("forVotes", 0)) + 
-            int(proposal.get("againstVotes", 0)) + 
-            int(proposal.get("abstainVotes", 0))
+            int(proposal.get("forVotes", 0))
+            + int(proposal.get("againstVotes", 0))
+            + int(proposal.get("abstainVotes", 0))
             for proposal in proposals
         )
-        
+
         # Calculate average votes per proposal
         avg_votes = total_votes / len(proposals) if proposals else 0
-        
+
         # Normalize to percentage (assuming 10% participation is typical)
         participation_rate = min((avg_votes / 1000000) * 100, 100.0)
-        
+
         return participation_rate
 
     def _make_request(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Make a rate-limited API request.
-        
+
         Args:
             params: Request parameters
-            
+
         Returns:
             API response as dictionary
         """
         # Implement rate limiting
         current_time = time.time()
         time_since_last_request = current_time - self.last_request_time
-        
+
         if time_since_last_request < self.min_request_interval:
             sleep_time = self.min_request_interval - time_since_last_request
             time.sleep(sleep_time)
-            
+
         self.last_request_time = time.time()
-        
+
         # Make the request
         try:
             response = self.session.get(params.get("url", ""), params=params.get("params", {}))
@@ -424,4 +425,4 @@ class APIClient:
             return response.json()
         except Exception as e:
             logger.error(f"API request failed: {e}")
-            return {"error": str(e), "status": "error"} 
+            return {"error": str(e), "status": "error"}

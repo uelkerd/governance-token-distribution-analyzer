@@ -58,9 +58,7 @@ def generate_comprehensive_html_report(
     metrics_data = report_generator._extract_metrics(current_data) if current_data and "metrics" in current_data else []
 
     # Generate visualizations
-    distribution_visualizations = create_token_distribution_visualization(
-        protocol, current_data, viz_dir, timestamp
-    )
+    distribution_visualizations = create_token_distribution_visualization(protocol, current_data, viz_dir, timestamp)
 
     governance_visualizations = create_governance_visualization(protocol, governance_data, viz_dir, timestamp)
 
@@ -106,7 +104,7 @@ def render_html_template(
     output_path: str,
 ) -> str:
     """Render HTML template with the provided data.
-    
+
     Args:
         report_generator: The ReportGenerator instance
         protocol: Protocol name
@@ -115,7 +113,7 @@ def render_html_template(
         governance_data: Governance data
         historical_section: Historical section data
         output_path: Path to save the report
-        
+
     Returns:
         Path to the generated report
     """
@@ -149,13 +147,13 @@ def create_token_distribution_visualization(
     protocol: str, current_data: Dict[str, Any], viz_dir: str, timestamp: str
 ) -> List[Dict[str, str]]:
     """Create visualizations for token distribution.
-    
+
     Args:
         protocol: Protocol name
         current_data: Current distribution data
         viz_dir: Directory for visualizations
         timestamp: Timestamp for the report
-        
+
     Returns:
         List of visualization metadata
     """
@@ -216,13 +214,13 @@ def create_governance_visualization(
     protocol: str, governance_data: List[Dict[str, Any]], viz_dir: str, timestamp: str
 ) -> List[Dict[str, str]]:
     """Create visualizations for governance data.
-    
+
     Args:
         protocol: Protocol name
         governance_data: Governance data
         viz_dir: Directory for visualizations
         timestamp: Timestamp for the report
-        
+
     Returns:
         List of visualization metadata
     """
@@ -295,13 +293,13 @@ def process_historical_data(
     protocol: str, historical_data: Optional[Dict[str, Any]], viz_dir: str, timestamp: str
 ) -> Optional[Dict[str, Any]]:
     """Process historical data and create visualizations.
-    
+
     Args:
         protocol: Protocol name
         historical_data: Historical data
         viz_dir: Directory for visualizations
         timestamp: Timestamp for the report
-        
+
     Returns:
         Historical section data
     """
@@ -353,7 +351,7 @@ def process_time_series(
     historical_metrics: Dict[str, Any],
 ) -> None:
     """Process time series data and create visualizations.
-    
+
     Args:
         protocol: Protocol name
         time_series: Time series data
@@ -420,19 +418,17 @@ def process_time_series(
                 )
 
                 # Add to historical metrics
-                historical_metrics[column] = (
-                    time_series.iloc[-1][column] if column in time_series.columns else "N/A"
-                )
+                historical_metrics[column] = time_series.iloc[-1][column] if column in time_series.columns else "N/A"
             except Exception as e:
                 logger.error(f"Error creating time series chart for {column}: {e}")
 
 
 def extract_snapshot_data(historical_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Extract snapshot data from historical data.
-    
+
     Args:
         historical_data: Historical data
-        
+
     Returns:
         List of snapshot data
     """
@@ -466,14 +462,14 @@ def generate_basic_html_report(
     historical_section: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Generate a basic HTML report when template rendering fails.
-    
+
     Args:
         protocol: Protocol name
         metrics: Metrics data
         visualizations: Visualizations
         output_path: Path to save the report
         historical_section: Historical section data
-        
+
     Returns:
         Path to the generated report
     """
@@ -502,10 +498,10 @@ def generate_basic_html_report(
 
 def create_basic_html_structure(protocol: str) -> str:
     """Create the basic HTML structure for a report.
-    
+
     Args:
         protocol: Protocol name
-        
+
     Returns:
         HTML string
     """
@@ -530,10 +526,10 @@ def create_basic_html_structure(protocol: str) -> str:
 
 def create_metrics_html_section(metrics: List[Dict[str, Any]]) -> str:
     """Create HTML for the metrics section.
-    
+
     Args:
         metrics: Metrics data
-        
+
     Returns:
         HTML string
     """
@@ -550,10 +546,10 @@ def create_metrics_html_section(metrics: List[Dict[str, Any]]) -> str:
 
 def create_visualizations_html_section(visualizations: List[Dict[str, str]]) -> str:
     """Create HTML for the visualizations section.
-    
+
     Args:
         visualizations: Visualizations
-        
+
     Returns:
         HTML string
     """
@@ -581,10 +577,10 @@ def create_visualizations_html_section(visualizations: List[Dict[str, str]]) -> 
 
 def create_historical_html_section(historical_section: Dict[str, Any]) -> str:
     """Create HTML for the historical section.
-    
+
     Args:
         historical_section: Historical section data
-        
+
     Returns:
         HTML string
     """
@@ -612,10 +608,10 @@ def create_historical_html_section(historical_section: Dict[str, Any]) -> str:
 
 def add_historical_visualizations(historical_section: Dict[str, Any]) -> str:
     """Add historical visualizations to HTML content.
-    
+
     Args:
         historical_section: Historical section data
-        
+
     Returns:
         HTML string
     """
@@ -637,10 +633,10 @@ def add_historical_visualizations(historical_section: Dict[str, Any]) -> str:
 
 def add_historical_metrics(historical_section: Dict[str, Any]) -> str:
     """Add historical metrics to HTML content.
-    
+
     Args:
         historical_section: Historical section data
-        
+
     Returns:
         HTML string
     """
@@ -660,10 +656,10 @@ def add_historical_metrics(historical_section: Dict[str, Any]) -> str:
 
 def add_historical_snapshots(historical_section: Dict[str, Any]) -> str:
     """Add historical snapshots to HTML content.
-    
+
     Args:
         historical_section: Historical section data
-        
+
     Returns:
         HTML string
     """
@@ -703,7 +699,7 @@ def add_historical_snapshots(historical_section: Dict[str, Any]) -> str:
 
 def create_conclusion_and_footer_html() -> str:
     """Create HTML for conclusion and footer sections.
-    
+
     Returns:
         HTML string
     """

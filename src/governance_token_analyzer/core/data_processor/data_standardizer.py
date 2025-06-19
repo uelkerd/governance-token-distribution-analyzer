@@ -24,7 +24,7 @@ def standardize_holder_data(holder_data: List[Dict[str, Any]], protocol_name: st
         DataFrame with standardized columns: address, balance, percentage, protocol
     """
     logger.info(f"Standardizing holder data for {protocol_name}")
-    
+
     # Handle different protocol data structures
     if protocol_name.lower() == "compound":
         df = _standardize_compound_holders(holder_data)
@@ -128,7 +128,7 @@ def calculate_overlap(df1: pd.DataFrame, df2: pd.DataFrame, column: str = "addre
         Dictionary containing overlap count and percentage
     """
     logger.info(f"Calculating overlap between DataFrames with {len(df1)} and {len(df2)} records")
-    
+
     set1 = set(df1[column].unique())
     set2 = set(df2[column].unique())
 
@@ -137,4 +137,4 @@ def calculate_overlap(df1: pd.DataFrame, df2: pd.DataFrame, column: str = "addre
     return {
         "overlap_count": len(overlap),
         "overlap_percentage": len(overlap) / min(len(set1), len(set2)) * 100 if min(len(set1), len(set2)) > 0 else 0,
-    } 
+    }
