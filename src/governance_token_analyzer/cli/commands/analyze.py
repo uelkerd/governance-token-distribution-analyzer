@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
-"""Analyze command implementation for the Governance Token Distribution Analyzer CLI."""
+"""Analyze command implementation for the governance token analyzer CLI."""
 
 import os
-import json
 import sys
-from typing import Dict, Any, List, Optional
+import json
 from datetime import datetime
+from typing import Any
 
 import click
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+
 from governance_token_analyzer.core.metrics_collector import MetricsCollector
 
 
@@ -20,10 +20,11 @@ def execute_analyze_command(
     output_dir: str = "outputs",
     chart: bool = False,
     live_data: bool = True,
+    simulated_data: bool = False,
     verbose: bool = False,
 ) -> None:
     """
-    Execute the analyze command to analyze token distribution for a specific protocol.
+    Execute the analyze command.
 
     Args:
         protocol: Protocol to analyze (compound, uniswap, aave)
@@ -31,40 +32,26 @@ def execute_analyze_command(
         output_format: Output format (json, csv)
         output_dir: Directory to save output files
         chart: Whether to generate distribution charts
-        live_data: Whether to use live blockchain data or simulated data
-        verbose: Whether to display detailed metrics
+        live_data: Whether to use live blockchain data
+        simulated_data: Whether to use simulated data
+        verbose: Whether to show detailed metrics
     """
-    # Handle long file paths gracefully
+    # Ensure output directory exists
     try:
-        # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
     except OSError as e:
-        if "File name too long" in str(e):
-            click.echo(f"❌ Error: Output path too long: {output_dir}")
-            click.echo("Please specify a shorter output directory path")
-            sys.exit(1)
-        elif "Permission denied" in str(e):
-            click.echo(f"❌ Error: Permission denied when creating directory: {output_dir}")
-            sys.exit(1)
-        else:
-            click.echo(f"❌ Error creating output directory: {e}")
-            sys.exit(1)
+        click.secho(f"❌ Error creating output directory: {e}", fg="red")
+        sys.exit(1)
 
     # Initialize metrics collector
     metrics_collector = MetricsCollector(use_live_data=live_data)
-
-    # Get token distribution data
-    click.echo(f"📊 Analyzing {protocol.upper()} token distribution...")
 
     if live_data:
         click.echo("📡 Fetching live blockchain data...")
     else:
         click.echo("🎲 Generating simulated data...")
 
-    # Collect protocol data
-    data = metrics_collector.collect_protocol_data(protocol, limit=limit)
-
-    # Replace with error handling
+    # Collect protocol data with error handling
     try:
         data = metrics_collector.collect_protocol_data(protocol, limit=limit)
         if not data:
