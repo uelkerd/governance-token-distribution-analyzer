@@ -10,7 +10,7 @@ import logging
 import os
 import shutil
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1070,294 +1070,366 @@ class ReportGenerator:
         viz_dir: str = None,
         timestamp: str = None,
     ) -> str:
-        """Generate a comprehensive HTML report with all data components.
+        """Generate a comprehensive HTML report with all data components."""
+        # Initialize parameters with default values if not provided
+        timestamp = timestamp or datetime.now().strftime("%Y%m%d_%H%M%S")
+        report_dir = report_dir or self.output_dir
+        viz_dir = viz_dir or os.path.join(report_dir, "visualizations")
+        os.makedirs(viz_dir, exist_ok=True)
+        output_path = output_path or os.path.join(report_dir, f"{protocol}_report_{timestamp}.html")
 
-        Args:
-            protocol: Protocol name
-            current_data: Current distribution data
-            governance_data: Governance proposals data
-            votes_data: Voting data
-            historical_data: Historical data dictionary
-            output_path: Path to save the report
-            report_dir: Directory for report files
-            viz_dir: Directory for visualizations
-            timestamp: Timestamp string for file naming
-
-        Returns:
-            Path to the generated report
-        """
-        if timestamp is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Extract metrics and create visualizations
+        metrics_data = self._extract_metrics(current_data) if current_data and "metrics" in current_data else []
         
-        if report_dir is None:
-            report_dir = self.output_dir
-            
-        if viz_dir is None:
-            viz_dir = os.path.join(report_dir, "visualizations")
-            os.makedirs(viz_dir, exist_ok=True)
-            
-        if output_path is None:
-            output_path = os.path.join(report_dir, f"{protocol}_report_{timestamp}.html")
-
-        # Create visualizations for token distribution
-        distribution_visualizations = []
-        metrics_data = []
+        # Generate visualizations
+        distribution_visualizations = self._create_token_distribution_visualization(
+            protocol, current_data, viz_dir, timestamp
+        )
         
+        governance_visualizations = self._create_governance_visualization(
+            protocol, governance_data, viz_dir, timestamp
+        )
+        
+        # Process historical data if available
+        historical_section = self._process_historical_data(
+            protocol, historical_data, viz_dir, timestamp
+        )
+        
+        # Combine all visualizations
+        all_visualizations = distribution_visualizations + governance_visualizations
+        if historical_section and "visualizations" in historical_section:
+            all_visualizations.extend(historical_section["visualizations"])
+
+        # Generate the HTML report using template
         try:
-            # Extract metrics and create visualizations for current data
-            if current_data and "metrics" in current_data:
-                metrics_data = self._extract_metrics(current_data)
+            return self._render_html_template(
+                protocol=protocol,
+                metrics_data=metrics_data,
+                all_visualizations=all_visualizations,
+                governance_data=governance_data[:10],  # Limit to top 10 proposals
+                historical_section=historical_section,
+                output_path=output_path
+            )
+        except Exception as e:
+            logger.error(f"Error rendering HTML: {e}")
+            
+            # Fallback to basic HTML if template rendering fails
+            return self._generate_basic_html_report(
+                protocol=protocol,
+                metrics=metrics_data,
+                visualizations=all_visualizations,
+                output_path=output_path,
+                historical_section=historical_section
+            )
+            
+    def _render_html_template(
+        self, 
+        protocol: str,
+        metrics_data: List[Dict[str, Any]],
+        all_visualizations: List[Dict[str, str]],
+        governance_data: List[Dict[str, Any]],
+        historical_section: Dict[str, Any],
+        output_path: str
+    ) -> str:
+        """Render HTML template with the provided data."""
+        # Set up Jinja environment
+        env = self._setup_jinja_env()
+        
+        # Load template
+        template = env.get_template("report_template.html")
+        
+        # Render template
+        html_content = template.render(
+            protocol=protocol.upper(),
+            title=f"{protocol.upper()} Governance Analysis Report",
+            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            metrics=metrics_data,
+            visualizations=all_visualizations,
+            governance_data=governance_data,
+            historical_analysis=historical_section,
+            overview=f"Analysis of governance token distribution for {protocol.upper()}",
+            conclusion="This report provides insights into the token distribution and governance of the protocol."
+        )
+        
+        # Write to file
+        with open(output_path, "w") as f:
+            f.write(html_content)
+        
+        return output_path
+
+    def _create_token_distribution_visualization(
+        self,
+        protocol: str,
+        current_data: Dict[str, Any],
+        viz_dir: str,
+        timestamp: str
+    ) -> List[Dict[str, str]]:
+        """Create visualizations for token distribution."""
+        visualizations = []
+        
+        if not current_data or "token_holders" not in current_data or not current_data["token_holders"]:
+            return visualizations
+            
+        try:
+            # Prepare data for visualization
+            token_holders = current_data["token_holders"]
+            holders_data = []
+            for holder in token_holders[:20]:  # Top 20 holders
+                if "TokenHolderAddress" in holder and "TokenHolderQuantity" in holder:
+                    holders_data.append({
+                        "address": holder["TokenHolderAddress"],
+                        "balance": float(holder["TokenHolderQuantity"]),
+                    })
+            
+            # Create distribution chart if we have data
+            if holders_data:
+                chart_file = os.path.join(viz_dir, f"{protocol}_distribution_{timestamp}.png")
                 
-                # Create token distribution visualization
-                if "token_holders" in current_data and len(current_data["token_holders"]) > 0:
-                    # Prepare data for visualization
-                    token_holders = current_data["token_holders"]
-                    holders_data = []
-                    for holder in token_holders[:20]:  # Top 20 holders
-                        if "TokenHolderAddress" in holder and "TokenHolderQuantity" in holder:
-                            holders_data.append({
-                                "address": holder["TokenHolderAddress"],
-                                "balance": float(holder["TokenHolderQuantity"]),
-                            })
-                    
-                    # Create distribution chart
-                    if holders_data:
-                        chart_file = os.path.join(viz_dir, f"{protocol}_distribution_{timestamp}.png")
-                        
-                        # Create a simple distribution chart directly
-                        import matplotlib.pyplot as plt
-                        
-                        # Extract data for plotting
-                        addresses = [h["address"] for h in holders_data]
-                        balances = [h["balance"] for h in holders_data]
-                        
-                        # Create the chart
-                        fig, ax = plt.subplots(figsize=(10, 6))
-                        ax.bar(range(len(addresses)), balances)
-                        ax.set_title(f"{protocol.upper()} Token Distribution")
-                        ax.set_xlabel("Holder Rank")
-                        ax.set_ylabel("Token Balance")
-                        ax.set_xticks([])  # Hide x-axis labels as they would be too crowded
-                        
-                        # Save the chart
-                        plt.tight_layout()
-                        plt.savefig(chart_file)
-                        plt.close(fig)
-                        
-                        # Add to visualizations list
-                        distribution_visualizations.append({
-                            "title": "Token Distribution",
-                            "path": chart_file,
-                            "description": "Distribution of tokens among top token holders."
-                        })
+                # Create a simple distribution chart
+                import matplotlib.pyplot as plt
+                
+                # Extract data for plotting
+                addresses = [h["address"] for h in holders_data]
+                balances = [h["balance"] for h in holders_data]
+                
+                # Create the chart
+                fig, ax = plt.subplots(figsize=(10, 6))
+                ax.bar(range(len(addresses)), balances)
+                ax.set_title(f"{protocol.upper()} Token Distribution")
+                ax.set_xlabel("Holder Rank")
+                ax.set_ylabel("Token Balance")
+                ax.set_xticks([])  # Hide x-axis labels as they would be too crowded
+                
+                # Save the chart
+                plt.tight_layout()
+                plt.savefig(chart_file)
+                plt.close(fig)
+                
+                # Add to visualizations list
+                visualizations.append({
+                    "title": "Token Distribution",
+                    "path": os.path.relpath(dist_chart_path, start=os.path.dirname(viz_dir)),
+                    "description": "Distribution of tokens among top token holders."
+                })
         except Exception as e:
             logger.error(f"Error generating token distribution visualizations: {e}")
             
-        # Create governance visualizations
-        governance_visualizations = []
+        return visualizations
+
+    def _create_governance_visualization(
+        self,
+        protocol: str,
+        governance_data: List[Dict[str, Any]],
+        viz_dir: str,
+        timestamp: str
+    ) -> List[Dict[str, str]]:
+        """Create visualizations for governance data."""
+        visualizations = []
+        
+        if not governance_data:
+            return visualizations
+            
         try:
-            if governance_data and len(governance_data) > 0:
-                # Create governance participation chart
-                chart_file = os.path.join(viz_dir, f"{protocol}_governance_{timestamp}.png")
-                
-                # Extract participation data
-                proposals_data = []
-                for proposal in governance_data:
-                    if "id" in proposal and "for_votes" in proposal and "against_votes" in proposal:
-                        proposals_data.append({
-                            "id": proposal["id"],
-                            "for": float(proposal.get("for_votes", 0)),
-                            "against": float(proposal.get("against_votes", 0)),
-                        })
-                
-                if proposals_data:
-                    # Create visualization
-                    import matplotlib.pyplot as plt
-                    import numpy as np
-                    
-                    fig, ax = plt.subplots(figsize=(10, 6))
-                    
-                    proposal_ids = [p["id"] for p in proposals_data]
-                    for_votes = [p["for"] for p in proposals_data]
-                    against_votes = [p["against"] for p in proposals_data]
-                    
-                    # Width of the bars
-                    width = 0.3
-                    
-                    # Position of bars on x-axis
-                    ind = np.arange(len(proposal_ids))
-                    
-                    # Creating bars
-                    ax.bar(ind - width/2, for_votes, width, label='For')
-                    ax.bar(ind + width/2, against_votes, width, label='Against')
-                    
-                    # Labels and title
-                    ax.set_xlabel('Proposal ID')
-                    ax.set_ylabel('Votes')
-                    ax.set_title(f'{protocol.upper()} Governance Participation')
-                    ax.set_xticks(ind)
-                    ax.set_xticklabels(proposal_ids)
-                    ax.legend()
-                    
-                    # Save figure
-                    plt.tight_layout()
-                    plt.savefig(chart_file, dpi=300)
-                    plt.close(fig)
-                    
-                    # Add to visualizations
-                    governance_visualizations.append({
-                        "title": "Governance Participation",
-                        "path": chart_file,
-                        "description": "Voting participation across governance proposals."
+            # Create governance participation chart
+            chart_file = os.path.join(viz_dir, f"{protocol}_governance_{timestamp}.png")
+            
+            # Extract participation data
+            proposals_data = []
+            for proposal in governance_data:
+                if "id" in proposal and "for_votes" in proposal and "against_votes" in proposal:
+                    proposals_data.append({
+                        "id": proposal["id"],
+                        "for": float(proposal.get("for_votes", 0)),
+                        "against": float(proposal.get("against_votes", 0)),
                     })
+            
+            if proposals_data:
+                # Create visualization
+                import matplotlib.pyplot as plt
+                import numpy as np
+                
+                fig, ax = plt.subplots(figsize=(10, 6))
+                
+                proposal_ids = [p["id"] for p in proposals_data]
+                for_votes = [p["for"] for p in proposals_data]
+                against_votes = [p["against"] for p in proposals_data]
+                
+                # Width of the bars
+                width = 0.3
+                
+                # Position of bars on x-axis
+                ind = np.arange(len(proposal_ids))
+                
+                # Creating bars
+                ax.bar(ind - width/2, for_votes, width, label='For')
+                ax.bar(ind + width/2, against_votes, width, label='Against')
+                
+                # Labels and title
+                ax.set_xlabel('Proposal ID')
+                ax.set_ylabel('Votes')
+                ax.set_title(f'{protocol.upper()} Governance Participation')
+                ax.set_xticks(ind)
+                ax.set_xticklabels(proposal_ids)
+                ax.legend()
+                
+                # Save figure
+                plt.tight_layout()
+                plt.savefig(chart_file, dpi=300)
+                plt.close(fig)
+                
+                # Add to visualizations
+                visualizations.append({
+                    "title": "Governance Participation",
+                    "path": chart_file,
+                    "description": "Voting participation across governance proposals."
+                })
         except Exception as e:
             logger.error(f"Error generating governance visualizations: {e}")
             
-        # Create historical visualizations if available
+        return visualizations
+
+    def _process_historical_data(
+        self,
+        protocol: str,
+        historical_data: Optional[Dict[str, Any]],
+        viz_dir: str,
+        timestamp: str
+    ) -> Optional[Dict[str, Any]]:
+        """Process historical data and create visualizations."""
+        if not historical_data:
+            return None
+            
         historical_visualizations = []
-        historical_section = None
         historical_metrics = {}
         
         try:
-            # Always create a historical section if historical_data is provided
-            if historical_data:
-                # Extract time series data
-                if "time_series" in historical_data:
-                    time_series = historical_data["time_series"]
-                    
-                    # Check if time_series is a dict of DataFrames
-                    if isinstance(time_series, dict):
-                        for metric_name, metric_data in time_series.items():
-                            # Only process if it's a DataFrame
-                            if isinstance(metric_data, pd.DataFrame) and not metric_data.empty:
-                                chart_file = os.path.join(viz_dir, f"{protocol}_{metric_name}_{timestamp}.png")
-                                
-                                try:
-                                    # Create time series visualization
-                                    from governance_token_analyzer.visualization.historical_charts import create_time_series_chart
-                                    
-                                    create_time_series_chart(
-                                        time_series=metric_data,
-                                        output_path=chart_file,
-                                        metric=metric_name,
-                                        title=f"{protocol.upper()} {metric_name.replace('_', ' ').title()} Over Time"
-                                    )
-                                    
-                                    historical_visualizations.append({
-                                        "title": f"Historical {metric_name.replace('_', ' ').title()}",
-                                        "path": chart_file,
-                                        "description": f"Time series analysis of {metric_name.replace('_', ' ')} over time."
-                                    })
-                                    
-                                    # Add to historical metrics
-                                    historical_metrics[metric_name] = metric_data.iloc[-1][metric_name] if metric_name in metric_data.columns else "N/A"
-                                except Exception as e:
-                                    logger.error(f"Error creating time series chart for {metric_name}: {e}")
-                    elif isinstance(time_series, pd.DataFrame) and not time_series.empty:
-                        # If time_series is a single DataFrame
-                        for column in time_series.columns:
-                            if column not in ['date', 'timestamp']:
-                                chart_file = os.path.join(viz_dir, f"{protocol}_{column}_{timestamp}.png")
-                                
-                                try:
-                                    # Create time series visualization
-                                    from governance_token_analyzer.visualization.historical_charts import create_time_series_chart
-                                    
-                                    create_time_series_chart(
-                                        time_series=time_series,
-                                        output_path=chart_file,
-                                        metric=column,
-                                        title=f"{protocol.upper()} {column.replace('_', ' ').title()} Over Time"
-                                    )
-                                    
-                                    historical_visualizations.append({
-                                        "title": f"Historical {column.replace('_', ' ').title()}",
-                                        "path": chart_file,
-                                        "description": f"Time series analysis of {column.replace('_', ' ')} over time."
-                                    })
-                                    
-                                    # Add to historical metrics
-                                    historical_metrics[column] = time_series.iloc[-1][column] if column in time_series.columns else "N/A"
-                                except Exception as e:
-                                    logger.error(f"Error creating time series chart for {column}: {e}")
-                
-                # Extract snapshot data
-                snapshot_data = []
-                if "snapshots" in historical_data and historical_data["snapshots"]:
-                    snapshots = historical_data["snapshots"]
-                    for snapshot in snapshots:
-                        if "timestamp" in snapshot and "data" in snapshot:
-                            data = snapshot["data"]
-                            metrics = data.get("metrics", {})
-                            
-                            snapshot_entry = {
-                                "date": snapshot["timestamp"],
-                                "gini": metrics.get("gini_coefficient", "N/A"),
-                                "nakamoto": metrics.get("nakamoto_coefficient", "N/A"),
-                                "holders": len(data.get("token_holders", [])) if "token_holders" in data else "N/A"
-                            }
-                            snapshot_data.append(snapshot_entry)
-                
-                # Always create historical section even if there are no visualizations
-                historical_section = {
-                    "title": "Historical Analysis",
-                    "visualizations": historical_visualizations,
-                    "metrics": historical_metrics,
-                    "snapshots": snapshot_data,
-                    "overview": "Analysis of historical trends in token distribution metrics."
-                }
+            # Process time series data
+            if "time_series" in historical_data:
+                self._process_time_series(
+                    protocol=protocol,
+                    time_series=historical_data["time_series"],
+                    viz_dir=viz_dir,
+                    timestamp=timestamp,
+                    historical_visualizations=historical_visualizations,
+                    historical_metrics=historical_metrics
+                )
+            
+            # Extract snapshot data
+            snapshot_data = self._extract_snapshot_data(historical_data)
+            
+            # Create historical section with all data
+            historical_section = {
+                "title": "Historical Analysis",
+                "visualizations": historical_visualizations,
+                "metrics": historical_metrics,
+                "snapshots": snapshot_data,
+                "overview": "Analysis of historical trends in token distribution metrics."
+            }
+            return historical_section
         except Exception as e:
             logger.error(f"Error generating historical visualizations: {e}")
-            # Still create a basic historical section even if visualization fails
-            historical_section = {
+            # Create a basic historical section if visualization fails
+            return {
                 "title": "Historical Analysis",
                 "overview": "Historical data analysis was requested but encountered errors during processing."
             }
-            
-        # Combine all visualizations
-        all_visualizations = distribution_visualizations + governance_visualizations + historical_visualizations
-            
-        # Generate the HTML report
-        try:
-            # Set up Jinja environment
-            env = self._setup_jinja_env()
-            
-            try:
-                # Load template
-                template = env.get_template("report_template.html")
-                
-                # Render template
-                html_content = template.render(
-                    protocol=protocol.upper(),
-                    title=f"{protocol.upper()} Governance Analysis Report",
-                    timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    metrics=metrics_data,
-                    visualizations=all_visualizations,
-                    governance_data=governance_data[:10],  # Limit to top 10 proposals
-                    historical_analysis=historical_section,
-                    overview=f"Analysis of governance token distribution for {protocol.upper()}",
-                    conclusion="This report provides insights into the token distribution and governance of the protocol."
-                )
-                
-                # Write to file
-                with open(output_path, "w") as f:
-                    f.write(html_content)
-                
-                return output_path
-            except Exception as e:
-                logger.error(f"Error rendering template: {e}")
-                # Fall through to the fallback HTML generation
-        except Exception as e:
-            logger.error(f"Error setting up Jinja environment: {e}")
+
+    def _process_time_series(
+        self,
+        protocol: str,
+        time_series: Union[Dict[str, pd.DataFrame], pd.DataFrame],
+        viz_dir: str,
+        timestamp: str,
+        historical_visualizations: List[Dict[str, str]],
+        historical_metrics: Dict[str, Any]
+    ) -> None:
+        """Process time series data and create visualizations."""
+        from governance_token_analyzer.visualization.historical_charts import create_time_series_chart
         
-        # Fallback to basic HTML if template rendering fails
-        return self._generate_basic_html_report(
-            protocol=protocol,
-            metrics=metrics_data,
-            visualizations=all_visualizations,
-            output_path=output_path,
-            historical_section=historical_section
-        )
+        # Process dictionary of DataFrames
+        if isinstance(time_series, dict):
+            for metric_name, metric_data in time_series.items():
+                if not isinstance(metric_data, pd.DataFrame) or metric_data.empty:
+                    continue
+                    
+                chart_file = os.path.join(viz_dir, f"{protocol}_{metric_name}_{timestamp}.png")
+                
+                try:
+                    create_time_series_chart(
+                        time_series=metric_data,
+                        output_path=chart_file,
+                        metric=metric_name,
+                        title=f"{protocol.upper()} {metric_name.replace('_', ' ').title()} Over Time"
+                    )
+                    
+                    historical_visualizations.append({
+                        "title": f"Historical {metric_name.replace('_', ' ').title()}",
+                        "path": chart_file,
+                        "description": f"Time series analysis of {metric_name.replace('_', ' ')} over time."
+                    })
+                    
+                    # Add to historical metrics
+                    historical_metrics[metric_name] = (
+                        metric_data.iloc[-1][metric_name]
+                        if metric_name in metric_data.columns
+                        else "N/A"
+                    )
+                except Exception as e:
+                    logger.error(f"Error creating time series chart for {metric_name}: {e}")
+        
+        # Process single DataFrame
+        elif isinstance(time_series, pd.DataFrame) and not time_series.empty:
+            for column in time_series.columns:
+                if column in ['date', 'timestamp']:
+                    continue
+                    
+                chart_file = os.path.join(viz_dir, f"{protocol}_{column}_{timestamp}.png")
+                
+                try:
+                    create_time_series_chart(
+                        time_series=time_series,
+                        output_path=chart_file,
+                        metric=column,
+                        title=f"{protocol.upper()} {column.replace('_', ' ').title()} Over Time"
+                    )
+                    
+                    historical_visualizations.append({
+                        "title": f"Historical {column.replace('_', ' ').title()}",
+                        "path": chart_file,
+                        "description": f"Time series analysis of {column.replace('_', ' ')} over time."
+                    })
+                    
+                    # Add to historical metrics
+                    historical_metrics[column] = (
+                        time_series.iloc[-1][column] 
+                        if column in time_series.columns 
+                        else "N/A"
+                    )
+                except Exception as e:
+                    logger.error(f"Error creating time series chart for {column}: {e}")
+
+    def _extract_snapshot_data(self, historical_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Extract snapshot data from historical data."""
+        snapshot_data = []
+        
+        if "snapshots" not in historical_data or not historical_data["snapshots"]:
+            return snapshot_data
+            
+        snapshots = historical_data["snapshots"]
+        for snapshot in snapshots:
+            if "timestamp" in snapshot and "data" in snapshot:
+                data = snapshot["data"]
+                metrics = data.get("metrics", {})
+                
+                snapshot_entry = {
+                    "date": snapshot["timestamp"],
+                    "gini": metrics.get("gini_coefficient", "N/A"),
+                    "nakamoto": metrics.get("nakamoto_coefficient", "N/A"),
+                    "holders": len(data.get("token_holders", [])) if "token_holders" in data else "N/A"
+                }
+                snapshot_data.append(snapshot_entry)
+                
+        return snapshot_data
 
     def _generate_basic_html_report(
         self,
@@ -1368,7 +1440,31 @@ class ReportGenerator:
         historical_section: Optional[Dict[str, Any]] = None
     ) -> str:
         """Generate a basic HTML report when template rendering fails."""
-        html_content = f"""
+        # Create the basic HTML structure
+        html_content = self._create_basic_html_structure(protocol)
+        
+        # Add metrics section
+        html_content += self._create_metrics_html_section(metrics)
+        
+        # Add visualizations section
+        html_content += self._create_visualizations_html_section(visualizations)
+        
+        # Add historical section if provided
+        if historical_section:
+            html_content += self._create_historical_html_section(historical_section)
+            
+        # Add conclusion and footer
+        html_content += self._create_conclusion_and_footer_html()
+        
+        # Write to file
+        with open(output_path, "w") as f:
+            f.write(html_content)
+        
+        return output_path
+        
+    def _create_basic_html_structure(self, protocol: str) -> str:
+        """Create the basic HTML structure for a report."""
+        return f"""
             <!DOCTYPE html>
             <html>
             <head>
@@ -1385,22 +1481,71 @@ class ReportGenerator:
                 <div class="section">
                     <h2>Key Metrics</h2>
         """
-
-        # Add metrics
-        if metrics:
-            html_content += "<ul>"
-            for metric in metrics:
-                html_content += f"<li><strong>{metric['name']}:</strong> {metric['value']} - {metric['description']}</li>"
-            html_content += "</ul>\n"
         
-        # Add visualizations
-        if visualizations:
-            html_content += """
-                <div class="section">
-                    <h2>Visualizations</h2>
-            """
+    def _create_metrics_html_section(self, metrics: List[Dict[str, Any]]) -> str:
+        """Create HTML for the metrics section."""
+        if not metrics:
+            return "</div>\n"
             
-            for viz in visualizations:
+        html_content = "<ul>"
+        for metric in metrics:
+            html_content += f"<li><strong>{metric['name']}:</strong> {metric['value']} - {metric['description']}</li>"
+        html_content += "</ul>\n</div>\n"
+        
+        return html_content
+        
+    def _create_visualizations_html_section(self, visualizations: List[Dict[str, str]]) -> str:
+        """Create HTML for the visualizations section."""
+        if not visualizations:
+            return ""
+            
+        html_content = """
+            <div class="section">
+                <h2>Visualizations</h2>
+        """
+        
+        for viz in visualizations:
+            viz_path = os.path.basename(viz["path"])
+            html_content += f"""
+                <div>
+                    <h3>{viz["title"]}</h3>
+                    <img src="{viz_path}" alt="{viz["title"]}">
+                    <p>{viz["description"]}</p>
+                </div>
+            """
+        
+        html_content += "</div>\n"
+        return html_content
+        
+    def _create_historical_html_section(self, historical_section: Dict[str, Any]) -> str:
+        """Create HTML for the historical section."""
+        html_content = """
+            <div class="section">
+                <h2>Historical Analysis</h2>
+        """
+        
+        # Add overview if available
+        if "overview" in historical_section:
+            html_content += f"<p>{historical_section['overview']}</p>"
+            
+        # Add visualizations if available
+        html_content += self._add_historical_visualizations(historical_section)
+        
+        # Add metrics if available
+        html_content += self._add_historical_metrics(historical_section)
+        
+        # Add snapshot data if available
+        html_content += self._add_historical_snapshots(historical_section)
+        
+        html_content += "</div>\n"
+        return html_content
+        
+    def _add_historical_visualizations(self, historical_section: Dict[str, Any]) -> str:
+        """Add historical visualizations to HTML content."""
+        html_content = ""
+        
+        if "visualizations" in historical_section and historical_section["visualizations"]:
+            for viz in historical_section["visualizations"]:
                 viz_path = os.path.basename(viz["path"])
                 html_content += f"""
                     <div>
@@ -1409,87 +1554,73 @@ class ReportGenerator:
                         <p>{viz["description"]}</p>
                     </div>
                 """
-            
-            html_content += "</div>\n"
+                
+        return html_content
         
-        # Always add historical section if provided, even if no visualizations
-        if historical_section:
+    def _add_historical_metrics(self, historical_section: Dict[str, Any]) -> str:
+        """Add historical metrics to HTML content."""
+        html_content = ""
+        
+        if "metrics" in historical_section and historical_section["metrics"]:
+            html_content += "<h3>Historical Metrics</h3><ul>"
+            
+            for metric_name, value in historical_section["metrics"].items():
+                formatted_value = f"{value:.4f}" if isinstance(value, (int, float)) else str(value)
+                html_content += f"<li><strong>{metric_name.replace('_', ' ').title()}:</strong> {formatted_value}</li>"
+                
+            html_content += "</ul>"
+            
+        return html_content
+        
+    def _add_historical_snapshots(self, historical_section: Dict[str, Any]) -> str:
+        """Add historical snapshots to HTML content."""
+        html_content = ""
+        
+        if "snapshots" in historical_section and historical_section["snapshots"]:
             html_content += """
-                <div class="section">
-                    <h2>Historical Analysis</h2>
+                <h3>Snapshot Summary</h3>
+                <table border="1" cellpadding="5">
+                    <tr>
+                        <th>Date</th>
+                        <th>Gini Coefficient</th>
+                        <th>Nakamoto Coefficient</th>
+                        <th>Holders</th>
+                    </tr>
             """
             
-            if "overview" in historical_section:
-                html_content += f"<p>{historical_section['overview']}</p>"
+            for snapshot in historical_section["snapshots"]:
+                date = snapshot.get("date", "N/A")
+                gini = snapshot.get("gini", "N/A")
+                nakamoto = snapshot.get("nakamoto", "N/A")
+                holders = snapshot.get("holders", "N/A")
                 
-            if "visualizations" in historical_section and historical_section["visualizations"]:
-                for viz in historical_section["visualizations"]:
-                    viz_path = os.path.basename(viz["path"])
-                    html_content += f"""
-                        <div>
-                            <h3>{viz["title"]}</h3>
-                            <img src="{viz_path}" alt="{viz["title"]}">
-                            <p>{viz["description"]}</p>
-                        </div>
-                    """
-            
-            # Add historical metrics if available
-            if "metrics" in historical_section and historical_section["metrics"]:
-                html_content += "<h3>Historical Metrics</h3><ul>"
-                for metric_name, value in historical_section["metrics"].items():
-                    formatted_value = f"{value:.4f}" if isinstance(value, (int, float)) else str(value)
-                    html_content += f"<li><strong>{metric_name.replace('_', ' ').title()}:</strong> {formatted_value}</li>"
-                html_content += "</ul>"
-                
-            # Add snapshot data if available
-            if "snapshots" in historical_section and historical_section["snapshots"]:
-                html_content += """
-                    <h3>Snapshot Summary</h3>
-                    <table border="1" cellpadding="5">
-                        <tr>
-                            <th>Date</th>
-                            <th>Gini Coefficient</th>
-                            <th>Nakamoto Coefficient</th>
-                            <th>Holders</th>
-                        </tr>
+                html_content += f"""
+                    <tr>
+                        <td>{date}</td>
+                        <td>{gini}</td>
+                        <td>{nakamoto}</td>
+                        <td>{holders}</td>
+                    </tr>
                 """
-                
-                for snapshot in historical_section["snapshots"]:
-                    date = snapshot.get("date", "N/A")
-                    gini = snapshot.get("gini", "N/A")
-                    nakamoto = snapshot.get("nakamoto", "N/A")
-                    holders = snapshot.get("holders", "N/A")
-                    
-                    html_content += f"""
-                        <tr>
-                            <td>{date}</td>
-                            <td>{gini}</td>
-                            <td>{nakamoto}</td>
-                            <td>{holders}</td>
-                        </tr>
-                    """
-                
-                html_content += "</table>"
             
-            html_content += "</div>\n"
+            html_content += "</table>"
+            
+        return html_content
         
-        html_content += """
-                <div class="section">
-                    <h2>Conclusion</h2>
-                    <p>This report provides insights into the governance token distribution and participation metrics.</p>
-                </div>
-                
-                <div class="footer">
-                    <p>Generated using Governance Token Distribution Analyzer</p>
-                </div>
-            </body>
-            </html>
+    def _create_conclusion_and_footer_html(self) -> str:
+        """Create HTML for conclusion and footer sections."""
+        return """
+            <div class="section">
+                <h2>Conclusion</h2>
+                <p>This report provides insights into the governance token distribution and participation metrics.</p>
+            </div>
+            
+            <div class="footer">
+                <p>Generated using Governance Token Distribution Analyzer</p>
+            </div>
+        </body>
+        </html>
         """
-        
-        with open(output_path, "w") as f:
-            f.write(html_content)
-        
-        return output_path
 
 
 def generate_historical_analysis_report(protocol, time_series_data, snapshots, output_path):
@@ -1506,13 +1637,26 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
 
     Returns:
         Path to the generated report
-
     """
     # Create a report generator instance
     report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))
 
     # Create HTML content
-    html_content = f"""
+    html_content = create_historical_report_header(protocol)
+    html_content += create_time_series_section(time_series_data)
+    html_content += create_snapshots_section(snapshots)
+    html_content += "</body>\n</html>"
+
+    # Write to file
+    with open(output_path, "w") as f:
+        f.write(html_content)
+
+    return output_path
+
+
+def create_historical_report_header(protocol):
+    """Create the header section of a historical analysis report."""
+    return f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -1536,55 +1680,38 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
         </div>
     """
 
-    # Add historical data
-    # Check if time_series_data is a DataFrame and not empty
+
+def create_time_series_section(time_series_data):
+    """Create the time series analysis section of a report."""
+    if time_series_data is None:
+        return ""
+
+    html_content = """
+    <div class="section">
+        <h2>Historical Analysis</h2>
+    """
+
+    # Handle DataFrame case
     if isinstance(time_series_data, pd.DataFrame) and not time_series_data.empty:
-        html_content += """
-        <div class="section">
-            <h2>Historical Analysis</h2>
-        """
-
-        # Extract columns from DataFrame
-        for column in time_series_data.columns:
-            if column not in ['date', 'timestamp']:
-                html_content += f"""
-                <div class="metric">
-                    <h3>{column.replace("_", " ").title()}</h3>
-                    <table>
-                        <tr>
-                            <th>Date</th>
-                            <th>Value</th>
-                        </tr>
-                """
-
-                for idx, row in time_series_data.iterrows():
-                    date_str = idx.strftime("%Y-%m-%d") if isinstance(idx, pd.Timestamp) else str(idx)
-                    value = row[column] if column in row else "N/A"
-                    formatted_value = f"{value:.4f}" if isinstance(value, (int, float)) else str(value)
-                    html_content += f"""
-                        <tr>
-                            <td>{date_str}</td>
-                            <td>{formatted_value}</td>
-                        </tr>
-                    """
-
-                html_content += """
-                </table>
-            </div>
-            """
-
-        html_content += "</div>"
-    # Check if time_series_data is a dictionary
+        html_content += create_dataframe_time_series_tables(time_series_data)
+    # Handle dictionary case
     elif isinstance(time_series_data, dict) and time_series_data:
-        html_content += """
-        <div class="section">
-            <h2>Historical Analysis</h2>
-        """
+        html_content += create_dict_time_series_tables(time_series_data)
 
-        for metric, data in time_series_data.items():
+    html_content += "</div>"
+    return html_content
+
+
+def create_dataframe_time_series_tables(df):
+    """Create HTML tables for each metric in a DataFrame."""
+    html_content = ""
+
+    # Extract columns from DataFrame
+    for column in df.columns:
+        if column not in ['date', 'timestamp']:
             html_content += f"""
             <div class="metric">
-                <h3>{metric.replace("_", " ").title()}</h3>
+                <h3>{column.replace("_", " ").title()}</h3>
                 <table>
                     <tr>
                         <th>Date</th>
@@ -1592,24 +1719,16 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
                     </tr>
             """
 
-            # Check if data is a DataFrame
-            if isinstance(data, pd.DataFrame) and not data.empty:
-                for idx, row in data.iterrows():
-                    date_str = idx.strftime("%Y-%m-%d") if isinstance(idx, pd.Timestamp) else str(idx)
-                    value = row[metric] if metric in row else "N/A"
-                    formatted_value = f"{value:.4f}" if isinstance(value, (int, float)) else str(value)
-                    html_content += f"""
-                        <tr>
-                            <td>{date_str}</td>
-                            <td>{formatted_value}</td>
-                        </tr>
-                    """
-            else:
-                # Handle non-DataFrame data
+            # Add rows for each timestamp
+            for idx, row in df.iterrows():
+                date_str = idx.strftime("%Y-%m-%d") if isinstance(idx, pd.Timestamp) else str(idx)
+                value = row[column] if column in row else "N/A"
+                formatted_value = f"{value:.4f}" if isinstance(value, (int, float)) else str(value)
+                
                 html_content += f"""
                     <tr>
-                        <td>Current</td>
-                        <td>{data:.4f if isinstance(data, (int, float)) else data}</td>
+                        <td>{date_str}</td>
+                        <td>{formatted_value}</td>
                     </tr>
                 """
 
@@ -1618,37 +1737,44 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
             </div>
             """
 
-        html_content += "</div>"
+    return html_content
 
-    # Add snapshot summary if available
-    if snapshots:
-        html_content += """
-        <div class="section">
-            <h2>Snapshot Summary</h2>
+
+def create_dict_time_series_tables(time_series_dict):
+    """Create HTML tables for a dictionary of time series data."""
+    html_content = ""
+
+    for metric, data in time_series_dict.items():
+        html_content += f"""
+        <div class="metric">
+            <h3>{metric.replace("_", " ").title()}</h3>
             <table>
                 <tr>
                     <th>Date</th>
-                    <th>Holders</th>
-                    <th>Gini Coefficient</th>
+                    <th>Value</th>
                 </tr>
         """
 
-        for snapshot in snapshots:
-            date = snapshot.get("timestamp", "N/A")
-            if isinstance(date, str) and "T" in date:
-                date = date.split("T")[0]  # Extract date part from ISO format
-
-            data = snapshot.get("data", {})
-            metrics = data.get("metrics", {})
-            holders_count = len(data.get("token_holders", [])) if "token_holders" in data else "N/A"
-            gini = metrics.get("gini_coefficient", "N/A")
-            gini_formatted = f"{gini:.4f}" if isinstance(gini, (int, float)) else gini
-
+        # Check if data is a DataFrame
+        if isinstance(data, pd.DataFrame) and not data.empty:
+            # Add rows for each timestamp
+            for idx, row in data.iterrows():
+                date_str = idx.strftime("%Y-%m-%d") if isinstance(idx, pd.Timestamp) else str(idx)
+                value = row[metric] if metric in row else "N/A"
+                formatted_value = f"{value:.4f}" if isinstance(value, (int, float)) else str(value)
+                
+                html_content += f"""
+                    <tr>
+                        <td>{date_str}</td>
+                        <td>{formatted_value}</td>
+                    </tr>
+                """
+        else:
+            # Handle non-DataFrame data
             html_content += f"""
                 <tr>
-                    <td>{date}</td>
-                    <td>{holders_count}</td>
-                    <td>{gini_formatted}</td>
+                    <td>Current</td>
+                    <td>{data:.4f if isinstance(data, (int, float)) else data}</td>
                 </tr>
             """
 
@@ -1657,17 +1783,55 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
         </div>
         """
 
-    # Close HTML
-    html_content += """
-    </body>
-    </html>
+    return html_content
+
+
+def create_snapshots_section(snapshots):
+    """Create the snapshots summary section of a report."""
+    if not snapshots:
+        return ""
+
+    html_content = """
+    <div class="section">
+        <h2>Snapshot Summary</h2>
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Holders</th>
+                <th>Gini Coefficient</th>
+            </tr>
     """
 
-    # Write to file
-    with open(output_path, "w") as f:
-        f.write(html_content)
+    for snapshot in snapshots:
+        # Format date
+        date = snapshot.get("timestamp", "N/A")
+        if isinstance(date, str) and "T" in date:
+            date = date.split("T")[0]  # Extract date part from ISO format
 
-    return output_path
+        # Extract metrics
+        data = snapshot.get("data", {})
+        metrics = data.get("metrics", {})
+        
+        # Extract and format values
+        holders_count = len(data.get("token_holders", [])) if "token_holders" in data else "N/A"
+        gini = metrics.get("gini_coefficient", "N/A")
+        gini_formatted = f"{gini:.4f}" if isinstance(gini, (int, float)) else gini
+
+        # Add table row
+        html_content += f"""
+            <tr>
+                <td>{date}</td>
+                <td>{holders_count}</td>
+                <td>{gini_formatted}</td>
+            </tr>
+        """
+
+    html_content += """
+        </table>
+    </div>
+    """
+
+    return html_content
 
 
 def generate_comprehensive_report(protocol, snapshots, time_series_data, visualization_paths, output_path):
@@ -1686,16 +1850,41 @@ def generate_comprehensive_report(protocol, snapshots, time_series_data, visuali
 
     Returns:
         Path to the generated report
-
     """
-    # Create a report generator instance
-    report_gen = ReportGenerator(output_dir=os.path.dirname(output_path))
-
-    # Get the latest snapshot
-    latest_snapshot = snapshots[-1] if snapshots else None
-
     # Create HTML content
-    html_content = f"""
+    html_content = create_comprehensive_report_header(protocol)
+    
+    # Add visualizations section
+    html_content += create_visualizations_section(visualization_paths)
+    
+    # Add time series data section
+    html_content += create_time_series_section(time_series_data)
+    
+    # Add snapshots section
+    html_content += create_snapshots_section(snapshots)
+    
+    # Add conclusion
+    html_content += """
+    <div class="section">
+        <h2>Conclusion</h2>
+        <p>This report provides a comprehensive analysis of the {0} governance token distribution and historical trends.</p>
+        <p>Use this information to understand how token distribution has evolved over time and its impact on governance.</p>
+    </div>
+    </body>
+    </html>
+    """.format(protocol.capitalize())
+    
+    # Write to file
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w") as f:
+        f.write(html_content)
+    
+    return output_path
+
+
+def create_comprehensive_report_header(protocol):
+    """Create the HTML header for a comprehensive report."""
+    return f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -1719,111 +1908,37 @@ def generate_comprehensive_report(protocol, snapshots, time_series_data, visuali
         </div>
     """
 
-    # Add visualizations
-    if visualization_paths:
-        html_content += """
-        <div class="section">
-            <h2>Visualizations</h2>
-        """
 
-        for metric, path in visualization_paths.items():
-            # Create a relative path for the image
-            rel_path = os.path.basename(path)
-
-            # Skip copying if source and destination are the same
-            dest_path = os.path.join(os.path.dirname(output_path), rel_path)
-            if os.path.abspath(path) != os.path.abspath(dest_path):
-                # Copy the image to the output directory
-                shutil.copy(path, dest_path)
-
-            html_content += f"""
-            <div class="metric">
-                <h3>{metric.replace("_", " ").title()}</h3>
-                <img src="{rel_path}" alt="{metric} visualization">
-            </div>
-            """
-
-        html_content += "</div>"
-
-    # Add historical data
-    if time_series_data:
-        html_content += """
-        <div class="section">
-            <h2>Historical Analysis</h2>
-        """
-
-        for metric, data in time_series_data.items():
-            html_content += f"""
-            <div class="metric">
-                <h3>{metric.replace("_", " ").title()}</h3>
-                <table>
-                    <tr>
-                        <th>Date</th>
-                        <th>Value</th>
-                    </tr>
-            """
-
-            for idx, row in data.iterrows():
-                date_str = idx.strftime("%Y-%m-%d") if isinstance(idx, pd.Timestamp) else str(idx)
-                value = row[metric] if metric in row else "N/A"
-                formatted_value = f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
-                html_content += f"""
-                    <tr>
-                        <td>{date_str}</td>
-                        <td>{formatted_value}</td>
-                    </tr>
-                """
-
-            html_content += """
-                </table>
-            </div>
-            """
-
-        html_content += "</div>"
-
-    # Add latest snapshot data
-    if latest_snapshot:
-        html_content += """
-        <div class="section">
-            <h2>Current Distribution</h2>
-        """
-
-        # Add metrics
-        if "metrics" in latest_snapshot.get("data", {}):
-            html_content += """
-            <div class="metric">
-                <h3>Key Metrics</h3>
-                <table>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                    </tr>
-            """
-
-            for metric, value in latest_snapshot["data"]["metrics"].items():
-                formatted_value = f"{value:.2f}" if isinstance(value, (int, float)) else str(value)
-                html_content += f"""
-                    <tr>
-                        <td>{metric.replace("_", " ").title()}</td>
-                        <td>{formatted_value}</td>
-                    </tr>
-                """
-
-            html_content += """
-                </table>
-            </div>
-            """
-
-        html_content += "</div>"
-
-    # Close HTML
-    html_content += """
-    </body>
-    </html>
+def create_visualizations_section(visualization_paths):
+    """Create the visualizations section of a comprehensive report."""
+    if not visualization_paths:
+        return ""
+        
+    html_content = """
+    <div class="section">
+        <h2>Visualizations</h2>
     """
-
-    # Write to file
-    with open(output_path, "w") as f:
-        f.write(html_content)
-
-    return output_path
+    
+    for metric, path in visualization_paths.items():
+        # Create a relative path for the image
+        rel_path = os.path.basename(path)
+        
+        # Skip copying if source and destination are the same
+        dest_path = os.path.join(os.path.dirname(path), rel_path)
+        if os.path.abspath(path) != os.path.abspath(dest_path):
+            # Copy the image to the output directory
+            try:
+                import shutil
+                shutil.copy(path, dest_path)
+            except Exception as e:
+                logger.error(f"Error copying visualization file: {e}")
+        
+        html_content += f"""
+        <div class="metric">
+            <h3>{metric.replace("_", " ").title()}</h3>
+            <img src="{rel_path}" alt="{metric} visualization">
+        </div>
+        """
+    
+    html_content += "</div>"
+    return html_content
