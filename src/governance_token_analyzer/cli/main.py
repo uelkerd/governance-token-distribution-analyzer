@@ -228,7 +228,11 @@ def analyze(protocol, limit, output_format, output_dir, chart, live_data, simula
     help="Primary metric for comparison (default: gini_coefficient)",
 )
 @click.option(
-    "--output-format", "-f", type=click.Choice(["json", "html", "png"]), default="json", help="Output format (default: json)"
+    "--output-format",
+    "-f",
+    type=click.Choice(["json", "html", "png"]),
+    default="json",
+    help="Output format (default: json)",
 )
 @click.option(
     "--output-dir",
@@ -384,7 +388,9 @@ def export_historical_data(protocol, output_format, output_dir, limit, include_h
     callback=validate_output_dir,
     help="Directory to save analysis results (default: outputs)",
 )
-@click.option("--output-format", "-f", type=click.Choice(["json", "png"]), default="png", help="Output format (default: png)")
+@click.option(
+    "--output-format", "-f", type=click.Choice(["json", "png"]), default="png", help="Output format (default: png)"
+)
 @click.option("--plot", "-c", is_flag=True, default=True, help="Generate time series plots")
 def historical_analysis(protocol, metric, data_dir, output_dir, output_format, plot):
     """📈 Analyze historical trends in token distribution metrics.
@@ -425,7 +431,9 @@ def historical_analysis(protocol, metric, data_dir, output_dir, output_format, p
     "generate-report", help="📑 Generate a comprehensive analysis report (-p) with visualizations and detailed metrics."
 )
 @click.option("--protocol", "-p", type=ProtocolChoice(), required=True, help="Protocol to generate report for")
-@click.option("--output-format", "-f", type=click.Choice(["html"]), default="html", help="Report format (default: html)")
+@click.option(
+    "--output-format", "-f", type=click.Choice(["html"]), default="html", help="Report format (default: html)"
+)
 @click.option(
     "--output-dir",
     "-o",
@@ -658,10 +666,7 @@ def simulate_historical(protocol, snapshots, interval, data_dir, output_dir):
                         snapshot_data["metrics"] = metrics
 
                 # Format the snapshot correctly with timestamp and data fields
-                formatted_snapshot = {
-                    "timestamp": timestamp_str,
-                    "data": snapshot_data
-                }
+                formatted_snapshot = {"timestamp": timestamp_str, "data": snapshot_data}
 
                 # Save snapshot
                 snapshot_file = os.path.join(protocol_dir, f"{protocol}_snapshot_{date_str}.json")

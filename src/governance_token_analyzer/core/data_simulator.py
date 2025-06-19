@@ -338,21 +338,21 @@ class TokenDistributionSimulator:
         distribution_type: str = "power_law",
     ) -> Dict[str, Any]:
         """Generate simulated protocol data including token holders and metrics.
-        
+
         Args:
             protocol: Name of the protocol (compound, aave, uniswap)
             num_holders: Number of token holders to generate
             date: Date string for the snapshot (YYYY-MM-DD)
             variance_factor: Factor to adjust distribution variance
             distribution_type: Type of distribution ("power_law", "protocol_dominated", "community")
-            
+
         Returns:
             Dictionary with simulated protocol data
         """
         # Set default date if not provided
         if date is None:
             date = datetime.now().strftime("%Y-%m-%d")
-        
+
         # Select distribution method based on protocol and type
         if distribution_type == "power_law":
             # Adjust alpha to make each protocol slightly different
@@ -363,11 +363,9 @@ class TokenDistributionSimulator:
             }
             alpha = alpha_adjustments.get(protocol.lower(), 1.5)
             alpha += variance_factor  # Add variance based on the provided factor
-            
+
             token_holders = self.generate_power_law_distribution(
-                num_holders=num_holders, 
-                alpha=alpha,
-                total_supply=10_000_000
+                num_holders=num_holders, alpha=alpha, total_supply=10_000_000
             )
         elif distribution_type == "protocol_dominated":
             # Adjust protocol percentage for each protocol
@@ -378,11 +376,9 @@ class TokenDistributionSimulator:
             }
             protocol_pct = protocol_percentages.get(protocol.lower(), 30.0)
             protocol_pct += variance_factor * 10  # Scale variance factor appropriately
-            
+
             token_holders = self.generate_protocol_dominated_distribution(
-                num_holders=num_holders,
-                protocol_percentage=protocol_pct,
-                total_supply=10_000_000
+                num_holders=num_holders, protocol_percentage=protocol_pct, total_supply=10_000_000
             )
         else:  # community distribution
             # Adjust gini target for each protocol
@@ -393,11 +389,9 @@ class TokenDistributionSimulator:
             }
             gini_target = gini_targets.get(protocol.lower(), 0.6)
             gini_target -= variance_factor * 0.1  # Lower gini means more equal
-            
+
             token_holders = self.generate_community_distribution(
-                num_holders=num_holders,
-                gini_target=gini_target,
-                total_supply=10_000_000
+                num_holders=num_holders, gini_target=gini_target, total_supply=10_000_000
             )
 
         # Extract balances for metrics calculation
@@ -442,14 +436,9 @@ class TokenDistributionSimulator:
             elif protocol.lower() == "uniswap":
                 metrics["liquidity_providers"] = n // 3  # Example of LP count
                 metrics["average_holding"] = total / n  # Average holdings
-        
+
         # Return the complete data structure
-        return {
-            "protocol": protocol,
-            "date": date,
-            "token_holders": token_holders,
-            "metrics": metrics
-        }
+        return {"protocol": protocol, "date": date, "token_holders": token_holders, "metrics": metrics}
 
 
 # Simple usage example

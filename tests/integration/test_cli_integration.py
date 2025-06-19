@@ -75,6 +75,7 @@ class TestCliIntegration:
         # Check that output files were created
         # The file name includes a timestamp, so we need to check for any file matching the pattern
         import glob
+
         output_files = glob.glob(os.path.join(temp_output_dir, "compound_gini_coefficient_*.png"))
         assert len(output_files) > 0, f"No output files found in {temp_output_dir}"
         assert os.path.getsize(output_files[0]) > 0
@@ -136,6 +137,7 @@ class TestCliIntegration:
         # Check that output files were created
         # The file name includes a timestamp, so we need to check for any file matching the pattern
         import glob
+
         output_files = glob.glob(os.path.join(temp_output_dir, "compound_report_*.html"))
         assert len(output_files) > 0, f"No output files found in {temp_output_dir}"
         assert os.path.getsize(output_files[0]) > 0
@@ -174,6 +176,7 @@ class TestCliIntegration:
         # Check that output files were created
         # The file name includes a timestamp, so we need to check for any file matching the pattern
         import glob
+
         output_files = glob.glob(os.path.join(temp_output_dir, "compound_gini_coefficient_historical*.json"))
         assert len(output_files) > 0, f"No output files found in {temp_output_dir}"
         assert os.path.getsize(output_files[0]) > 0
