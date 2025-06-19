@@ -111,8 +111,7 @@ class ProtocolClient:
 
             # Fetch votes for each proposal
             for proposal in all_proposals:
-                proposal_id = proposal.get("id")
-                if proposal_id:
+                if proposal_id := proposal.get("id"):
                     votes = self._fetch_governance_votes(protocol, proposal_id)
                     proposal["votes"] = votes
 
