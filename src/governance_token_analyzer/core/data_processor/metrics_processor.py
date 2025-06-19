@@ -128,9 +128,7 @@ class MetricsProcessor:
             abstain_votes = int(proposal.get("abstainVotes", 0))
             total_proposal_votes = for_votes + against_votes + abstain_votes
 
-            # Assuming total_supply is available in the proposal or a constant
-            # Here we use a placeholder value
-            total_supply = 1000000  # This should be replaced with actual total supply
+            # Use the provided total_supply parameter
 
             participation_rate = (total_proposal_votes / total_supply) * 100
             participation_rates.append(participation_rate)
