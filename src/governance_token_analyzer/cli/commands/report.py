@@ -5,6 +5,7 @@ Report generation command implementation for the Governance Token Distribution A
 This module implements comprehensive report generation functionality,
 allowing users to create detailed analysis reports with visualizations.
 """
+
 from typing import Dict, Any, List, Optional
 
 import click

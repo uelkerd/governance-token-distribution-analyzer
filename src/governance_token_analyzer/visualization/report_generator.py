@@ -1238,7 +1238,6 @@ class ReportGenerator:
                     )
 
             if proposals_data:
-
                 fig, ax = plt.subplots(figsize=(10, 6))
 
                 proposal_ids = [p["id"] for p in proposals_data]
@@ -1925,7 +1924,6 @@ def create_visualizations_section(visualization_paths):
         if os.path.abspath(path) != os.path.abspath(dest_path):
             # Copy the image to the output directory
             try:
-
                 shutil.copy(path, dest_path)
             except Exception as e:
                 logger.error(f"Error copying visualization file: {e}")
