@@ -1537,7 +1537,45 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
     """
 
     # Add historical data
-    if time_series_data:
+    # Check if time_series_data is a DataFrame and not empty
+    if isinstance(time_series_data, pd.DataFrame) and not time_series_data.empty:
+        html_content += """
+        <div class="section">
+            <h2>Historical Analysis</h2>
+        """
+
+        # Extract columns from DataFrame
+        for column in time_series_data.columns:
+            if column not in ['date', 'timestamp']:
+                html_content += f"""
+                <div class="metric">
+                    <h3>{column.replace("_", " ").title()}</h3>
+                    <table>
+                        <tr>
+                            <th>Date</th>
+                            <th>Value</th>
+                        </tr>
+                """
+
+                for idx, row in time_series_data.iterrows():
+                    date_str = idx.strftime("%Y-%m-%d") if isinstance(idx, pd.Timestamp) else str(idx)
+                    value = row[column] if column in row else "N/A"
+                    formatted_value = f"{value:.4f}" if isinstance(value, (int, float)) else str(value)
+                    html_content += f"""
+                        <tr>
+                            <td>{date_str}</td>
+                            <td>{formatted_value}</td>
+                        </tr>
+                    """
+
+                html_content += """
+                </table>
+            </div>
+            """
+
+        html_content += "</div>"
+    # Check if time_series_data is a dictionary
+    elif isinstance(time_series_data, dict) and time_series_data:
         html_content += """
         <div class="section">
             <h2>Historical Analysis</h2>
@@ -1555,7 +1593,7 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
             """
 
             # Check if data is a DataFrame
-            if isinstance(data, pd.DataFrame):
+            if isinstance(data, pd.DataFrame) and not data.empty:
                 for idx, row in data.iterrows():
                     date_str = idx.strftime("%Y-%m-%d") if isinstance(idx, pd.Timestamp) else str(idx)
                     value = row[metric] if metric in row else "N/A"
@@ -1567,7 +1605,7 @@ def generate_historical_analysis_report(protocol, time_series_data, snapshots, o
                         </tr>
                     """
             else:
-                # Handle non-DataFrame data (e.g., if time_series_data contains scalar values)
+                # Handle non-DataFrame data
                 html_content += f"""
                     <tr>
                         <td>Current</td>
