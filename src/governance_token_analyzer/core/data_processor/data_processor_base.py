@@ -24,6 +24,7 @@ class DataProcessor:
     def metrics_processor(self):
         if self._metrics_processor is None:
             from .metrics_processor import MetricsProcessor
+
             self._metrics_processor = MetricsProcessor()
         return self._metrics_processor
 
@@ -31,6 +32,7 @@ class DataProcessor:
     def visualization_processor(self):
         if self._visualization_processor is None:
             from .visualization_processor import VisualizationProcessor
+
             self._visualization_processor = VisualizationProcessor()
         return self._visualization_processor
 
@@ -38,6 +40,7 @@ class DataProcessor:
     def report_processor(self):
         if self._report_processor is None:
             from .report_processor import ReportProcessor
+
             self._report_processor = ReportProcessor()
         return self._report_processor
 
