@@ -268,7 +268,7 @@ class ReportGenerator:
         if output_format == "json":
             # JSON report generation
             # ... (implementation details)
-            return "JSON report generation not implemented yet"
+            raise NotImplementedError("JSON report generation not implemented yet")
         if output_format == "pdf":
             # PDF report generation
             # ... (implementation details)
