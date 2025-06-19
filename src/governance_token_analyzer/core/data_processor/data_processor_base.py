@@ -16,22 +16,30 @@ class DataProcessor:
 
     def __init__(self):
         """Initialize the data processor."""
-        self.metrics_processor = None
-        self.visualization_processor = None
-        self.report_processor = None
+        self._metrics_processor = None
+        self._visualization_processor = None
+        self._report_processor = None
 
-        # Initialize processors lazily when needed
-        self._initialize_processors()
+    @property
+    def metrics_processor(self):
+        if self._metrics_processor is None:
+            from .metrics_processor import MetricsProcessor
+            self._metrics_processor = MetricsProcessor()
+        return self._metrics_processor
 
-    def _initialize_processors(self):
-        """Initialize the specialized processors."""
-        from .metrics_processor import MetricsProcessor
-        from .visualization_processor import VisualizationProcessor
-        from .report_processor import ReportProcessor
+    @property
+    def visualization_processor(self):
+        if self._visualization_processor is None:
+            from .visualization_processor import VisualizationProcessor
+            self._visualization_processor = VisualizationProcessor()
+        return self._visualization_processor
 
-        self.metrics_processor = MetricsProcessor()
-        self.visualization_processor = VisualizationProcessor()
-        self.report_processor = ReportProcessor()
+    @property
+    def report_processor(self):
+        if self._report_processor is None:
+            from .report_processor import ReportProcessor
+            self._report_processor = ReportProcessor()
+        return self._report_processor
 
     def process_token_data(self, protocol: str, token_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process token data for a specific protocol.
