@@ -13,7 +13,6 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union
 
 import click
-import pandas as pd
 
 # Add the src directory to Python path for imports
 try:

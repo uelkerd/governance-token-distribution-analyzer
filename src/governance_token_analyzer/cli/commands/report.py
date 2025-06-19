@@ -5,16 +5,12 @@ Report generation command implementation for the Governance Token Distribution A
 This module implements comprehensive report generation functionality,
 allowing users to create detailed analysis reports with visualizations.
 """
-
-import os
 from typing import Dict, Any, List, Optional
 
 import click
-
-from governance_token_analyzer.core.metrics_collector import MetricsCollector
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
 from governance_token_analyzer.visualization.report_generator import ReportGenerator
-from .utils import ensure_output_directory, handle_cli_error, CLIError, generate_timestamp
+from .utils import ensure_output_directory, handle_cli_error, CLIError
 from governance_token_analyzer.core.api_client import APIClient
 
 
@@ -186,7 +182,7 @@ def execute_generate_report_command(
             votes_data=votes_data,
             historical_data=historical_data,
             output_format=output_format,
-            include_historical=True if historical_data else False,
+            include_historical=bool(historical_data),
         )
 
         click.echo(f"✅ Report generated: {report_path}")

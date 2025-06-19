@@ -1048,11 +1048,11 @@ class ReportGenerator:
                 viz_dir=viz_dir,
                 timestamp=timestamp,
             )
-        elif output_format == "json":
+        if output_format == "json":
             # JSON report generation
             # ... (implementation details)
             return "JSON report generation not implemented yet"
-        elif output_format == "pdf":
+        if output_format == "pdf":
             # PDF report generation
             # ... (implementation details)
             raise NotImplementedError("PDF report generation not implemented yet")
@@ -1154,8 +1154,9 @@ class ReportGenerator:
 
         return output_path
 
+    @staticmethod
     def _create_token_distribution_visualization(
-        self, protocol: str, current_data: Dict[str, Any], viz_dir: str, timestamp: str
+        protocol: str, current_data: Dict[str, Any], viz_dir: str, timestamp: str
     ) -> List[Dict[str, str]]:
         """Create visualizations for token distribution."""
         visualizations = []
@@ -1179,9 +1180,6 @@ class ReportGenerator:
             # Create distribution chart if we have data
             if holders_data:
                 chart_file = os.path.join(viz_dir, f"{protocol}_distribution_{timestamp}.png")
-
-                # Create a simple distribution chart
-                import matplotlib.pyplot as plt
 
                 # Extract data for plotting
                 addresses = [h["address"] for h in holders_data]
@@ -1213,8 +1211,9 @@ class ReportGenerator:
 
         return visualizations
 
+    @staticmethod
     def _create_governance_visualization(
-        self, protocol: str, governance_data: List[Dict[str, Any]], viz_dir: str, timestamp: str
+        protocol: str, governance_data: List[Dict[str, Any]], viz_dir: str, timestamp: str
     ) -> List[Dict[str, str]]:
         """Create visualizations for governance data."""
         visualizations = []
@@ -1239,9 +1238,6 @@ class ReportGenerator:
                     )
 
             if proposals_data:
-                # Create visualization
-                import matplotlib.pyplot as plt
-                import numpy as np
 
                 fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -1327,8 +1323,8 @@ class ReportGenerator:
                 "overview": "Historical data analysis was requested but encountered errors during processing.",
             }
 
+    @staticmethod
     def _process_time_series(
-        self,
         protocol: str,
         time_series: Union[Dict[str, pd.DataFrame], pd.DataFrame],
         viz_dir: str,
@@ -1401,7 +1397,8 @@ class ReportGenerator:
                 except Exception as e:
                     logger.error(f"Error creating time series chart for {column}: {e}")
 
-    def _extract_snapshot_data(self, historical_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    @staticmethod
+    def _extract_snapshot_data(historical_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Extract snapshot data from historical data."""
         snapshot_data = []
 
@@ -1455,7 +1452,8 @@ class ReportGenerator:
 
         return output_path
 
-    def _create_basic_html_structure(self, protocol: str) -> str:
+    @staticmethod
+    def _create_basic_html_structure(protocol: str) -> str:
         """Create the basic HTML structure for a report."""
         return f"""
             <!DOCTYPE html>
@@ -1475,7 +1473,8 @@ class ReportGenerator:
                     <h2>Key Metrics</h2>
         """
 
-    def _create_metrics_html_section(self, metrics: List[Dict[str, Any]]) -> str:
+    @staticmethod
+    def _create_metrics_html_section(metrics: List[Dict[str, Any]]) -> str:
         """Create HTML for the metrics section."""
         if not metrics:
             return "</div>\n"
@@ -1487,7 +1486,8 @@ class ReportGenerator:
 
         return html_content
 
-    def _create_visualizations_html_section(self, visualizations: List[Dict[str, str]]) -> str:
+    @staticmethod
+    def _create_visualizations_html_section(visualizations: List[Dict[str, str]]) -> str:
         """Create HTML for the visualizations section."""
         if not visualizations:
             return ""
@@ -1533,7 +1533,8 @@ class ReportGenerator:
         html_content += "</div>\n"
         return html_content
 
-    def _add_historical_visualizations(self, historical_section: Dict[str, Any]) -> str:
+    @staticmethod
+    def _add_historical_visualizations(historical_section: Dict[str, Any]) -> str:
         """Add historical visualizations to HTML content."""
         html_content = ""
 
@@ -1550,7 +1551,8 @@ class ReportGenerator:
 
         return html_content
 
-    def _add_historical_metrics(self, historical_section: Dict[str, Any]) -> str:
+    @staticmethod
+    def _add_historical_metrics(historical_section: Dict[str, Any]) -> str:
         """Add historical metrics to HTML content."""
         html_content = ""
 
@@ -1565,7 +1567,8 @@ class ReportGenerator:
 
         return html_content
 
-    def _add_historical_snapshots(self, historical_section: Dict[str, Any]) -> str:
+    @staticmethod
+    def _add_historical_snapshots(historical_section: Dict[str, Any]) -> str:
         """Add historical snapshots to HTML content."""
         html_content = ""
 
@@ -1600,14 +1603,15 @@ class ReportGenerator:
 
         return html_content
 
-    def _create_conclusion_and_footer_html(self) -> str:
+    @staticmethod
+    def _create_conclusion_and_footer_html() -> str:
         """Create HTML for conclusion and footer sections."""
         return """
             <div class="section">
                 <h2>Conclusion</h2>
                 <p>This report provides insights into the governance token distribution and participation metrics.</p>
             </div>
-            
+
             <div class="footer">
                 <p>Generated using Governance Token Distribution Analyzer</p>
             </div>
@@ -1921,7 +1925,6 @@ def create_visualizations_section(visualization_paths):
         if os.path.abspath(path) != os.path.abspath(dest_path):
             # Copy the image to the output directory
             try:
-                import shutil
 
                 shutil.copy(path, dest_path)
             except Exception as e:
