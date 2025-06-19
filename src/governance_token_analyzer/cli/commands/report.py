@@ -150,10 +150,10 @@ def execute_generate_report_command(
         historical_data = None
         if include_historical:
             click.echo("📈 Including historical data...")
-            
+
             # Initialize historical data manager
             data_manager = HistoricalDataManager(data_dir)
-            
+
             try:
                 # Get time series data for key metrics
                 time_series = {}
@@ -164,21 +164,20 @@ def execute_generate_report_command(
                             time_series[metric] = metric_data
                     except Exception as e:
                         click.echo(f"⚠️ Could not load time series for {metric}: {e}")
-                
+
                 # Get snapshots
                 snapshots = data_manager.get_snapshots(protocol)
-                
+
                 if snapshots or time_series:
-                    historical_data = {
-                        "time_series": time_series,
-                        "snapshots": snapshots
-                    }
-                    click.echo(f"📊 Found historical data: {len(snapshots)} snapshots and {len(time_series)} time series")
+                    historical_data = {"time_series": time_series, "snapshots": snapshots}
+                    click.echo(
+                        f"📊 Found historical data: {len(snapshots)} snapshots and {len(time_series)} time series"
+                    )
                 else:
                     click.echo("⚠️ No historical data found")
             except Exception as e:
                 click.echo(f"⚠️ Error loading historical data: {e}")
-        
+
         # Generate the report
         report_path = report_gen.generate_report(
             protocol=protocol,
@@ -187,7 +186,7 @@ def execute_generate_report_command(
             votes_data=votes_data,
             historical_data=historical_data,
             output_format=output_format,
-            include_historical=True if historical_data else False
+            include_historical=True if historical_data else False,
         )
 
         click.echo(f"✅ Report generated: {report_path}")

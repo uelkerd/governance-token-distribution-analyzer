@@ -217,11 +217,11 @@ class TestCLIEdgeCases:
 
         assert result.exit_code == 0
         assert "Token Distribution Analysis" in result.output
-        
+
         # Check that output file was created
         files = os.listdir(temp_dir)
         assert any(f.startswith("compound_") and f.endswith(".json") for f in files)
-        
+
         # Verify JSON content
         json_file = [f for f in files if f.startswith("compound_") and f.endswith(".json")][0]
         with open(os.path.join(temp_dir, json_file)) as f:
@@ -237,11 +237,11 @@ class TestCLIEdgeCases:
 
         assert result.exit_code == 0
         assert "Token Distribution Analysis" in result.output
-        
+
         # Check that output file was created
         files = os.listdir(temp_dir)
         assert any(f.startswith("compound_") and f.endswith(".csv") for f in files)
-        
+
         # Verify CSV content
         csv_file = [f for f in files if f.startswith("compound_") and f.endswith(".csv")][0]
         with open(os.path.join(temp_dir, csv_file)) as f:
@@ -258,11 +258,11 @@ class TestCLIEdgeCases:
 
         assert result.exit_code == 0
         assert "Report generated" in result.output
-        
+
         # Check that output file was created
         files = os.listdir(temp_dir)
         assert any(f.startswith("compound_report_") and f.endswith(".html") for f in files)
-        
+
         # Verify HTML content
         html_file = [f for f in files if f.startswith("compound_report_") and f.endswith(".html")][0]
         with open(os.path.join(temp_dir, html_file)) as f:
@@ -305,7 +305,7 @@ class TestCLIEdgeCases:
 
         assert result.exit_code == 0
         assert "Token Distribution Analysis" in result.output
-        
+
         # Step 2: Generate historical data
         result = cli_runner.invoke(
             cli,
@@ -319,14 +319,14 @@ class TestCLIEdgeCases:
                 temp_dir,
             ],
         )
-        
+
         assert result.exit_code == 0
         assert "Simulating historical data" in result.output
         assert "Generated" in result.output and "historical snapshots" in result.output
-        
+
         # Skip historical analysis step since it's tested separately
         # and go straight to report generation
-        
+
         # Generate report
         result = cli_runner.invoke(
             cli,
@@ -340,7 +340,7 @@ class TestCLIEdgeCases:
                 "html",
             ],
         )
-        
+
         assert result.exit_code == 0
         assert "Report generated" in result.output
 
@@ -578,27 +578,27 @@ class TestCLIEdgeCases:
         )
 
         assert result.exit_code == 0
-        
+
         # Check that output file was created
         files = os.listdir(temp_dir)
         assert any(f.startswith("compound_") and f.endswith(".json") for f in files)
-        
+
         # Verify JSON content
         json_file = [f for f in files if f.startswith("compound_") and f.endswith(".json")][0]
         with open(os.path.join(temp_dir, json_file)) as f:
             data = json.load(f)
-            
+
             # Check required fields
             assert "protocol" in data
             assert data["protocol"] == "compound"
-            
+
             if "token_holders" in data:
                 assert isinstance(data["token_holders"], list)
                 if data["token_holders"]:
                     holder = data["token_holders"][0]
                     assert "address" in holder or "TokenHolderAddress" in holder
                     assert "balance" in holder or "TokenHolderQuantity" in holder
-            
+
             if "metrics" in data:
                 assert isinstance(data["metrics"], dict)
                 # Check for key metrics
@@ -716,7 +716,7 @@ class TestDeploymentReadiness:
 
         assert result.exit_code == 0
         assert "Token Distribution Analysis" in result.output
-        
+
         # Check that output file was created
         files = os.listdir(temp_dir)
         assert any(f.startswith("compound_") and f.endswith(".json") for f in files)
