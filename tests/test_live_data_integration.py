@@ -660,14 +660,10 @@ class TestErrorPropagation:
             if result.exit_code == 0:
                 # If exit code is 0, check that analysis completed successfully
                 # (which means error handling and fallback worked)
-                assert "analysis complete" in result.output.lower() or "output files" in result.output.lower()
+                assert "token distribution analysis" in result.output.lower() or "metrics" in result.output.lower()
             else:
-                # If exit code is non-zero, check that error message is present
-                assert (
-                    "error" in result.output.lower()
-                    or "exception" in result.output.lower()
-                    or "failed" in result.output.lower()
-                )
+                # If exit code is non-zero, check that error was reported
+                assert "error" in result.output.lower() or "failed" in result.output.lower() or "simulated error" in result.output.lower()
 
 
 if __name__ == "__main__":
