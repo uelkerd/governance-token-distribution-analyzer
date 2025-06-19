@@ -190,10 +190,14 @@ class DataProcessor:
             logger.warning("No protocol data provided for comparison")
             return {}
 
-        # Extract metrics for each protocol
+        # Extract metrics for each protocol with validation
         protocol_metrics = {}
         for protocol, data in protocol_data.items():
-            protocol_metrics[protocol] = data.get("metrics", {})
+            metrics = data.get("metrics")
+            if not metrics:
+                logger.warning(f"Missing or empty 'metrics' for protocol '{protocol}'. Skipping this protocol.")
+                continue
+            protocol_metrics[protocol] = metrics
 
         # Calculate comparison metrics
         comparison_metrics = self.metrics_processor.calculate_comparison_metrics(protocol_metrics)
