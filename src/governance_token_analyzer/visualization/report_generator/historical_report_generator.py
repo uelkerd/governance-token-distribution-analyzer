@@ -90,9 +90,15 @@ def _generate_historical_html_report(
     # Create HTML content
     html_content = create_historical_report_header(protocol)
 
-    # Process time series data
-    if "time_series" in historical_data:
-        html_content += create_time_series_section(protocol, historical_data["time_series"], viz_dir, timestamp)
+    # Process time series data with validation
+    time_series = historical_data.get("time_series")
+    if time_series is not None:
+        if isinstance(time_series, (list, dict)):  # Adjust type as needed
+            html_content += create_time_series_section(protocol, time_series, viz_dir, timestamp)
+        else:
+            logging.warning("Expected 'time_series' to be a list or dict, got %s", type(time_series).__name__)
+    else:
+        logging.info("'time_series' key not found in historical_data; skipping time series section.")
 
     # Process snapshot data
     if "snapshots" in historical_data:
