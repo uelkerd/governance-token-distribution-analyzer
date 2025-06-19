@@ -15,6 +15,7 @@ from governance_token_analyzer.core.metrics_collector import MetricsCollector
 from governance_token_analyzer.core.historical_data import HistoricalDataManager
 from governance_token_analyzer.visualization.report_generator import ReportGenerator
 from .utils import ensure_output_directory, handle_cli_error, CLIError, generate_timestamp
+from governance_token_analyzer.core.api_client import APIClient
 
 
 def _fetch_governance_data_safely(api_client, protocol: str) -> List[Dict[str, Any]]:
@@ -84,76 +85,112 @@ def _load_historical_data_safely(data_dir: str, protocol: str) -> Optional[Dict[
 
 def execute_generate_report_command(
     protocol: str,
-    format: str = "html",
+    output_format: str = "html",
     output_dir: str = "reports",
     include_historical: bool = False,
     data_dir: str = "data/historical",
 ) -> None:
     """
-    Execute the generate-report command to create a comprehensive analysis report.
-
+    Execute the generate-report command.
     Args:
         protocol: Protocol to generate report for
-        format: Report format (html)
-        output_dir: Directory to save report files
-        include_historical: Whether to include historical analysis in report
+        output_format: Output format (html, json, pdf)
+        output_dir: Directory to save report
+        include_historical: Whether to include historical data
         data_dir: Directory containing historical data
     """
     try:
         # Ensure output directory exists
         ensure_output_directory(output_dir)
 
-        click.echo(f"📑 Generating report for {protocol.upper()}...")
+        click.echo(f"📊 Generating report for {protocol.upper()}...")
 
-        # Initialize components
-        metrics_collector = MetricsCollector(use_live_data=True)
-        report_generator = ReportGenerator()
+        # Initialize API client
+        api_client = APIClient()
 
-        # Get current data
-        click.echo("📡 Fetching current data...")
+        # Get token holders data
         try:
-            current_data = metrics_collector.collect_protocol_data(protocol)
+            click.echo("📡 Fetching token holders data...")
+            holders_data = api_client.get_token_holders(protocol, limit=1000, use_real_data=True)
         except Exception as e:
-            raise CLIError(f"Failed to fetch current data for {protocol}: {e}")
+            raise CLIError(f"Error fetching token holders data: {e}")
 
         # Get governance data
-        click.echo("🏛️ Fetching governance data...")
-        api_client = metrics_collector.api_client
-        governance_data = _fetch_governance_data_safely(api_client, protocol)
+        try:
+            click.echo("📡 Fetching governance data...")
+            governance_data = api_client.get_governance_proposals(protocol, use_real_data=True)
+        except Exception as e:
+            click.echo(f"⚠️ Error fetching governance data: {e}")
+            governance_data = []
 
-        # Fetch votes data if we have governance proposals
-        all_votes = []
-        if governance_data:
-            all_votes = _fetch_votes_data_safely(api_client, governance_data, protocol)
+        # Get votes data
+        try:
+            click.echo("📡 Fetching votes data...")
+            votes_data = []
+            for proposal in governance_data:
+                if "id" in proposal:
+                    proposal_votes = api_client.get_governance_votes(
+                        protocol, proposal_id=proposal["id"], use_real_data=True
+                    )
+                    votes_data.extend(proposal_votes)
+        except Exception as e:
+            click.echo(f"⚠️ Error fetching votes data: {e}")
+            votes_data = []
+
+        # Process token holders data
+        current_data = {
+            "token_holders": holders_data,
+            "metrics": {},  # Will be calculated by the report generator
+        }
+
+        # Initialize report generator
+        report_gen = ReportGenerator(output_dir=output_dir)
 
         # Get historical data if requested
         historical_data = None
         if include_historical:
-            click.echo("📈 Including historical analysis...")
-            historical_data = _load_historical_data_safely(data_dir, protocol)
+            click.echo("📈 Including historical data...")
+            
+            # Initialize historical data manager
+            data_manager = HistoricalDataManager(data_dir)
+            
+            try:
+                # Get time series data for key metrics
+                time_series = {}
+                for metric in ["gini_coefficient", "nakamoto_coefficient"]:
+                    try:
+                        metric_data = data_manager.get_time_series_data(protocol, metric)
+                        if not metric_data.empty:
+                            time_series[metric] = metric_data
+                    except Exception as e:
+                        click.echo(f"⚠️ Could not load time series for {metric}: {e}")
+                
+                # Get snapshots
+                snapshots = data_manager.get_snapshots(protocol)
+                
+                if snapshots or time_series:
+                    historical_data = {
+                        "time_series": time_series,
+                        "snapshots": snapshots
+                    }
+                    click.echo(f"📊 Found historical data: {len(snapshots)} snapshots and {len(time_series)} time series")
+                else:
+                    click.echo("⚠️ No historical data found")
+            except Exception as e:
+                click.echo(f"⚠️ Error loading historical data: {e}")
+        
+        # Generate the report
+        report_path = report_gen.generate_report(
+            protocol=protocol,
+            current_data=current_data,
+            governance_data=governance_data,
+            votes_data=votes_data,
+            historical_data=historical_data,
+            output_format=output_format,
+            include_historical=True if historical_data else False
+        )
 
-        # Generate timestamp for output file
-        timestamp = generate_timestamp()
-        output_file = os.path.join(output_dir, f"{protocol}_report_{timestamp}.{format}")
-
-        # Generate report
-        click.echo("🔧 Generating report...")
-
-        try:
-            report_generator.generate_report(
-                protocol=protocol,
-                current_data=current_data,
-                governance_data=governance_data,
-                votes_data=all_votes,
-                historical_data=historical_data,
-                output_path=output_file,
-                include_historical=include_historical,
-            )
-
-            click.echo(f"✅ Report saved to {output_file}")
-
-        except Exception as e:
-            raise CLIError(f"Error generating report: {e}")
+        click.echo(f"✅ Report generated: {report_path}")
 
     except CLIError:
         # CLIError is already handled by the utility function
