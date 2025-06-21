@@ -78,8 +78,7 @@ def generate_comprehensive_report(
         # PDF report generation
         # ... (implementation details)
         raise NotImplementedError("PDF report generation not implemented yet")
-    else:
-        raise ValueError(f"Unsupported format: {output_format}")
+    raise ValueError(f"Unsupported format: {output_format}")
 
 
 def _generate_comprehensive_html_report(
